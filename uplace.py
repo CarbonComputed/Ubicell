@@ -27,7 +27,7 @@ class Application(tornado.web.Application):
 		(r"/auth/login", AuthLoginHandler),
 		(r"/auth/logout", AuthLogoutHandler),
 		(r"/auth/register",RegisterHandler),
-		(r'/user/(.*)', ),
+		(r'/user/(.*)',UserHandler),
 		]
 		settings = dict(
 			cookie_secret="43oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
@@ -52,11 +52,14 @@ class BaseHandler(tornado.web.RequestHandler):
 class MainHandler(BaseHandler):
 	@tornado.web.authenticated
 	def get(self):
-		self.render("index.html")
+		user = self.get_secure_cookie('userdata')
+		user = tornado.escape.json_decode(user)
+		self.render("index.html",userdata=user)
 
 class AuthLoginHandler(BaseHandler):
     @tornado.web.asynchronous
     def get(self):
+
         self.render("login.html")
 
     def post(self):
@@ -68,7 +71,7 @@ class AuthLoginHandler(BaseHandler):
             return
         self.set_secure_cookie("user", tornado.escape.json_encode(user_cookie))
         user = user_actions.get_user_data(db,user_cookie)
-        #self.user_cache[user_cookie] = user
+        self.set_secure_cookie("userdata", tornado.escape.json_encode(user))
         self.redirect("/")
 
 
@@ -80,7 +83,12 @@ class AuthLogoutHandler(BaseHandler):
 
 class RegisterHandler(BaseHandler):
 	def get(self):
-		pass
+		self.render("register.html")
+	def post(self):
+		user = self.request.arguments
+		resp = auth_actions.do_register(db,user)
+		print resp
+
 
 class UserHandler(BaseHandler):
 	def get(self,UserName):

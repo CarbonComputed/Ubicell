@@ -56,7 +56,7 @@ def auth_currentid(user_data,uid):
 def main():
 	print "Testing User Data"
 	db = database.Connection("localhost", "ProjectTakeOver",user="root",password="")
-	cookie = auth_actions.do_login(db,"kmcarbone","kmcarbone")
+	cookie = auth_actions.do_login(db,"kevin","test")
 	json = get_user_data(db,cookie)
 	print json
 	print "Testing Friend Request"

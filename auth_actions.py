@@ -34,12 +34,13 @@ def do_login(db,username,password,cookie=None):
 
 
 def do_register(db,user):
-	username = user["UserName"]
-	password = user["Password"]
-	email = user["Email"]
-	uid = user["UID"]
-	firstname = user["FirstName"]
-	lastname = user["LastName"]
+	username = user["UserName"][0]
+	password = user["Password"][0]
+	email = user["Email"][0]
+	uid = user["UID"][0]
+	firstname = user["FirstName"][0]
+	lastname = user["LastName"][0]
+	print firstname
 	m = hashlib.md5()
 	m.update(password)
 	password = m.hexdigest()
@@ -50,15 +51,16 @@ def do_register(db,user):
 	except:
 		return RespError.DEFAULT_ERROR
 	userid = get_user_id(db,username)
+	
 	try:
-		db.execute("Insert into RegisterRequests Values(%s)",userid)
+		db.execute("Insert into Cookie Values(%s,0)",userid)
 	except MySQLdb.IntegrityError:
 		db.execute("Delete from User where UserID = %s",userid)
 		return RespError.DUPLICATE_ERROR
 	except:
 		db.execute("Delete from User where UserID = %s",userid)
 		return RespError.DEFAULT_ERROR
-	return userid
+	return RespSuccess.DEFAULT_SUCCESS
 
 
 def is_registered(db,cookie):
