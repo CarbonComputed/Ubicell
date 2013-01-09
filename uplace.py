@@ -44,7 +44,7 @@ class BaseHandler(tornado.web.RequestHandler):
 	#user_cache = {}
 
 	def get_current_user(self):
-		user_json = self.get_secure_cookie("user")
+		user_json = self.get_secure_cookie("userdata")
 		if not user_json: return None
 		return tornado.escape.json_decode(user_json)
 
@@ -52,8 +52,7 @@ class BaseHandler(tornado.web.RequestHandler):
 class MainHandler(BaseHandler):
 	@tornado.web.authenticated
 	def get(self):
-		user = self.get_secure_cookie('userdata')
-		user = tornado.escape.json_decode(user)
+		user = self.get_current_user()
 		self.render("index.html",userdata=user)
 
 class AuthLoginHandler(BaseHandler):
@@ -79,7 +78,9 @@ class AuthLoginHandler(BaseHandler):
 class AuthLogoutHandler(BaseHandler):
     def get(self):
         self.clear_cookie("user")
-        self.write("You are now logged out")
+        self.clear_cookie("userdata")
+        self.redirect("/")
+        #self.write("You are now logged out")
 
 class RegisterHandler(BaseHandler):
 	def get(self):
