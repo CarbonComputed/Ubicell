@@ -27,6 +27,7 @@ class Application(tornado.web.Application):
 		(r"/auth/login", AuthLoginHandler),
 		(r"/auth/logout", AuthLogoutHandler),
 		(r"/auth/register",RegisterHandler),
+		(r'/user/(.*)', ),
 		]
 		settings = dict(
 			cookie_secret="43oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
@@ -64,21 +65,12 @@ class AuthLoginHandler(BaseHandler):
     	user_cookie = auth_actions.do_login(db,username,password)
     	if not user_cookie:
             self.redirect("/auth/login")
+            return
         self.set_secure_cookie("user", tornado.escape.json_encode(user_cookie))
         user = user_actions.get_user_data(db,user_cookie)
         #self.user_cache[user_cookie] = user
         self.redirect("/")
 
-class FriendRequestHandler(BaseHandler):
-	@tornado.web.authenticated
-	def post(self):
-		pass
-		
-
-class EventHandler(BaseHandler):
-	@tornado.web.authenticated
-	def get(self):
-		pass
 
 
 class AuthLogoutHandler(BaseHandler):
@@ -88,6 +80,13 @@ class AuthLogoutHandler(BaseHandler):
 
 class RegisterHandler(BaseHandler):
 	def get(self):
+		pass
+
+class UserHandler(BaseHandler):
+	def get(self,UserName):
+		#check if user can view profile
+		#get user data
+		#render page
 		pass
 
 

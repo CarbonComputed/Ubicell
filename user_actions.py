@@ -34,6 +34,7 @@ def get_friends(self,userid):
 	return req
 
 def accept_friend_request(db,userid,friendid):
+
 	req = RespSuccess.DEFAULT_SUCCESS
 	try:
 		req = db.get("Insert into Friends Values(%s,%s)",userid,friendid)
@@ -48,7 +49,8 @@ def is_friends_with(db,userid,userid2):
 		return False
 	return True
 
-
+def auth_currentid(user_data,uid):
+	return user_data['UID'] is uid
 
 
 def main():
