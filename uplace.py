@@ -30,7 +30,7 @@ class Application(tornado.web.Application):
 		(r'/user/(.*)',UserHandler),
 		]
 		settings = dict(
-			cookie_secret="43oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=",
+			cookie_secret="p5q5askPJeOhs5mXb3QZ9CrNZUlxRWha6CPXif8G",
 			login_url="/auth/login",
 			template_path=os.path.join(os.path.dirname(__file__), "templates"),
 			static_path=os.path.join(os.path.dirname(__file__), "static"),
@@ -76,13 +76,15 @@ class AuthLoginHandler(BaseHandler):
 
 
 class AuthLogoutHandler(BaseHandler):
-    def get(self):
-        self.clear_cookie("user")
-        self.clear_cookie("userdata")
-        self.redirect("/")
+	@tornado.web.asynchronous
+	def get(self):
+		self.clear_cookie("user")
+		self.clear_cookie("userdata")
+		self.redirect("/")
         #self.write("You are now logged out")
 
 class RegisterHandler(BaseHandler):
+	@tornado.web.asynchronous
 	def get(self):
 		self.render("register.html")
 	def post(self):
