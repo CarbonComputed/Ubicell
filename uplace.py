@@ -27,7 +27,8 @@ class Application(tornado.web.Application):
 		(r"/auth/login", AuthLoginHandler),
 		(r"/auth/logout", AuthLogoutHandler),
 		(r"/auth/register",RegisterHandler),
-		(r'/user/(.*)',UserHandler),
+		(r'/user/([a-z\d.]{5,})/?',UserHandler),
+		(r'/user/([a-z\d.]{5,})/friends',UserFriendHandler)
 		]
 		settings = dict(
 			cookie_secret="p5q5askPJeOhs5mXb3QZ9CrNZUlxRWha6CPXif8G",
@@ -98,8 +99,12 @@ class UserHandler(BaseHandler):
 		#check if user can view profile
 		#get user data
 		#render page
+		self.write(UserName)
 		pass
 
+class UserFriendHandler(BaseHandler):
+	def get(self,UserName):
+		self.write(UserName + "hi!")
 
 
 def main():

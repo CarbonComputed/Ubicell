@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 
+USER_REGEX='([a-z\d.]{5,})/?'
+
 class RespSuccess:
 	DEFAULT_SUCCESS = 200
 
