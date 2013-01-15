@@ -15,10 +15,13 @@ from tornado import database
 
 import auth_actions
 import user_actions
+import core_actions
 
 define("port", default=8000, help="run on the given port", type=int)
 
 db = database.Connection("localhost", "ProjectTakeOver",user="root",password="")
+
+
 
 class Application(tornado.web.Application):
 	def __init__(self):
@@ -28,7 +31,8 @@ class Application(tornado.web.Application):
 		(r"/auth/logout", AuthLogoutHandler),
 		(r"/auth/register",RegisterHandler),
 		(r'/user/([a-z\d.]{5,})/?',UserHandler),
-		(r'/user/([a-z\d.]{5,})/friends',UserFriendHandler)
+		(r'/user/([a-z\d.]{5,})/friends',UserFriendHandler),
+		(r'/user/([a-z\d.]{5,})/status',StatusHandler)
 		]
 		settings = dict(
 			cookie_secret="p5q5askPJeOhs5mXb3QZ9CrNZUlxRWha6CPXif8G",
@@ -105,6 +109,13 @@ class UserHandler(BaseHandler):
 class UserFriendHandler(BaseHandler):
 	def get(self,UserName):
 		self.write(UserName + "hi!")
+
+class StatusHandler(BaseHandler):
+
+	def post(self):
+		user = self.get_current_user()
+		msg = self.get_argument("Message",strip = True)
+		return core_actions.post_status(db,user,msg)
 
 
 def main():

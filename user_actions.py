@@ -2,7 +2,9 @@
 
 from tornado import database
 import MySQLdb
+import json
 from constants import *
+
 
 import auth_actions
 
@@ -12,6 +14,15 @@ def get_user_data(db,cookie):
 		del user_json['Password']
 	return user_json
 
+def get_friend_data(db,user):
+	rows = db.query("Select * from Friend inner join User on User.UserID = Friend.UserID and Friend.UserID = %s",userid)
+	nrows = []
+	for row in rows:
+		del row['Password']
+		del row['Email']
+		nrows.append(row)
+	return nrows
+
 def send_friend_request(db,userid,friendid):
 	req = RespSuccess.DEFAULT_SUCCESS
 	try:
@@ -20,7 +31,7 @@ def send_friend_request(db,userid,friendid):
 		req = RespError.DUPLICATE_ERROR
 	except:
 		req = RespError.DEFAULT_ERROR
-		return req
+	return req
 
 def get_friend_requests(db,userid):
 	req = db.get("Select * from FriendRequests inner join User on User.UserID = FriendRequests.UserID and FriendRequests.UserID = %s",userid)
@@ -28,10 +39,14 @@ def get_friend_requests(db,userid):
 		del req['Password']
 	return req
 
-def get_friends(self,userid):
-	req = db.get("Select * from Friend inner join User on User.UserID = Friend.UserID and Friend.UserID = %s",userid)
-	del req['Password']
-	return req
+def get_friends(db,userid):
+	rows = db.query("Select * from Friend inner join User on User.UserID = Friend.UserID and Friend.UserID = %s",userid)
+	nrows = []
+	for row in rows:
+		del row['Password']
+		del row['Email']
+		nrows.append(row)
+	return nrows
 
 def accept_friend_request(db,userid,friendid):
 
@@ -69,7 +84,10 @@ def main():
 	print get_friend_requests(db,1)
 	db.close()
 
+def friend_test():
+	db = database.Connection("localhost", "ProjectTakeOver",user="root",password="")
+	print json.dumps(get_friends(db,1))
 
 if __name__ == "__main__":
-	main()
+	friend_test()
 		
