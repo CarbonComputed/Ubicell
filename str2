@@ -1,0 +1,17 @@
+
+
+/ = /feed
+
+/friends= GET
+/friends/requests
+/requests
+/messages
+/notifications
+/events
+/events/requests
+
+/search= arguments
+
+
+/events/id
+/friends/id

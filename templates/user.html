@@ -1,6 +1,15 @@
 <html>
 <title>uPlace</title>
 <h1>uPlace:{{escape(userdata['UserName'])}} </h1>
+
+{% if userdata['FriendFlag'] == False%}
+	<a href="">Request Friend</a>
+{% end %}
+<a href="friends">View Friends</a>
+<a href="photos">View Photos</a>
+
+
+
 <body>
 </body>
 </html>

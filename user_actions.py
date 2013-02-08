@@ -8,14 +8,20 @@ from constants import *
 
 import auth_actions
 
-def get_user_data(db,cookie):
+def get_my_data(db,cookie):
 	user_json = db.get("Select * from User inner join Cookie on Cookie.UserID = User.UserID and Cookie.CookieVal = %s",cookie)
 	if user_json != None:
 		del user_json['Password']
 	return user_json
 
+def get_user_data(db,username):
+	user_json = db.get("Select * from User where UserName = %s",username)
+	if user_json != None:
+		del user_json['Password']
+	return user_json
+
 def get_friend_data(db,user):
-	rows = db.query("Select * from Friend inner join User on User.UserID = Friend.UserID and Friend.UserID = %s",userid)
+	rows = db.query("Select UserID,UserName,FirstName,LastName from Friend inner join User on User.UserID = Friend.UserID and Friend.UserID = %s",userid)
 	nrows = []
 	for row in rows:
 		del row['Password']
@@ -64,6 +70,11 @@ def is_friends_with(db,userid,userid2):
 		return False
 	return True
 
+def is_friends_with(db,userid,f_username):
+	req = db.get("Select u.UserID,u.UserName,u.FirstName,u.LastName from Friend f join User u on f.FriendID = u.UserID and u.UserName = %s \
+					where f.UserID = %s;",f_username,userid)
+	return req
+
 def auth_currentid(user_data,uid):
 	return user_data['UID'] is uid
 
@@ -87,7 +98,10 @@ def main():
 def friend_test():
 	db = database.Connection("localhost", "ProjectTakeOver",user="root",password="")
 	print json.dumps(get_friends(db,1))
+def is_friends_test():
+	db = database.Connection("localhost", "ProjectTakeOver",user="root",password="")
+	return is_friends_with(db,1,'njcbone2')
 
 if __name__ == "__main__":
-	friend_test()
+	print is_friends_test()
 		

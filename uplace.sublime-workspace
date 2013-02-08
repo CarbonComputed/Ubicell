@@ -1,0 +1,302 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"is_",
+				"is_final"
+			],
+			[
+				"cur",
+				"currentCyl_"
+			],
+			[
+				"cyl",
+				"cylinderRequest"
+			],
+			[
+				"in",
+				"inUse_"
+			],
+			[
+				"req",
+				"reqLock_"
+			],
+			[
+				"get",
+				"get_sstf"
+			],
+			[
+				"sta",
+				"statistics_"
+			],
+			[
+				"stats",
+				"statistsics_"
+			],
+			[
+				"stat",
+				"statistsics_"
+			],
+			[
+				"cy",
+				"cylinderRequest"
+			],
+			[
+				"pth",
+				"pthread_mutex_unlock"
+			],
+			[
+				"pthread",
+				"pthread_mutex_lock"
+			],
+			[
+				"inU",
+				"inUseLock_"
+			],
+			[
+				"cross",
+				"cross_interval"
+			],
+			[
+				"thre",
+				"thread"
+			],
+			[
+				"pthre",
+				"pthread_t"
+			],
+			[
+				"to",
+				"to_dir_"
+			],
+			[
+				"cro",
+				"crossToSouth"
+			],
+			[
+				"app",
+				"approach_interval"
+			],
+			[
+				"cros",
+				"cross_interval"
+			],
+			[
+				"num",
+				"numCars"
+			],
+			[
+				"next",
+				"nextCar"
+			],
+			[
+				"uer",
+				"userid"
+			],
+			[
+				"user",
+				"username"
+			],
+			[
+				"U",
+				"UserID"
+			],
+			[
+				"Us",
+				"UserName"
+			],
+			[
+				"USER",
+				"UserID"
+			],
+			[
+				"Coo",
+				"Cookie"
+			],
+			[
+				"Cookie",
+				"CookieVal"
+			],
+			[
+				"use",
+				"user_reg"
+			],
+			[
+				"ge",
+				"get_user_id"
+			],
+			[
+				"User",
+				"UserID"
+			],
+			[
+				"re",
+				"req"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/kmcarbone16/Programming/Major_Projects/uPlace/auth_actions.py",
+		"/Users/kmcarbone16/Programming/Major_Projects/uPlace/uplace.py",
+		"/Users/kmcarbone16/Programming/Major_Projects/uPlace/templates/user.html",
+		"/Users/kmcarbone16/NetBeansProjects/StatisticsManager/StatisticsHandler/src/parser/SMTPLogParser.java",
+		"/Users/kmcarbone16/NetBeansProjects/StatisticsManager/StatisticsHandler/src/parser/TomcatLogParser.java",
+		"/Users/kmcarbone16/Desktop/test.ncx",
+		"/Users/kmcarbone16/Library/Application Support/Sublime Text 2/Packages/Default/Preferences.sublime-settings",
+		"/Users/kmcarbone16/Desktop/fuzzer/cross_fuzz_randomized_20110105_seed.html",
+		"/Users/kmcarbone16/Desktop/QuoridorProject/StudentEngines/nrr3556/engineData.py",
+		"/Users/kmcarbone16/Desktop/sudoku.py",
+		"/Users/kmcarbone16/Desktop/QuoridorProject/Model/interface.py",
+		"/Users/kmcarbone16/Desktop/QuoridorProject/config.txt",
+		"/Users/kmcarbone16/Desktop/QuoridorProject/StudentPlayers/nrr3556/playerData.py",
+		"/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Resources/Extras2.rsrc",
+		"/Users/kmcarbone16/Desktop/test.java",
+		"/Users/kmcarbone16/Downloads/udt4/app/appclient.cpp",
+		"/Users/kmcarbone16/Programming/School/OperatingSystems/Project2/readme.txt",
+		"/Users/kmcarbone16/Programming/School/OperatingSystems/Project2/ErieCanalMonitor.h",
+		"/Users/kmcarbone16/Programming/School/OperatingSystems/Project2/Erie.cpp",
+		"/Users/kmcarbone16/Programming/School/OperatingSystems/Project2/Car.h",
+		"/Users/kmcarbone16/Programming/School/OperatingSystems/Project2/main.cpp",
+		"/Users/kmcarbone16/Programming/Major_Projects/ProjectTakeOver/static/login.html",
+		"/Users/kmcarbone16/Programming/Major_Projects/ProjectTShare/WebServer/tornado-2.3/demos/blog/blog.py",
+		"/Users/kmcarbone16/Programming/MultiProjects/RestServer/main.py"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"vim",
+			"cycles",
+			"seed",
+			"not",
+			"logging",
+			"r",
+			"THEME",
+			"0",
+			"get_cu",
+			"root"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 100.0
+	},
+	"replace":
+	{
+		"height": 0.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true
+}

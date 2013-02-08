@@ -18,6 +18,7 @@ def get_user_id(db,username):
 	return userid
 
 
+
 def do_login(db,username,password,cookie=None):
 	m = hashlib.md5()
 	m.update(password)
@@ -37,7 +38,7 @@ def do_register(db,user):
 	username = user["UserName"][0]
 	password = user["Password"][0]
 	email = user["Email"][0]
-	uid = user["UID"][0]
+	#uid = user["UID"][0]
 	firstname = user["FirstName"][0]
 	lastname = user["LastName"][0]
 	print firstname

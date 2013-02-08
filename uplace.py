@@ -16,6 +16,7 @@ from tornado import database
 import auth_actions
 import user_actions
 import core_actions
+import custom_dec
 
 define("port", default=8000, help="run on the given port", type=int)
 
@@ -32,7 +33,7 @@ class Application(tornado.web.Application):
 		(r"/auth/register",RegisterHandler),
 		(r'/user/([a-z\d.]{5,})/?',UserHandler),
 		(r'/user/([a-z\d.]{5,})/friends',UserFriendHandler),
-		(r'/user/([a-z\d.]{5,})/status',StatusHandler)
+		(r'/user/([a-z\d.]{5,})/status',StatusHandler),
 		]
 		settings = dict(
 			cookie_secret="p5q5askPJeOhs5mXb3QZ9CrNZUlxRWha6CPXif8G",
@@ -74,7 +75,7 @@ class AuthLoginHandler(BaseHandler):
             self.redirect("/auth/login")
             return
         self.set_secure_cookie("user", tornado.escape.json_encode(user_cookie))
-        user = user_actions.get_user_data(db,user_cookie)
+        user = user_actions.get_my_data(db,user_cookie)
         self.set_secure_cookie("userdata", tornado.escape.json_encode(user))
         self.redirect("/")
 
@@ -99,14 +100,28 @@ class RegisterHandler(BaseHandler):
 
 
 class UserHandler(BaseHandler):
+	@tornado.web.authenticated
+	@tornado.web.addslash
+
 	def get(self,UserName):
 		#check if user can view profile
+		user = self.get_current_user()
+		user2 = user_actions.get_user_data(db,UserName)
+		friend = user_actions.is_friends_with(db,user['UserID'],UserName)
+		if user2 is None:
+			raise tornado.web.HTTPError(404)
+		user2['FriendFlag'] = True
+		if friend is None:
+			print friend
+			user2['FriendFlag'] = False
+
+			#raise tornado.web.HTTPError(403)
 		#get user data
 		#render page
-		self.write(UserName)
-		pass
+		self.render("user.html",userdata=user2)
 
 class UserFriendHandler(BaseHandler):
+	@custom_dec.auth_friend
 	def get(self,UserName):
 		self.write(UserName + "hi!")
 
@@ -122,6 +137,7 @@ def main():
     tornado.options.parse_command_line()
     db = database.Connection("localhost", "ProjectTakeOver",user="root",password="")
     print "Established Database Connection"
+    print 'http://127.0.0.1:'+str(options.port)
     app = Application()
     app.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()
