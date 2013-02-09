@@ -33,7 +33,7 @@ def get_friend_data(db,mc,user):
 def send_friend_request(db,userid,friendid):
 	req = RespSuccess.DEFAULT_SUCCESS
 	try:
-		req = db.execute("Insert into FriendRequests Values(%s,%s)",userid,friendid)
+		db.execute("Insert into FriendRequests Values(%s,%s)",userid,friendid)
 	except MySQLdb.IntegrityError:
 		req = RespError.DUPLICATE_ERROR
 	except:
@@ -56,11 +56,16 @@ def get_friends(db,userid):
 	return nrows
 
 def accept_friend_request(db,userid,friendid):
-
 	req = RespSuccess.DEFAULT_SUCCESS
+	print userid,friendid
 	try:
-		req = db.get("Insert into Friends Values(%s,%s)",userid,friendid)
-		req = db.get("Insert into Friends Values(%s,%s)",friendid,userid)
+		db.execute("Delete from FriendRequests where UserID = %s and FriendID = %s",friendid,userid)
+	except:
+		req = RespError.DEFAULT_ERROR
+		return req
+	try:
+		db.execute("Insert into Friend Values(%s,%s)",userid,friendid)
+		db.execute("Insert into Friend Values(%s,%s)",friendid,userid)
 	except:
 		req = RespError.DEFAULT_ERROR
 	return req
@@ -74,6 +79,16 @@ def is_friends_with(db,userid,userid2):
 def is_friends_with(db,userid,f_username):
 	req = db.get("Select u.UserID,u.UserName,u.FirstName,u.LastName from Friend f join User u on f.FriendID = u.UserID and u.UserName = %s \
 					where f.UserID = %s;",f_username,userid)
+	return req
+
+def is_friend_requested(db,userid,f_username):
+	req = db.get("Select u.UserID,u.UserName,u.FirstName,u.LastName from FriendRequests f join User u on f.FriendID = u.UserID and u.UserName = %s \
+					where f.UserID = %s;",f_username,userid)
+	return req
+
+def is_friend_requesting(db,userid,my_username):
+	req = db.get("Select 1 from FriendRequests f join User u on f.UserID = u.UserID and u.UserName = %s \
+					where f.FriendID = %s;",my_username,userid)
 	return req
 
 def auth_currentid(user_data,uid):
@@ -101,7 +116,7 @@ def friend_test():
 	print json.dumps(get_friends(db,1))
 def is_friends_test():
 	db = database.Connection("localhost", "ProjectTakeOver",user="root",password="")
-	return is_friends_with(db,1,'njcbone2')
+	return is_friends_with(db,1,'jillian')
 
 if __name__ == "__main__":
 	print is_friends_test()

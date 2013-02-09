@@ -17,6 +17,7 @@ class UserStatus:
 	USER_ACC = 2
 	USER_NEI = 3
 	USER_ME = 4
+	USER_FRI = 5
 
 class Action:
 	FRIEND_RESP = 1

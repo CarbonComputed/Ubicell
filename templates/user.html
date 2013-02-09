@@ -9,6 +9,12 @@
 {% if userdata['UserStatus'] == UserStatus.USER_NEI%}
 	<a href="#" onclick="return friend_request()">Request Friend</a>
 {% end %}
+{% if userdata['UserStatus'] == UserStatus.USER_REQ%}
+	<h3>Friend Request Sent</h3>
+{% end %}
+{% if userdata['UserStatus'] == UserStatus.USER_ACC%}
+	<a href="#" onclick="return friend_request()">Accept Friend</a>
+{% end %}
 {% if userdata['UserStatus'] == UserStatus.USER_ME%}
 	  <form id="statusForm" action="" method="post" onSubmit="return post_status()" >
 
@@ -24,14 +30,19 @@
 <body>
 	<script type="text/javascript">
 		 
-		function friend_request(action){
+		function friend_request(){
 					$.ajax({
 		            type: 'POST',
 		            url: '/actions/respond_friend',
-		            data: {UserID : {{userdata['UserID']}}}, UserStatus : {{userdata['UserStatus']}}, 
-		            Action : {{Action.FRIEND_RESP}},
+		            data: {UserID : {{userdata['UserID']}}, UserStatus : {{userdata['UserStatus']}}, Action : {{Action.FRIEND_RESP}}, 
+		        	},
 		            success: function(data){
-		            	alert("Friend Requested!");
+		            	{% if userdata['UserStatus'] == UserStatus.USER_NEI%}
+							alert('Friend Requested');
+						{% end %}
+						{% if userdata['UserStatus'] == UserStatus.USER_ACC%}
+							alert('Friend Accepted');
+						{% end %}
 		            }
 		        });
 		        return false;

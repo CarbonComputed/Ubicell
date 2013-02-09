@@ -117,15 +117,21 @@ class UserHandler(BaseHandler):
 		user = self.get_current_user()
 		user2 = user_actions.get_user_data(self.db,UserName)
 		friend = user_actions.is_friends_with(self.db,user['UserID'],UserName)
+		friend_requested = user_actions.is_friend_requested(self.db,user['UserID'],UserName)
+		friend_requesting = user_actions.is_friend_requesting(self.db,user['UserID'],UserName)
 		if user2 is None:
 			raise tornado.web.HTTPError(404)
-		user2['UserStatus'] = UserStatus.USER_ACC
-		if friend is None:
-			print friend
-			user2['UserStatus'] = UserStatus.USER_NEI
+		user2['UserStatus'] = UserStatus.USER_FRI
 		if UserName == user['UserName']:
 			user2 = user
-			user2['UserStatus'] = UserStatus.USER_ME 
+			user2['UserStatus'] = UserStatus.USER_ME
+		elif friend is None and friend_requested is None and friend_requesting is None:
+			user2['UserStatus'] = UserStatus.USER_NEI
+		elif friend_requesting != None:
+			user2['UserStatus'] = UserStatus.USER_ACC
+		elif friend_requested != None:
+			user2['UserStatus'] = UserStatus.USER_REQ
+
 
 			#raise tornado.web.HTTPError(403)
 		#get user data
@@ -157,7 +163,22 @@ class FriendActionHandler(BaseHandler):
 	@tornado.web.authenticated
 
 	def post(self):
-		pass
+		me = self.get_current_user()
+		act = int(self.get_argument("Action",strip = True))
+		fid = self.get_argument("UserID",strip = True)
+		ustat = int(self.get_argument("UserStatus",strip = True))
+		resp = RespSuccess.DEFAULT_SUCCESS
+		if int(ustat) == UserStatus.USER_NEI:
+			resp = user_actions.send_friend_request(self.db,me['UserID'],fid)
+		elif ustat == UserStatus.USER_REQ:
+			pass
+		elif ustat == UserStatus.USER_ACC:
+			resp = user_actions.accept_friend_request(self.db,me['UserID'],fid)
+		else:
+			raise tornado.web.HTTPError(500)
+		if resp != RespSuccess.DEFAULT_SUCCESS:
+			print 'Default',resp
+			raise tornado.web.HTTPError(500)
 
 
 def main():
