@@ -12,8 +12,11 @@ class RespError:
 	NOT_REGISTERED_ERROR = 502
 	UNAUTHORIZED_ACTION = 503
 
-class FriendStatus:
-	FRIEND_REQ = 1
-	FRIEND_ACC = 2
-	FRIEND_NEI = 3
+class UserStatus:
+	USER_REQ = 1
+	USER_ACC = 2
+	USER_NEI = 3
+	USER_ME = 4
 
+class Action:
+	FRIEND_RESP = 1
