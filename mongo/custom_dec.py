@@ -8,7 +8,7 @@ from tornado import database
 def auth_friend(method):
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
-        userid = self.get_current_user()['UserID']
+        userid = self.get_current_user()['_id']
         me = self.get_current_user()['UserName']
         friend_username = args[0]
         if me == friend_username:

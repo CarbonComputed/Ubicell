@@ -11,10 +11,12 @@ import uuid
 
 from tornado.options import define, options
 
-import motor
+from bson.json_util import dumps,loads
+
 from constants import *
 
-import pylibmc
+import pymongo
+#import pylibmc
 
 import auth_actions
 import user_actions
@@ -46,8 +48,9 @@ class Application(tornado.web.Application):
 			autoescape="xhtml_escape",
 			)
 		tornado.web.Application.__init__(self, handlers, **settings)
-		self.db = motor.MotorClient().open_sync().uplace
-		self.mc = pylibmc.Client(["127.0.0.1"], binary=True, behaviors={"tcp_nodelay": True,"ketama": True})
+		self.db = pymongo.MongoClient().uplace
+		self.mc = None
+		#self.mc = pylibmc.Client(["127.0.0.1"], binary=True, behaviors={"tcp_nodelay": True,"ketama": True})
 
 class BaseHandler(tornado.web.RequestHandler):
 	@property
@@ -61,7 +64,7 @@ class BaseHandler(tornado.web.RequestHandler):
 	def get_current_user(self):
 		user_json = self.get_secure_cookie("userdata")
 		if not user_json: return None
-		return tornado.escape.json_decode(user_json)
+		return tornado.escape.json_decode(loads(user_json))
 
 
 class MainHandler(BaseHandler):
@@ -79,13 +82,14 @@ class AuthLoginHandler(BaseHandler):
     def post(self):
     	username = self.get_argument("UserName",strip = True)
     	password = self.get_argument("Password",strip = True)
-    	user_cookie = auth_actions.do_login(self.db,username,password)
-    	if not user_cookie:
+    	user = auth_actions.do_login(self.db,username,password)
+    	if not user:
             self.redirect("/auth/login")
             return
-        self.set_secure_cookie("user", tornado.escape.json_encode(user_cookie))
-        user = user_actions.get_my_data(self.db,user_cookie)
-        self.set_secure_cookie("userdata", tornado.escape.json_encode(user))
+
+        #user = user_actions.get_my_data(self.db,user['_id'])
+        print dumps(user)
+        self.set_secure_cookie("userdata", tornado.escape.json_encode(dumps(user)))
         self.redirect("/")
 
 
@@ -114,11 +118,12 @@ class UserHandler(BaseHandler):
 
 	def get(self,UserName):
 		#check if user can view profile
+
 		user = self.get_current_user()
-		user2 = user_actions.get_user_data(self.db,UserName)
-		friend = user_actions.is_friends_with(self.db,user['UserID'],UserName)
-		friend_requested = user_actions.is_friend_requested(self.db,user['UserID'],UserName)
-		friend_requesting = user_actions.is_friend_requesting(self.db,user['UserID'],UserName)
+		user2 = user_actions.get_friend_data(self.db,None,UserName)
+		friend = user_actions.is_friends_with(self.db,user['_id'],UserName)
+		friend_requested = user_actions.is_friend_requested(self.db,user['_id'],UserName)
+		friend_requesting = user_actions.is_friend_requesting(self.db,user['_id'],UserName)
 		if user2 is None:
 			raise tornado.web.HTTPError(404)
 		user2['UserStatus'] = UserStatus.USER_FRI
@@ -126,8 +131,10 @@ class UserHandler(BaseHandler):
 			user2 = user
 			user2['UserStatus'] = UserStatus.USER_ME
 		elif friend is None and friend_requested is None and friend_requesting is None:
+
 			user2['UserStatus'] = UserStatus.USER_NEI
 		elif friend_requesting != None:
+
 			user2['UserStatus'] = UserStatus.USER_ACC
 		elif friend_requested != None:
 			user2['UserStatus'] = UserStatus.USER_REQ
@@ -168,15 +175,16 @@ class FriendActionHandler(BaseHandler):
 	def post(self):
 		me = self.get_current_user()
 		act = int(self.get_argument("Action",strip = True))
-		fid = self.get_argument("UserID",strip = True)
+		fid = self.get_argument("_id",strip = True)
 		ustat = int(self.get_argument("UserStatus",strip = True))
+		print ustat
 		resp = RespSuccess.DEFAULT_SUCCESS
 		if int(ustat) == UserStatus.USER_NEI:
-			resp = user_actions.send_friend_request(self.db,me['UserID'],fid)
+			resp = user_actions.send_friend_request(self.db,me['_id'],fid)
 		elif ustat == UserStatus.USER_REQ:
 			pass
 		elif ustat == UserStatus.USER_ACC:
-			resp = user_actions.accept_friend_request(self.db,me['UserID'],fid)
+			resp = user_actions.accept_friend_request(self.db,me['_id'],fid)
 		else:
 			raise tornado.web.HTTPError(500)
 		if resp != RespSuccess.DEFAULT_SUCCESS:

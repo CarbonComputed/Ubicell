@@ -7,6 +7,7 @@ from constants import *
 import hashlib
 import random
 
+from bson import json_util
 import pymongo
 import models
 
@@ -23,19 +24,27 @@ def do_login(db,username,password):
 	m.update(password)
 	hashed = m.hexdigest()
 	login = db.user.find_one({'UserName' : username, 'Password' : hashed})
-	del login['Password']
+	if login is not None:
+		del login['Password']
+		login['_id'] = str(login['_id'])
+
+	print 'Login',login
 	return login
 
 
 
 
 def do_register(db,user):
-	password = user["Password"]
+	print user
+	password = user["Password"][-1]
 	m = hashlib.md5()
 	m.update(password)
 	password = m.hexdigest()
-	user["Password"] = password
-	username = user['UserName']
+	username = user['UserName'][-1]
+	firstname = user['FirstName'][-1]
+	lastname = user['LastName'][-1]
+	email = user['Email'][-1]
+	user  = {'UserName' : username, 'Password' : password,'FirstName' : firstname, 'LastName' : lastname, 'Email' : email }
 	return db.user.update({'UserName' : username},user,upsert=True)
 
 

@@ -34,9 +34,10 @@
 					$.ajax({
 		            type: 'POST',
 		            url: '/actions/respond_friend',
-		            data: {UserID : {{userdata['UserID']}}, UserStatus : {{userdata['UserStatus']}}, Action : {{Action.FRIEND_RESP}}, 
+		            data: {_id : "{{userdata['_id']}}", UserStatus : {{userdata['UserStatus']}}, Action : {{Action.FRIEND_RESP}}, 
 		        	},
 		            success: function(data){
+
 		            	{% if userdata['UserStatus'] == UserStatus.USER_NEI%}
 							alert('Friend Requested');
 						{% end %}
