@@ -12,8 +12,9 @@ import user_actions
 
 def post_status(db,mc,user,message):
 	userid = user['UserID']
-	t = long(time())
 	try:
+		post = {}
+		db.user.update({'_id' : ObjectId(userid)},)
 		db.execute("Insert into UserStatus Values(0,%s,%s,%s)",userid,message,t)
 	except MySQLdb.IntegrityError:
 		return RespError.DUPLICATE_ERROR
@@ -23,14 +24,13 @@ def post_status(db,mc,user,message):
 
 def post_wall(db,mc,user,friendid,message):
 	userid = user['UserID']
-	t = long(time())
-	print user['UserName'],friendid
+	post = {'_id', ObjectId(friendid), 'Message' : message, 'Time' : 'Date()'}
 	if userid == friendid:
 		fid = -1
 	else:
 		fid = friendid
 	try:
-		db.execute("Insert into UserWall Values(0,%s,%s,%s,%s)",userid,fid,message,t)
+		db.user.update({'_id' : userid},{{'$push' : { 'Wall' : post}})
 	except MySQLdb.IntegrityError:
 		return RespError.DUPLICATE_ERROR
 	except:
