@@ -10,8 +10,8 @@ import os.path
 import uuid
 
 from tornado.options import define, options
-from tornado import database
 
+import motor
 from constants import *
 
 import pylibmc
@@ -46,7 +46,7 @@ class Application(tornado.web.Application):
 			autoescape="xhtml_escape",
 			)
 		tornado.web.Application.__init__(self, handlers, **settings)
-		self.db = database.Connection("localhost", "ProjectTakeOver",user="root",password="root")
+		self.db = motor.MotorClient().open_sync().uplace
 		self.mc = pylibmc.Client(["127.0.0.1"], binary=True, behaviors={"tcp_nodelay": True,"ketama": True})
 
 class BaseHandler(tornado.web.RequestHandler):

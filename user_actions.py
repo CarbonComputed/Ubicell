@@ -21,13 +21,8 @@ def get_user_data(db,username):
 	return user_json
 
 def get_friend_data(db,mc,user):
-	rows = db.query("Select UserID,UserName,FirstName,LastName from Friend inner join User on User.UserID = Friend.UserID and Friend.UserID = %s",userid)
-	nrows = []
-	for row in rows:
-		del row['Password']
-		del row['Email']
-		nrows.append(row)
-	return nrows
+	row = db.get("Select UserID,UserName,FirstName,LastName from User where UserName = %s",user)
+	return row
 
 
 def send_friend_request(db,userid,friendid):

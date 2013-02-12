@@ -1,0 +1,65 @@
+{% from constants import *%}
+<html>
+<head>
+	<script src="/static/jquery-1.9.1.min.js"></script>
+</head>
+<title>uPlace</title>
+<h1>uPlace:{{escape(userdata['UserName'])}} </h1>
+
+{% if userdata['UserStatus'] == UserStatus.USER_NEI%}
+	<a href="#" onclick="return friend_request()">Request Friend</a>
+{% end %}
+{% if userdata['UserStatus'] == UserStatus.USER_REQ%}
+	<h3>Friend Request Sent</h3>
+{% end %}
+{% if userdata['UserStatus'] == UserStatus.USER_ACC%}
+	<a href="#" onclick="return friend_request()">Accept Friend</a>
+{% end %}
+{% if userdata['UserStatus'] == UserStatus.USER_ME%}
+	  <form id="statusForm" action="" method="post" onSubmit="return post_status()" >
+
+	  Write your status! <input type="text" name="message">
+	  <input type="submit" value="Post">
+	  </form>
+{% end %}
+<a href="friends">View Friends</a>
+<a href="photos">View Photos</a>
+
+
+
+<body>
+	<script type="text/javascript">
+		 
+		function friend_request(){
+					$.ajax({
+		            type: 'POST',
+		            url: '/actions/respond_friend',
+		            data: {UserID : {{userdata['UserID']}}, UserStatus : {{userdata['UserStatus']}}, Action : {{Action.FRIEND_RESP}}, 
+		        	},
+		            success: function(data){
+		            	{% if userdata['UserStatus'] == UserStatus.USER_NEI%}
+							alert('Friend Requested');
+						{% end %}
+						{% if userdata['UserStatus'] == UserStatus.USER_ACC%}
+							alert('Friend Accepted');
+						{% end %}
+		            }
+		        });
+		        return false;
+		}
+		function post_status(){
+
+		        $.ajax({
+		            type: 'POST',
+		            url: 'status',
+		            data: { Message: document.getElementById('statusForm').message.value, },
+		            success: function(data){
+		            	alert("Status Posted!");
+		            }
+		        });
+		        return false;
+		} 
+		
+	</script>
+</body>
+</html>

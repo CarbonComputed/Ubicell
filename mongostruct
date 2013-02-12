@@ -1,0 +1,31 @@
+User
+{
+	_id : ObjectID("kevin.carbone1"),
+	UserName : "kevin.carbone1"
+	FirstName : "Kevin",
+	LastName : "Carbone",
+	Email  : "kmcarbone16@gmail.com",
+	Cookie : "asdf234wef323e23f",
+	Password : "234234234234"
+	Friends : [ _id : $ref, _id : $ref2 ]
+	FriendReqs : [ _id : $ref, _id : $ref2 ]
+	Wall: [ Post: {
+					_id : $ref,
+					Message: "hey!"
+					Time : 234223423
+				}
+	]
+}
+
+University{
+	Name: "Rochester Institute of Tech",
+	Email: "rit.edu",
+	Mascot : "Tigers",
+	Nick: "RIT",
+	Students : []
+	Location {
+		State: "NY",
+
+	}
+
+}

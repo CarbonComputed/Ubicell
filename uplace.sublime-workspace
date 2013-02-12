@@ -4,16 +4,28 @@
 		"selected_items":
 		[
 			[
+				"User",
+				"UserID"
+			],
+			[
 				"get",
-				"get_argument"
+				"get"
+			],
+			[
+				"ex",
+				"execute"
+			],
+			[
+				"useri",
+				"userid"
+			],
+			[
+				"user",
+				"userid"
 			],
 			[
 				"Us",
 				"UserStatus"
-			],
-			[
-				"User",
-				"UserName"
 			],
 			[
 				"friend",
@@ -46,10 +58,6 @@
 			[
 				"U",
 				"UserName"
-			],
-			[
-				"user",
-				"user_actions"
 			],
 			[
 				"is_fri",
@@ -183,7 +191,7 @@
 			"file": "templates/user.html",
 			"settings":
 			{
-				"buffer_size": 1655,
+				"buffer_size": 1840,
 				"line_ending": "Unix"
 			}
 		},
@@ -199,18 +207,15 @@
 			"file": "templates/index.html",
 			"settings":
 			{
-				"buffer_size": 164,
+				"buffer_size": 165,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"contents": "#!/usr/bin/env python\n\nimport logging\nimport tornado.auth\nimport tornado.escape\nimport tornado.ioloop\nimport tornado.options\nimport tornado.web\nimport os.path\nimport uuid\n\nfrom tornado.options import define, options\nfrom tornado import database\n\nfrom constants import *\n\nimport pylibmc\n\nimport auth_actions\nimport user_actions\nimport core_actions\nimport custom_dec\n\ndefine(\"port\", default=8000, help=\"run on the given port\", type=int)\n\n\nclass Application(tornado.web.Application):\n	def __init__(self):\n		handlers = [\n		(r\"/\", MainHandler),\n		(r\"/auth/login\", AuthLoginHandler),\n		(r\"/auth/logout\", AuthLogoutHandler),\n		(r\"/auth/register\",RegisterHandler),\n		(r'/user/([a-z\\d.]{5,})/?',UserHandler),\n		(r'/user/([a-z\\d.]{5,})/friends',UserFriendHandler),\n		(r'/user/([a-z\\d.]{5,})/status',StatusHandler),\n		(r'/user/([a-z\\d.]{5,})/wall',WallHandler),\n		(r'/actions/respond_friend',FriendActionHandler),\n		]\n		settings = dict(\n			cookie_secret=\"p5q5askPJeOhs5mXb3QZ9CrNZUlxRWha6CPXif8G\",\n			login_url=\"/auth/login\",\n			template_path=os.path.join(os.path.dirname(__file__), \"templates\"),\n			static_path=os.path.join(os.path.dirname(__file__), \"static\"),\n			xsrf_cookies=False,\n			autoescape=\"xhtml_escape\",\n			)\n		tornado.web.Application.__init__(self, handlers, **settings)\n		self.db = database.Connection(\"localhost\", \"ProjectTakeOver\",user=\"root\",password=\"\")\n		self.mc = pylibmc.Client([\"127.0.0.1\"], binary=True, behaviors={\"tcp_nodelay\": True,\"ketama\": True})\n\nclass BaseHandler(tornado.web.RequestHandler):\n	@property\n	def db(self):\n		return self.application.db\n\n	@property\n	def mc(self):\n		return self.application.mc\n\n	def get_current_user(self):\n		user_json = self.get_secure_cookie(\"userdata\")\n		if not user_json: return None\n		return tornado.escape.json_decode(user_json)\n\n\nclass MainHandler(BaseHandler):\n	@tornado.web.authenticated\n	def get(self):\n		user = self.get_current_user()\n		self.render(\"index.html\",userdata=user)\n\nclass AuthLoginHandler(BaseHandler):\n    @tornado.web.asynchronous\n    def get(self):\n\n        self.render(\"login.html\")\n\n    def post(self):\n    	username = self.get_argument(\"UserName\",strip = True)\n    	password = self.get_argument(\"Password\",strip = True)\n    	user_cookie = auth_actions.do_login(self.db,username,password)\n    	if not user_cookie:\n            self.redirect(\"/auth/login\")\n            return\n        self.set_secure_cookie(\"user\", tornado.escape.json_encode(user_cookie))\n        user = user_actions.get_my_data(self.db,user_cookie)\n        self.set_secure_cookie(\"userdata\", tornado.escape.json_encode(user))\n        self.redirect(\"/\")\n\n\n\nclass AuthLogoutHandler(BaseHandler):\n	@tornado.web.asynchronous\n	def get(self):\n		self.clear_cookie(\"user\")\n		self.clear_cookie(\"userdata\")\n		self.redirect(\"/\")\n        #self.write(\"You are now logged out\")\n\nclass RegisterHandler(BaseHandler):\n	@tornado.web.asynchronous\n	def get(self):\n		self.render(\"register.html\")\n	def post(self):\n		user = self.request.arguments\n		resp = auth_actions.do_register(self.db,user)\n		print resp\n\n\nclass UserHandler(BaseHandler):\n	@tornado.web.authenticated\n	@tornado.web.addslash\n\n	def get(self,UserName):\n		#check if user can view profile\n		user = self.get_current_user()\n		user2 = user_actions.get_user_data(self.db,UserName)\n		friend = user_actions.is_friends_with(self.db,user['UserID'],UserName)\n		friend_requested = user_actions.is_friend_requested(self.db,user['UserID'],UserName)\n		friend_requesting = user_actions.is_friend_requested(self.db,user['UserID'],UserName)\n		if user2 is None:\n			raise tornado.web.HTTPError(404)\n		user2['UserStatus'] = UserStatus.USER_ACC\n		if UserName == user['UserName']:\n			user2 = user\n			user2['UserStatus'] = UserStatus.USER_ME\n		elif friend is None and friend_requested is None and friend_requesting is None:\n			user2['UserStatus'] = UserStatus.USER_NEI\n		elif friend_requesting != None:\n			user2['UserStatus'] = UserStatus.USER_ACC\n		elif friend_requested != None:\n			user2['UserStatus'] = UserStatus.USER_REQ\n\n\n			#raise tornado.web.HTTPError(403)\n		#get user data\n		#render page\n		self.render(\"user.html\",userdata=user2)\n\nclass UserFriendHandler(UserHandler):\n	@tornado.web.authenticated\n	@custom_dec.auth_friend\n	def get(self,UserName):\n		self.write(UserName + \"hi!\")\n\nclass StatusHandler(BaseHandler):\n	@tornado.web.authenticated\n	def post(self,UserName):\n		user = self.get_current_user()\n		msg = self.get_argument(\"Message\",strip = True)\n		return core_actions.post_wall(self.db,self.mc,user,UserName,msg)\n\nclass WallHandler(BaseHandler):\n	@tornado.web.authenticated\n	@custom_dec.auth_friend\n	def post(self,UserName):\n		user = self.get_current_user()\n		msg = self.get_argument(\"Message\",strip = True)\n		return core_actions.post_wall(self.db,self.mc,user,UserName,msg)\n\nclass FriendActionHandler(BaseHandler):\n	@tornado.web.authenticated\n\n	def post(self):\n		me = self.get_current_user()\n		act = self.get_argument(\"Action\",strip = True)\n		fid = self.get_argument(\"UserID\",strip = True)\n		ustat = self.get_argument(\"UserStatus\",strip = True)\n		print ustat,act\n		resp = RespSuccess.DEFAULT_SUCCESS\n		if ustat == UserStatus.USER_NEI:\n			resp = user_actions.send_friend_request(self.db,me['UserID'],fid)\n		if ustat == UserStatus.USER_REQ:\n			resp = user_actions.send_friend_request(self.db,me['UserID'],fid)\n		else:\n			print 'hello1'\n			raise tornado.web.HTTPError(500)\n		if resp != RespSuccess.DEFAULT_SUCCESS:\n			raise tornado.web.HTTPError(500)\n\n\ndef main():\n    tornado.options.parse_command_line()\n    #self.db = database.Connection(\"localhost\", \"ProjectTakeOver\",user=\"root\",password=\"\")\n    print \"Established Database Connection\"\n    print 'http://127.0.0.1:'+str(options.port)\n    app = Application()\n    app.listen(options.port)\n    tornado.ioloop.IOLoop.instance().start()\n\n\nif __name__ == \"__main__\":\n    main()\n\n\n",
 			"file": "uplace.py",
-			"file_size": 5781,
-			"file_write_time": 1360395224000000,
 			"settings":
 			{
-				"buffer_size": 5799,
+				"buffer_size": 5993,
 				"line_ending": "Unix"
 			}
 		},
@@ -218,7 +223,7 @@
 			"file": "user_actions.py",
 			"settings":
 			{
-				"buffer_size": 3602,
+				"buffer_size": 3616,
 				"line_ending": "Unix"
 			}
 		},
@@ -226,7 +231,7 @@
 			"file": "constants.py",
 			"settings":
 			{
-				"buffer_size": 319,
+				"buffer_size": 333,
 				"line_ending": "Unix"
 			}
 		},
@@ -234,7 +239,7 @@
 			"file": "core_actions.py",
 			"settings":
 			{
-				"buffer_size": 948,
+				"buffer_size": 1449,
 				"line_ending": "Unix"
 			}
 		}
@@ -305,6 +310,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"get_friend_data",
+			"send_fr",
 			"get_fr",
 			"get_friend",
 			"get_frie",
@@ -336,7 +343,6 @@
 	"groups":
 	[
 		{
-			"selected": 4,
 			"sheets":
 			[
 				{
@@ -370,23 +376,24 @@
 					"file": "templates/user.html",
 					"settings":
 					{
-						"buffer_size": 1655,
+						"buffer_size": 1840,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1155,
-								1155
+								782,
+								782
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/HTML/HTML.tmLanguage"
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 249.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -403,8 +410,8 @@
 						"selection":
 						[
 							[
-								316,
-								316
+								16,
+								16
 							]
 						],
 						"settings":
@@ -424,15 +431,15 @@
 					"file": "templates/index.html",
 					"settings":
 					{
-						"buffer_size": 164,
+						"buffer_size": 165,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								69,
-								101
+								36,
+								36
 							]
 						],
 						"settings":
@@ -450,23 +457,24 @@
 					"file": "uplace.py",
 					"settings":
 					{
-						"buffer_size": 5799,
+						"buffer_size": 5993,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5305,
-								5305
+								4775,
+								4790
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Python/Python.tmLanguage"
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2097.0,
+						"translation.y": 2018.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -476,15 +484,15 @@
 					"file": "user_actions.py",
 					"settings":
 					{
-						"buffer_size": 3602,
+						"buffer_size": 3616,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2734,
-								2734
+								659,
+								659
 							]
 						],
 						"settings":
@@ -493,7 +501,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 991.0,
+						"translation.y": 17.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -503,20 +511,21 @@
 					"file": "constants.py",
 					"settings":
 					{
-						"buffer_size": 319,
+						"buffer_size": 333,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								129,
-								116
+								301,
+								301
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Python/Python.tmLanguage"
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -529,15 +538,15 @@
 					"file": "core_actions.py",
 					"settings":
 					{
-						"buffer_size": 948,
+						"buffer_size": 1449,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								649,
-								649
+								1046,
+								1046
 							]
 						],
 						"settings":
@@ -546,7 +555,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 70.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
