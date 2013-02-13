@@ -156,7 +156,7 @@ class StatusHandler(BaseHandler):
 	def post(self,UserName):
 		user = self.get_current_user()
 		msg = self.get_argument("Message",strip = True)
-		fid = user_actions.get_friend_data(self.db,self.mc,UserName)['UserID']
+		fid = user_actions.get_friend_data(self.db,self.mc,UserName)['_id']
 
 		return core_actions.post_wall(self.db,self.mc,user,fid,msg)
 
@@ -166,7 +166,7 @@ class WallHandler(BaseHandler):
 	def post(self,UserName):
 		user = self.get_current_user()
 		msg = self.get_argument("Message",strip = True)
-		fid = user_actions.get_friend_data(self.db,self.mc,UserName)['UserID']
+		fid = user_actions.get_friend_data(self.db,self.mc,UserName)['_id']
 		return core_actions.post_wall(self.db,self.mc,user,fid,msg)
 
 class FriendActionHandler(BaseHandler):
