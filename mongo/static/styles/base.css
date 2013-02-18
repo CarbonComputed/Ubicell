@@ -34,6 +34,14 @@ body { overflow-x: hidden;
     color: #222;
 
 }
+a{
+      -o-transition:color .2s ease-out, background 1s ease-in;
+      -ms-transition:color .2s ease-out, background 1s ease-in;
+      -moz-transition:color .2s ease-out, background 1s ease-in;
+      -webkit-transition:color .5s ease-out, background 1s ease-in;
+      /* ...and now override with proper CSS property */
+      transition:color .2s ease-out, background 1s ease-in;
+}
 #top-nav span a {
     padding: 5px 5px 5px 5px;
     background: #2FCCFF;
@@ -109,6 +117,12 @@ body { overflow-x: hidden;
     border-width:small;
     margin-left: 10px;
     border-radius: 5px;
+          -o-transition:color .2s ease-out, background 1s ease-in;
+      -ms-transition:color .2s ease-out, background 1s ease-in;
+      -moz-transition:color .2s ease-out, background 1s ease-in;
+      -webkit-transition:color .5s ease-out, background 1s ease-in;
+      /* ...and now override with proper CSS property */
+      transition:color .2s ease-out, background 1s ease-in;
 }
 .status_button:hover{
     color: orange;
