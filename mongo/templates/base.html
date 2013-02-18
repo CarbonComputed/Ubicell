@@ -1,21 +1,41 @@
 <html>
 <head>
-<link rel="stylesheet" href="../static/styles/base.css" type="text/css" />
+	<link rel="stylesheet" href="../static/styles/base.css" type="text/css" />
+	<link rel="stylesheet" href="../static/styles/switch.css" type="text/css" />
 </head>
 <body>
 	<div id="top-nav">
 		<h1>uPlace</h1>
-        <span>
-            <a href="#">Feed</a>
-            <a href="#">Profile</a>
-            <a href="#">Settings</a>
-        </span>
+		<span>
+			<a href="#">Feed</a>
+			<a href="#">Profile</a>
+			<a href="#">Settings</a>
+		</span>
 	</div>
+	<div id="left-side-bar">
+		<div id="search-area">
+			<form>
+				<input class="search_box" type="text" name="search" >
+				<input class="status_button" type="submit" value="Search">
+			</form>
+		</div>
+	</div>
+	<div class="clear"></div>
 	<div id="Feed">
+		<h2 style="float:left;color:white;margin: 5px 5px 5px 5px;text-shadow: 3px 5px 10px #000;">Feed</h2>
+		<div class="onoffswitch">
+			<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+			<label class="onoffswitch-label" for="myonoffswitch">
+				<div class="onoffswitch-inner"></div>
+				<div class="onoffswitch-switch"></div>
+			</label>
+		</div>
+		<div class="clear"></div>
+
 		<div id="Status">
 			<form action="#">
-				  <textarea class="status_box" type="text" name="status" ></textarea>
-				  <input class="status_button" type="submit" value="Post!">
+				<textarea class="status_box" type="text" name="status" ></textarea>
+				<input class="status_button" type="submit" value="Post!">
 			</form>
 		</div>
 		<div id="Status-Feed">
@@ -26,8 +46,14 @@
 					<p class="post">First post on uPlace!</p>
 				</div>
 				<div id="Votes">
-				<div class="clear"></div>
+					<a href="#">&#8743;</a>
+					<p>43</p>
+					<a href="#">&#8744;</a>
+					<div class="clear"></div>
+
 				</div>
+				<div class="clear"></div>
+
 			</div>
 
 

@@ -158,7 +158,7 @@ class StatusHandler(BaseHandler):
 		msg = self.get_argument("Message",strip = True)
 		fid = user_actions.get_friend_data(self.db,self.mc,UserName)['_id']
 
-		return core_actions.post_wall(self.db,self.mc,user,fid,msg)
+		return core_actions.post_wall(self.db,self.mc,user['_id'],fid,msg)
 
 class WallHandler(BaseHandler):
 	@tornado.web.authenticated
@@ -167,7 +167,7 @@ class WallHandler(BaseHandler):
 		user = self.get_current_user()
 		msg = self.get_argument("Message",strip = True)
 		fid = user_actions.get_friend_data(self.db,self.mc,UserName)['_id']
-		return core_actions.post_wall(self.db,self.mc,user,fid,msg)
+		return core_actions.post_wall(self.db,self.mc,user['_id'],fid,msg)
 
 class FriendActionHandler(BaseHandler):
 	@tornado.web.authenticated

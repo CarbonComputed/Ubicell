@@ -2,13 +2,14 @@
 * {
   margin: 0;
   padding: 0;
-  font-family: verdana;
+  font-family: Trebuchet, Arial, sans-serif;;
 }
 .clear {
     clear: both;
 }
 
-body { overflow-x: hidden;  }
+body { overflow-x: hidden;
+        background: rgb(196,196,196); background: rgb(75,75,75);}
 
 
 #top-nav {
@@ -21,9 +22,8 @@ body { overflow-x: hidden;  }
     -moz-box-shadow: 0px 0px 8px 0px #000000;
     box-shadow: 0px 0px 8px 0px #000000;
     /* Adds the transparent background */
-    background-color: rgba(1, 1, 1, 1);
     background: rgb(68,68,68);
-
+    z-index: 100;
 }
 #top-nav span {
     position: absolute;
@@ -36,8 +36,10 @@ body { overflow-x: hidden;  }
 }
 #top-nav span a {
     padding: 5px 5px 5px 5px;
-    background: gray;
+    background: #2FCCFF;
     text-decoration:none;
+    color: white;
+    border-radius: 3px;
 
 
 }
@@ -47,16 +49,17 @@ body { overflow-x: hidden;  }
     bottom: 0px;
     padding: 5px 5px 5px 15px;
     font-size: 50px;
-    color: rgb(181,181,181);
+    color: #2FCCFF;
+    text-shadow: 3px 5px 10px #000;
 
 }
 #top-nav span a:visited{
-    color: rgb(181,181,181);
+    color: white;
     text-decoration:none;
 
 }
 #top-nav span a:hover{
-    color: white;
+    color: orange;
     text-decoration:none;
 
 }
@@ -68,7 +71,13 @@ body { overflow-x: hidden;  }
     margin-left: 25%;
     margin-right: 25%;
     text-align: center;
-    float: left;
+    background: #707070;
+    background: gray;
+        -webkit-box-shadow: 0px 0px 8px 0px #000000;
+    -moz-box-shadow: 0px 0px 8px 0px #000000;
+    box-shadow: 0px 0px 8px 0px #000000;
+    border-radius: 10px;
+    position: absolute;
 
 }
 
@@ -91,23 +100,27 @@ body { overflow-x: hidden;  }
 
 }
 .status_button{
-    background: rgb(68,68,68);
+    background: #2FCCFF;
     vertical-align: middle;
-    color: rgb(181,181,181);
+    color: white;
     padding: 5px 5px 5px 5px;
     font-size: 18px;
-    border: 0;
+    border-style:solid;
+    border-width:small;
+    margin-left: 10px;
+    border-radius: 5px;
 }
 .status_button:hover{
-    color: white;
+    color: orange;
     text-decoration:none;
 }
 
 .Name{
-    color: rgb(59,89,152);
+    color: black;
     vertical-align: top;
     text-decoration: none;
     padding-top: 3px;
+
 }
 
 .Name:hover{
@@ -123,6 +136,7 @@ body { overflow-x: hidden;  }
 #status-post{
     float: left;
     margin-left: 10px;
+    border-radius: 5px;
 }
 
 #status-sec{
@@ -130,10 +144,72 @@ body { overflow-x: hidden;  }
     padding-bottom: 10px;
     padding-left: 10px;
     text-align: left;
-    border-bottom:solid gray;
+    border-bottom:solid black;
     border-bottom-width:1px;
+    margin: 5px 10px 5px 10px;
+
 }
 
 #status-sec img{
     float:left;
+}
+#status-sec p{
+    color: black;
+}
+
+#Votes{
+    float: right;
+    padding-top: 5px;
+    text-decoration: none;
+    border-radius: 5px;
+    background: #2FCCFF;
+    text-align: center;
+}
+
+#Votes a{
+    color: white;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-decoration: none;
+    padding-left: 5px;
+    padding-right: 5px;
+
+}
+#Votes a:hover{
+    color: orange;
+}
+#Votes p{
+    color: white;
+    padding-left: 5px;
+    padding-right: 5px;
+    text-decoration: none;
+}
+
+#left-side-bar{
+    position: absolute;
+    margin-top: 100px;
+    width: 25%;
+    height: 100%;
+ 
+}
+
+#search-area{
+    margin-left: 15%;
+    margin-right: 15%;
+    padding-top: 25px;
+    width: 70%;
+    height: 15%;
+
+}
+
+.search_box{
+    font-size: 18px;
+    width: 60%;
+}
+
+.onoffswitch {
+    position: relative; width: 129px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+    margin: 5px 5px 5px 5px;
+    float: right;
 }

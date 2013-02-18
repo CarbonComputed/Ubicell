@@ -14,7 +14,7 @@ import pymongo
 
 
 
-def post_wall(db,mc,user,friendid,message):
+def post_wall(db,mc,userid,friendid,message):
 	userid = user['_id']
 
 	post = {'_id' : ObjectId(friendid), 'Message' : message, 'Time' : datetime.datetime.now()}
