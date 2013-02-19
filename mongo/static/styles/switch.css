@@ -28,20 +28,31 @@
     .onoffswitch-inner:after {
     content: "Friends";
     padding-right: 8px;
-    background-color: #648B9C; color: #FFFFFF;
+    background-color: #FFFFFF; color: #2FCCFF;
     text-align: right;
     }
+
+
+
+
     .onoffswitch-switch {
     width: 18px; margin: 6px;
-    background: #FFFFFF;
+            background-color: #2FCCFF;
+
     border: 2px solid #999999; border-radius: 20px;
     position: absolute; top: 0; bottom: 0; right: 95px;
     -moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
     -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
     }
+
+ 
     .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
     margin-left: 0;
+    background-color: #2FCCFF;
     }
     .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
     right: 0px;
+    background: #FFFFFF;
+
+
     }
