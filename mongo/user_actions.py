@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from tornado import database
+import gridfs
 import pymongo
 import json
 from constants import *
@@ -75,13 +75,8 @@ def get_friend_requests(db,userid):
 	return req
 
 def get_friends(db,userid):
-	rows = db.query("Select * from Friend inner join User on User.UserID = Friend.UserID and Friend.UserID = %s",userid)
-	nrows = []
-	for row in rows:
-		del row['Password']
-		del row['Email']
-		nrows.append(row)
-	return nrows
+	friends = db.user.find({'Friends._id' : userid}, {'Password' : 0})
+	return friends
 
 
 def is_friends_with_byid(db,userid,fid):
@@ -128,17 +123,19 @@ def is_friend_requesting_byid(db,userid,fid):
 	return req
 
 
-def main():
-	print "Testing User Data"
-	db = pymongo.MongoClient().uplace
-	print accept_friend_request(db,"511a607420e5d26cec26302e","511a8b3944913104fc950d84")
+def get_user_photos(db,fs,f_username):
+	friend = get_friend_data(db,None,f_username)
+	photos = {}
+	for photo in friend['Photos']:
+		pid = photo['_id']
+		photos[pid] = fs.get(ObjectId(pid))
+	return photos
 
-	day = {'hi' : 1}
-	try:
-		print day['hello']
-	except KeyError:
-		print None
-	#get_friend_requests(db,"511a679820e5d26cec26302f")
+def main():
+	#print "Testing User Data"
+	db = pymongo.MongoClient().uplace
+	fs = gridfs.GridFS(db)
+	print get_user_photos(db,fs,'kmcarbone').itervalues().next().read()
 
 	#db.close()
 

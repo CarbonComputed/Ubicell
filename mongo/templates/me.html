@@ -1,0 +1,77 @@
+<html>
+<head>
+	<link rel="stylesheet" href="../static/styles/base.css" type="text/css" />
+	<link rel="stylesheet" href="../static/styles/switch.css" type="text/css" />
+	<link rel="stylesheet" href="../static/styles/me.css" type="text/css" />
+</head>
+<body>
+	<div id="background-grad"></div>
+
+	<div class="clear"></div>
+	<div id="top-nav">
+		<div id="logo">
+			<h1>uPlace</h1>
+			<img src="../static/images/logo2.png" height="35px" width="45px">
+		</div>
+		<div class="clear"></div>
+		<span>
+			<a href="#">Feed</a>
+			<a href="#">Profile</a>
+			<a href="#">Settings</a>
+		</span>
+	</div>
+	<div id="left-side-bar">
+		<div id="search-area">
+			<form>
+				<input class="search_box" type="text" name="search" >
+				<input class="status_button" type="submit" value="Search">
+			</form>
+		</div>
+	</div>
+	<div class="clear"></div>
+	<div id="Main-Content">
+		<div id="user-data">
+			<img src="https://sphotos-b.xx.fbcdn.net/hphotos-ash3/14805_10151469493508969_1668933023_n.jpg" height="150" width="150">
+			<div class="user-description">
+				<h2>{{escape(userdata['FirstName'])}} {{escape(userdata['LastName'])}}</h2></br>
+				<h3>Computer Science, 2015</h3>
+				<p>I plan on graduating soon.</p>
+			</br>
+				<a href="#">Photos</a>
+				<a href="#">Friends</a>
+			</div>
+
+		</div>
+		<div class="clear"></div>
+				<div id="Status">
+			<form action="#">
+				<textarea class="status_box" type="text" name="status" ></textarea>
+				<input class="status_button" type="submit" value="Post!">
+			</form>
+		</div>
+		<div class ="clear"></div>
+		<div id="Status-Feed">
+			<div id="Status-sec">
+				<img src="https://sphotos-b.xx.fbcdn.net/hphotos-ash3/14805_10151469493508969_1668933023_n.jpg" height="52" width="52">
+				<div id="status-post">
+					<a class="Name" href="#">Kevin Carbone</a></br>
+					<p class="post">First post on uPlace!</p>
+				</div>
+				<div id="Votes">
+					<a href="#">&#8743;</a>
+					<p>43</p>
+					<a href="#">&#8744;</a>
+					<div class="clear"></div>
+
+				</div>
+				<div class="clear"></div>
+
+			</div>
+
+
+
+		</div>
+	</div>
+	</div>
+</body>
+</html>

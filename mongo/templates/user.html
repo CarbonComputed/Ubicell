@@ -1,71 +1,77 @@
-{% from constants import *%}
 <html>
 <head>
-	<script src="/static/jquery-1.9.1.min.js"></script>
+	<link rel="stylesheet" href="../static/styles/base.css" type="text/css" />
+	<link rel="stylesheet" href="../static/styles/switch.css" type="text/css" />
+	<link rel="stylesheet" href="../static/styles/me.css" type="text/css" />
 </head>
-<title>uPlace</title>
-<h1>uPlace:{{escape(userdata['UserName'])}} </h1>
-
-{% if userdata['UserStatus'] == UserStatus.USER_NEI%}
-	<a href="#" onclick="return friend_request()">Request Friend</a>
-{% end %}
-{% if userdata['UserStatus'] == UserStatus.USER_REQ%}
-	<h3>Friend Request Sent</h3>
-{% end %}
-{% if userdata['UserStatus'] == UserStatus.USER_ACC%}
-	<a href="#" onclick="return friend_request()">Accept Friend</a>
-{% end %}
-{% if userdata['UserStatus'] == UserStatus.USER_ME%}
-	  <form id="statusForm" action="" method="post" onSubmit="return post_status()" >
-
-	  Write your status! <input type="text" name="message">
-	  <input type="submit" value="Post">
-	  </form>
-{% end %}
-<a href="friends">View Friends</a>
-<a href="photos">View Photos</a>
-
-
-
 <body>
-	<ul role"navigation">
-		<li>Feed</li>
-		<li>Profile</li>
-		<li>Settings</li>
-	</ul>
-	<script type="text/javascript">
-		 
-		function friend_request(){
-					$.ajax({
-		            type: 'POST',
-		            url: '/actions/respond_friend',
-		            data: {_id : "{{userdata['_id']}}", UserStatus : {{userdata['UserStatus']}}, Action : {{Action.FRIEND_RESP}}, 
-		        	},
-		            success: function(data){
+	<div id="background-grad"></div>
 
-		            	{% if userdata['UserStatus'] == UserStatus.USER_NEI%}
-							alert('Friend Requested');
-						{% end %}
-						{% if userdata['UserStatus'] == UserStatus.USER_ACC%}
-							alert('Friend Accepted');
-						{% end %}
-		            }
-		        });
-		        return false;
-		}
-		function post_status(){
+	<div class="clear"></div>
+	<div id="top-nav">
+		<div id="logo">
+			<h1>uPlace</h1>
+			<img src="../static/images/logo2.png" height="35px" width="45px">
+		</div>
+		<div class="clear"></div>
+		<span>
+			<a href="#">Feed</a>
+			<a href="#">Profile</a>
+			<a href="#">Settings</a>
+		</span>
+	</div>
+	<div id="left-side-bar">
+		<div id="search-area">
+			<form>
+				<input class="search_box" type="text" name="search" >
+				<input class="status_button" type="submit" value="Search">
+			</form>
+		</div>
+	</div>
+	<div class="clear"></div>
+	<div id="Main-Content">
+		<div id="user-data">
+			<img src="https://sphotos-b.xx.fbcdn.net/hphotos-ash3/14805_10151469493508969_1668933023_n.jpg" height="150" width="150">
+			<div class="user-description">
+				<h2>Kevin Carbone</h2></br>
+				<h3>Computer Science, 2015</h3>
+				<p>I plan on graduating soon.</p>
+			</br>
+				<a href="#">Photos</a>
+				<a href="#">Friends</a>
+			</div>
 
-		        $.ajax({
-		            type: 'POST',
-		            url: 'status',
-		            data: { Message: document.getElementById('statusForm').message.value, },
-		            success: function(data){
-		            	alert("Status Posted!");
-		            }
-		        });
-		        return false;
-		} 
-		
-	</script>
+		</div>
+		<div class="clear"></div>
+				<div id="Status">
+			<form action="#">
+				<textarea class="status_box" type="text" name="status" ></textarea>
+				<input class="status_button" type="submit" value="Post!">
+			</form>
+		</div>
+		<div class ="clear"></div>
+		<div id="Status-Feed">
+			<div id="Status-sec">
+				<img src="https://sphotos-b.xx.fbcdn.net/hphotos-ash3/14805_10151469493508969_1668933023_n.jpg" height="52" width="52">
+				<div id="status-post">
+					<a class="Name" href="#">Kevin Carbone</a></br>
+					<p class="post">First post on uPlace!</p>
+				</div>
+				<div id="Votes">
+					<a href="#">&#8743;</a>
+					<p>43</p>
+					<a href="#">&#8744;</a>
+					<div class="clear"></div>
+
+				</div>
+				<div class="clear"></div>
+
+			</div>
+
+
+
+		</div>
+	</div>
+	</div>
 </body>
 </html>

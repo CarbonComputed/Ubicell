@@ -16,6 +16,7 @@ from bson.json_util import dumps,loads
 from constants import *
 
 import pymongo
+import gridfs
 #import pylibmc
 
 import auth_actions
@@ -33,11 +34,14 @@ class Application(tornado.web.Application):
 		(r"/auth/login", AuthLoginHandler),
 		(r"/auth/logout", AuthLogoutHandler),
 		(r"/auth/register",RegisterHandler),
+		# (r'/auth/login/google',GoogleHandler),
+		# (r'/auth/login/facebook',FacebookHandler),
 		(r'/user/([a-z\d.]{5,})/?',UserHandler),
 		(r'/user/([a-z\d.]{5,})/friends',UserFriendHandler),
 		(r'/user/([a-z\d.]{5,})/status',StatusHandler),
 		(r'/user/([a-z\d.]{5,})/wall',WallHandler),
 		(r'/actions/respond_friend',FriendActionHandler),
+		
 		]
 		settings = dict(
 			cookie_secret="p5q5askPJeOhs5mXb3QZ9CrNZUlxRWha6CPXif8G",
@@ -46,10 +50,13 @@ class Application(tornado.web.Application):
 			static_path=os.path.join(os.path.dirname(__file__), "static"),
 			xsrf_cookies=False,
 			autoescape="xhtml_escape",
+			facebook_api_key='124864341026931',
+			facebook_secret='29c22c3ca0963581b47f1604adbe48ce',
 			)
 		tornado.web.Application.__init__(self, handlers, **settings)
 		self.db = pymongo.MongoClient().uplace
 		self.mc = None
+		self.fs = gridfs.GridFS(self.db)
 		#self.mc = pylibmc.Client(["127.0.0.1"], binary=True, behaviors={"tcp_nodelay": True,"ketama": True})
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -169,6 +176,13 @@ class WallHandler(BaseHandler):
 		fid = user_actions.get_friend_data(self.db,self.mc,UserName)['_id']
 		return core_actions.post_wall(self.db,self.mc,user['_id'],fid,msg)
 
+class UserPhotoHandler(BaseHandler):
+	@tornado.web.authenticated
+	@custom_dec.auth_friend
+
+	def get(self,UserName):
+		pass
+
 class FriendActionHandler(BaseHandler):
 	@tornado.web.authenticated
 
@@ -191,7 +205,36 @@ class FriendActionHandler(BaseHandler):
 			print 'Default',resp
 			raise tornado.web.HTTPError(500)
 
+class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
+    @tornado.web.asynchronous
+    def get(self):
+        if self.get_argument("openid.mode", None):
+            self.get_authenticated_user(self.async_callback(self._on_auth))
+            return
+        self.authenticate_redirect()
 
+    def _on_auth(self, user):
+        if not user:
+            raise tornado.web.HTTPError(500, "Google auth failed")
+        self.write(user)
+        self.finish()
+
+class FacebookHandler(tornado.web.RequestHandler,
+                      tornado.auth.FacebookMixin):
+    @tornado.web.asynchronous
+    def get(self):
+        if self.get_argument("session", None):
+            self.get_authenticated_user(self.async_callback(self._on_auth))
+            return
+        self.authenticate_redirect()
+
+    def _on_auth(self, user):
+        if not user:
+            raise tornado.web.HTTPError(500, "Facebook auth failed")
+        self.write(user)
+        self.finish()
+        # Save the user using, e.g., set_secure_cookie()
+        # Save the user with, e.g., set_secure_cookie()
 def main():
     tornado.options.parse_command_line()
     #self.db = database.Connection("localhost", "ProjectTakeOver",user="root",password="")

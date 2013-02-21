@@ -123,7 +123,7 @@ a{
 
 }
 
-#Feed{
+#Main-Content{
     width: 50%;
     height: 100%;
     margin-top: 100px;
@@ -167,6 +167,7 @@ a{
     border-style:solid;
     border-width:small;
     margin-left: 10px;
+    cursor: pointer;
     border-radius: 5px;
     -o-transition:color .2s ease-out, background 1s ease-in;
     -ms-transition:color .2s ease-out, background 1s ease-in;
