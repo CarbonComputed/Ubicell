@@ -1,34 +1,74 @@
 <html>
 <title>uPlace</title>
-<h1>uPlace: Registration</h1>
+<head>
+	<script src="../static/jquery-1.9.1.min.js"></script>
+	<link rel="stylesheet" href="../static/styles/base2.css" type="text/css" />
+	<link rel="stylesheet" href="../static/styles/reg.css" type="text/css" />
+</head>
 <body>
-<form id="regForm" action="register" onSubmit="return validateForm(this)" method="post">
-Username: <input type="text" name="UserName"><br>
-Password: <input type="password" name="Password"><br>
-Confirm Password: <input type="password" name="confPassword"><br>
-Email: <input type="email" name="Email"><br>
-University: <input type="text" name="university"><br>
-First Name: <input type="text" name="FirstName"><br>
-Last Name: <input type="text" name="LastName"><br>
-<input type="submit" value="Submit">
-</form>
+	<div id="container">
+	<div id="top-nav">
+		<div id="logo">
+			<h1>uPlace</h1>
+			<img src="../static/images/logo3.png" height="35px" width="45px">
+		</div>
+		<div class="clear"></div>
+
+	</div>
+
+	<div id="left-side-bar">
+		<form id="regForm" action="register" onSubmit="return validateForm(this)" method="post">
+
+		<div id="reg-block">
+				Name: <input type="text" name="FullName"><br>
+				Username: <input type="text" name="UserName"><br>
+				Password: <input type="password" name="Password"><br>
+				Confirm Password: <input type="password" name="confPassword"><br>
+				Email: <input type="email" name="Email"><br>
+
+		</div>
+	</div>
+	<div class="clear"></div>
+	<div id="Main-Content">
+		<div id="extra-info">
+			Male <input type="radio" name="gender" value="Male" checked> 
+			Female <input type="radio" name="gender" value="Female" ><br>
+			University: <input type="text" name="university"><br>
+			Major: <input type="text" name="major">
+			Grad Year: <select name="yearpicker" id="yearpicker" ></select><br><br>
+			About Me: <textarea style="vertical-align: middle;"></textarea><br><br><br>
+			<input type="submit" value="Submit" class="status_button" >
+
+		</div>
+	</form>
+
+	</div>
 
 
-<script type="text/javascript">
+	<script type="text/javascript">
 
-function validateForm(form){
-	return true;
-}
+	function validateForm(form){
+		return true;
+	}
 
-function checkUniversity(university){
+	function checkUniversity(university){
 
-}
+	}
 
-function checkUserAvailability(UserName){
+	function checkUserAvailability(UserName){
+
+	}
+	$(function() {
+     // Handler for .ready() called.
+     		for (i = new Date().getFullYear()+10; i > 2000; i--)
+		{
+    		$('#yearpicker').append($('<option />').val(i).html(i));
+		}
+    });
+
+
 	
-}
-
-</script>
-
+	</script>
+</div>
 </body>
 </html>

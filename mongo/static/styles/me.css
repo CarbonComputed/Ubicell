@@ -12,7 +12,7 @@
     border-bottom:solid white;
     border-bottom-width:0px;
     overflow: auto;
-    background: #2FCCFF;
+    background: white;
     border-radius: 3px;
     text-align: right;
 
@@ -30,8 +30,7 @@
 }
 
 .user-description {
-	color: white;
-	text-shadow: 0px 0px 10px #000;
+	color: gray;
 }
 
 #Status{

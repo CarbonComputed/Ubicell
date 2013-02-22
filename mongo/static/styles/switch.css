@@ -22,13 +22,13 @@
     .onoffswitch-inner:before {
     content: "University";
     padding-left: 8px;
-    background-color: #2FCCFF; color: #FFFFFF;
+    background-color: gray; color: #FFFFFF;
     text-align: left;
     }
     .onoffswitch-inner:after {
     content: "Friends";
     padding-right: 8px;
-    background-color: #FFFFFF; color: #2FCCFF;
+    background-color: #FFFFFF; color: gray;
     text-align: right;
     }
 
@@ -37,7 +37,7 @@
 
     .onoffswitch-switch {
     width: 18px; margin: 6px;
-            background-color: #2FCCFF;
+            background-color: gray;
 
     border: 2px solid #999999; border-radius: 20px;
     position: absolute; top: 0; bottom: 0; right: 95px;
@@ -48,7 +48,7 @@
  
     .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
     margin-left: 0;
-    background-color: #2FCCFF;
+    background-color: gray;
     }
     .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
     right: 0px;

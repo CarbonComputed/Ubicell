@@ -1,0 +1,292 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: Calibri;;
+}
+.clear {
+    clear: both;
+}
+
+body ,html{
+        min-width: 1100px;
+        width: auto;
+         overflow-x: hidden;
+        background: rgb(242,244,245);
+        
+
+}
+
+/*#background-grad{
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    background-image: linear-gradient(bottom, rgb(54,52,52) 14%, rgb(163,163,163) 90%);
+    background-image: -o-linear-gradient(bottom, rgb(54,52,52) 14%, rgb(163,163,163) 90%);
+    background-image: -moz-linear-gradient(bottom, rgb(54,52,52) 14%, rgb(163,163,163) 90%);
+    background-image: -webkit-linear-gradient(bottom, rgb(54,52,52) 14%, rgb(163,163,163) 90%);
+    background-image: -ms-linear-gradient(bottom, rgb(54,52,52) 14%, rgb(163,163,163) 90%);
+
+    background-image: -webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(0.14, rgb(54,52,52)),
+        color-stop(0.9, rgb(163,163,163))
+        );
+}*/
+
+#top-nav {
+    margin: 0;
+    width: 100%;
+    margin-left: 0%;
+    margin-right: 0%;
+    height: 55px;
+    position: fixed;
+    /* Adds shadow to the bottom of the bar */
+    -webkit-box-shadow: 0px 0px 8px 0px #000000;
+    -moz-box-shadow: 0px 0px 8px 0px #000000;
+    box-shadow: 0px 0px 8px 0px #000000;
+    /* Adds the transparent background */
+    background: rgb(68,68,68);
+    background-image: linear-gradient(bottom, rgb(54,52,52) 14%, rgb(163,163,163) 90%);
+    background-image: -o-linear-gradient(bottom, rgb(54,52,52) 14%, rgb(163,163,163) 90%);
+    background-image: -moz-linear-gradient(bottom, rgb(54,52,52) 14%, rgb(163,163,163) 90%);
+    background-image: -webkit-linear-gradient(bottom, rgb(54,52,52) 14%, rgb(163,163,163) 90%);
+    background-image: -ms-linear-gradient(bottom, rgb(54,52,52) 14%, rgb(163,163,163) 90%);
+
+    background-image: -webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(0.14, rgb(54,52,52)),
+        color-stop(0.9, rgb(163,163,163))
+        );
+/*    background-image:url('../images/3040.jpg');
+background-repeat:repeat-x;*/
+    background: white;
+    z-index: 100;
+}
+#top-nav span {
+    position: absolute;
+    bottom: 5px;
+    padding-right: 5px;
+    text-align: right;
+    width: 97%;
+    color: #222;
+
+}
+a{
+/*  -o-transition:color .2s ease-out, background 1s ease-in;
+  -ms-transition:color .2s ease-out, background 1s ease-in;
+  -moz-transition:color .2s ease-out, background 1s ease-in;
+  -webkit-transition:color .5s ease-out, background 1s ease-in;
+  /* ...and now override with proper CSS property 
+  transition:color .2s ease-out, background 1s ease-in;
+  */
+}
+#top-nav span a {
+    padding: 5px 5px 5px 5px;
+    background: gray;
+    text-decoration:none;
+    color: white;
+    border-radius: 3px;
+
+
+}
+
+#logo{
+    bottom: 0px;
+    margin: 0;
+    padding-left: 25px;
+    padding-top: 10px;
+    width: 120px;
+    float: left;
+}
+
+#logo img{
+    float: left;
+    padding-left: 10px;
+
+}
+#logo h1 {
+    padding-top: 10px;
+
+    vertical-align: middle;
+    font-size: 16px;
+    color: black;
+    float: right;
+    letter-spacing: 2px;
+
+}
+#top-nav span a:visited{
+    color: white;
+    text-decoration:none;
+
+}
+#top-nav span a:hover{
+    background: orange;
+    color: white;
+    text-decoration:none;
+
+}
+
+#Main-Content{
+    float: left;
+    min-width: 640px;
+    width: 50%;
+    height: 100%;
+    margin-top: 100px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    background: #707070;
+    background: gray;
+/*    -webkit-box-shadow: 0px 0px 8px 0px #000000;
+    -moz-box-shadow: 0px 0px 8px 0px #000000;
+    box-shadow: 0px 0px 8px 0px #000000;*/
+    border-radius: 10px;
+    background: white;
+
+}
+
+#Status{
+    padding-top: 15px;
+    height: 100px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: -5px;
+
+    border-bottom:solid gray;
+    border-bottom-width:1px;
+}
+.status_box{
+    width: 70%;
+    font-size: 18px;
+    height: inherit;
+    vertical-align: middle;
+    resize: none;
+
+}
+.status_button{
+    background: gray;
+    vertical-align: middle;
+    color: white;
+    cursor: pointer;
+    padding: 5px 5px 5px 5px;
+    font-size: 18px;
+    border-style:solid;
+    border-width:small;
+    margin-left: 10px;
+    border-radius: 5px;
+
+}
+.status_button:hover{
+    color: white;
+    background: orange;
+    text-decoration:none;
+}
+
+.Name{
+    color: black;
+    vertical-align: top;
+    text-decoration: none;
+    padding-top: 3px;
+
+}
+
+.Name:hover{
+    text-decoration: underline;
+}
+
+.post{
+    font-size: 14px;
+    padding-top: 10px;
+
+
+}
+#status-post{
+    float: left;
+    margin-left: 10px;
+    border-radius: 5px;
+}
+
+#status-sec{
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    text-align: left;
+    border-bottom:solid orange;
+    border-radius: 0px;
+    border-bottom-width:0px;
+    margin: 5px 0px 5px 0px;
+    background: rgb(92,92,92);
+    background: white;
+}
+
+#status-sec img{
+    float:left;
+}
+#status-sec p{
+    color: black;
+}
+
+#Votes{
+    float: right;
+    padding-top: 5px;
+    margin-right: 5px;
+    text-decoration: none;
+    border-radius: 5px;
+    background: gray;
+    text-align: center;
+}
+
+#Votes a{
+    color: white;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-decoration: none;
+    padding-left: 5px;
+    padding-right: 5px;
+
+}
+#Votes a:hover{
+    color: orange;
+}
+#Votes p{
+    color: white;
+    padding-left: 5px;
+    padding-right: 5px;
+    text-decoration: none;
+}
+
+#left-side-bar{
+    margin-top: 100px;
+    width: 25%;
+    height: 100%;
+    min-width: 300px;
+
+    float: left;
+
+}
+
+#search-area{
+    margin-left: 10%;
+    margin-right: 10%;
+    padding-top: 25px;
+    width: 80%;
+    height: 15%;
+
+}
+
+.search_box{
+    font-size: 18px;
+    width: 60%;
+}
+
+.onoffswitch {
+    position: relative; width: 129px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+    margin: 5px 5px 5px 5px;
+    float: right;
+}
