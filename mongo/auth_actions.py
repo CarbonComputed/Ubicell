@@ -11,6 +11,9 @@ from bson import json_util
 import pymongo
 import models
 
+import re
+
+EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 
 def get_user_id(db,username):
@@ -32,18 +35,35 @@ def do_login(db,username,password):
 	return login
 
 
+def validate_email(email):
+	if len(email) <= 0:
+		return False;
+	if not EMAIL_REGEX.match(email):
+		return False
+	
+	per = email.rfind('.') 
+	if per >= 0:
+		suf = email[per+1:]
+		if suf != 'edu':
+			return False
+	return True
 
+
+
+def check_exists(db,field,item):
+	item = db.user.find_one({field : item},{})
+	return item != None
 
 def do_register(db,user):
 	print user
-	password = user["Password"][-1]
+	password = user["Password"][0]
 	m = hashlib.md5()
 	m.update(password)
 	password = m.hexdigest()
-	username = user['UserName'][-1]
-	firstname = user['FirstName'][-1]
-	lastname = user['LastName'][-1]
-	email = user['Email'][-1]
+	username = user['UserName'][0]
+	firstname = user['FirstName'][0]
+	lastname = user['LastName'][0]
+	email = user['Email'][0]
 	user  = {'UserName' : username, 'Password' : password,'FirstName' : firstname, 'LastName' : lastname, 'Email' : email }
 	return db.user.update({'UserName' : username},user,upsert=True)
 
@@ -75,14 +95,16 @@ def main():
 	#print cookie
 	db = pymongo.MongoClient().uplace
 
-	user_reg = {'UserName' : "kmcarbone",'Password' : "kmcarbone",'UID' : 1,'FirstName' : "Kevind",'LastName' : "Carbone", 'Email' : "kmcarbone16@gmail.com"}
-	user_reg2 = {'UserName' : "jillian",'Password' : "jillian",'UID' : 1,'FirstName' : "jillian",'LastName' : "Carbone", 'Email' : "jpcarbone@gmail.com"}
+	# user_reg = {'UserName' : "kmcarbone",'Password' : "kmcarbone",'UID' : 1,'FirstName' : "Kevind",'LastName' : "Carbone", 'Email' : "kmcarbone16@gmail.com"}
+	# user_reg2 = {'UserName' : "jillian",'Password' : "jillian",'UID' : 1,'FirstName' : "jillian",'LastName' : "Carbone", 'Email' : "jpcarbone@gmail.com"}
 
 
-	#print "Testing Registration"
-	userid = do_register(db,user_reg)
+	# #print "Testing Registration"
+	# userid = do_register(db,user_reg)
 
-	print userid
+	# print userid
+	print validate_email('kmc8206@blah.rit.edu')
+	print check_exists(db,'Email','kmc8206@rit.edu')
 	#print do_login(db,'njcbone2','blah')
 	#print "Testing is_register_requested"
 	#resp = is_register_requested(db,cookie)
