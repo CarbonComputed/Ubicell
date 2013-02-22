@@ -1,27 +1,30 @@
 
-#left-side-bar{
-
-	background: transparent;
-	height: 75%;
-	
-}
 
 #container{
-   min-width:1000px; /* suppose you want minimun width of 1000px */
-   width: auto !important;  /* Firefox will set width as auto */
-   width:100px;             /* As IE ignores !important it will set width as 1000px; */
-   display: inline-block;
+	height: 75%;
+	font-size: 18px;
+}
+
+#left-side-bar{
+	background: transparent;
+
+	min-width: 320px;
+	
 }
 
 #Main-Content{
+	background: transparent;
+
+	text-align: right;
+
+}
+
+/*#Main-Content{
 	
 	text-align: center;
-	font-size: 18px;
 	background: transparent;
-	height: 75%;
-	text-align: right;
 	
-}
+}*/
 #reg-block{
 	font-size: 18px;
 	text-align: right;

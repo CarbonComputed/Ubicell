@@ -6,7 +6,7 @@
 	<link rel="stylesheet" href="../static/styles/reg.css" type="text/css" />
 </head>
 <body>
-	<div id="container">
+
 	<div id="top-nav">
 		<div id="logo">
 			<h1>uPlace</h1>
@@ -15,9 +15,11 @@
 		<div class="clear"></div>
 
 	</div>
+	<div class="clear"></div>
+	<div id="container">
 
 	<div id="left-side-bar">
-		<form id="regForm" action="register" onSubmit="return validateForm(this)" method="post">
+		<form id="regForm" action="#" onSubmit="return validateForm(this)" method="post">
 
 		<div id="reg-block">
 				Name: <input type="text" name="FullName"><br>
@@ -28,7 +30,6 @@
 
 		</div>
 	</div>
-	<div class="clear"></div>
 	<div id="Main-Content">
 		<div id="extra-info">
 			Male <input type="radio" name="gender" value="Male" checked> 
@@ -36,7 +37,7 @@
 			University: <input type="text" name="university"><br>
 			Major: <input type="text" name="major">
 			Grad Year: <select name="yearpicker" id="yearpicker" ></select><br><br>
-			About Me: <textarea style="vertical-align: middle;"></textarea><br><br><br>
+			About Me: <textarea style="vertical-align: middle;" name="about"></textarea><br><br><br>
 			<input type="submit" value="Submit" class="status_button" >
 
 		</div>

@@ -131,14 +131,23 @@ a{
 
 }
 
-#Main-Content{
+#container{
+    margin-top: 100px;
+    width: 100%;
+}
+
+#left-side-bar{
     float: left;
-    min-width: 640px;
+    width: 25%;
+    height: 100%;
+
+}
+#Main-Content{
+
+
+    float: left;
     width: 50%;
     height: 100%;
-    margin-top: 100px;
-    margin-left: auto;
-    margin-right: auto;
     text-align: center;
     background: #707070;
     background: gray;
@@ -147,7 +156,6 @@ a{
     box-shadow: 0px 0px 8px 0px #000000;*/
     border-radius: 10px;
     background: white;
-
 }
 
 #Status{
@@ -260,15 +268,7 @@ a{
     text-decoration: none;
 }
 
-#left-side-bar{
-    margin-top: 100px;
-    width: 25%;
-    height: 100%;
-    min-width: 300px;
 
-    float: left;
-
-}
 
 #search-area{
     margin-left: 10%;
