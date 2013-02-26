@@ -11,6 +11,7 @@ from bson import json_util
 import pymongo
 import models
 
+
 import re
 
 EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
@@ -55,35 +56,46 @@ def check_exists(db,field,item):
 	return item != None
 
 def do_register(db,user):
+	# TODO : Insert User into corresponding school collection/ register request
+	# A user should be added to the register request collection:
+	#When a user verifies email, then they are inserted into user/university collection
 	print user
-	password = user["Password"][0]
+	password = user["Password"][0].strip()
 	m = hashlib.md5()
 	m.update(password)
 	password = m.hexdigest()
-	username = user['UserName'][0]
-	firstname = user['FirstName'][0]
-	lastname = user['LastName'][0]
-	email = user['Email'][0]
-	user  = {'UserName' : username, 'Password' : password,'FirstName' : firstname, 'LastName' : lastname, 'Email' : email }
+	username = user['UserName'][0].strip()
+	if check_exists(db,'UserName',username):
+		return RegError.USERNAME_INUSE
+	firstname = user['FullName'][0].split()[0].strip()
+	lastname = user['FullName'][0].split()[1].strip()
+	email = user['Email'][0].strip()
+	if validate_email(email) == False or check_exists(db,'Email',email):
+		return RegError.INVALID_EMAIL
+	gender = user['gender'][0].strip()
+	if gender != 'Male' and gender != 'Female':
+		return RegError.DEFAULT_ERROR
+	university = user['university'][0].strip()
+	if university not in UNIVERSITY_LIST:
+		return RegError.DEFAULT_ERROR
+	major = user['major'][0]
+	gradyear = int(user['yearpicker'][0].strip())
+	aboutme = user['about'][0].strip()
+	if len(aboutme) >  400:
+		return RegError.DEFAULT_ERROR
+
+
+	user  = {'UserName' : username, 'Password' : password,'FirstName' : firstname, 'LastName' : lastname, 'Email' : email ,
+			 'Gender' : gender , 'About' : aboutme, 'School' : { 
+			 													'University' : university,
+			 													'Major' : major,
+			 													'GradYear' : gradyear
+
+			 								}
+			 }
 	return db.user.update({'UserName' : username},user,upsert=True)
 
 
-
-def is_registered(db,cookie):
-	req = db.get("select 1 from RegisterRequests where UserID = (select User.UserID from User inner join Cookie on User.UserID = Cookie.UserID and Cookie.CookieVal = %s)",cookie)
-	if req is None:
-		return True
-	return False
-
-def is_register_requested(db,cookie):
-	req = db.get("select User.UserID from User inner join Cookie on User.UserID = Cookie.UserID and Cookie.CookieVal = %s",cookie)
-	if req is None:
-		return False
-	userid = req["UserID"]
-	req = db.get("select 1 from RegisterRequests where UserID = %s",userid)
-	if req is None:
-		return False
-	return True
 
 
 def main():

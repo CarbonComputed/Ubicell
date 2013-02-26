@@ -36,6 +36,7 @@ def get_friend_data(db,mc,username):
 
 def send_friend_request(db,userid,friendid):
 
+	#TODO : Check if user already in array
 	friend = db.user.find_one({'_id' : ObjectId(friendid)},{'_id' : 1, 'UserName' : 1, 'FirstName' : 1 , 'LastName' : 1 })
 	user = db.user.find_one({'_id' : ObjectId(userid)},{'_id' : 1, 'UserName' : 1, 'FirstName' : 1 , 'LastName' : 1 })
 
@@ -53,6 +54,8 @@ def send_friend_request(db,userid,friendid):
 	return req
 
 def accept_friend_request(db,userid,friendid):
+
+	#TODO : Check if user already in Friends, Check if users are already requested/ing
 	req = RespSuccess.DEFAULT_SUCCESS
 	print userid,friendid
 

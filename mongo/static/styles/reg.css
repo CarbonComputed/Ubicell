@@ -37,7 +37,10 @@
 
 
 }
-
+#profile-pic{
+	text-align: right;
+	padding-bottom: 10px;
+}
 #extra-info{
 	position: relative;
 	text-align: right;

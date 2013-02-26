@@ -85,7 +85,7 @@ a{
   transition:color .2s ease-out, background 1s ease-in;
   */
 }
-#top-nav span a {
+#top-nav span a,i {
     padding: 5px 5px 5px 5px;
     background: gray;
     text-decoration:none;
@@ -104,7 +104,8 @@ a{
     float: left;
 }
 
-#logo img{
+#logo img,object{
+
     float: left;
     padding-left: 10px;
 
@@ -138,7 +139,7 @@ a{
 
 #left-side-bar{
     float: left;
-    width: 25%;
+    width: 15%;
     height: 100%;
 
 }
@@ -146,7 +147,7 @@ a{
 
 
     float: left;
-    width: 50%;
+    width: 70%;
     height: 100%;
     text-align: center;
     background: #707070;
@@ -249,7 +250,7 @@ a{
     text-align: center;
 }
 
-#Votes a{
+#Votes i{
     color: white;
     padding-top: 5px;
     padding-bottom: 5px;
@@ -258,7 +259,7 @@ a{
     padding-right: 5px;
 
 }
-#Votes a:hover{
+#Votes i:hover{
     color: orange;
 }
 #Votes p{

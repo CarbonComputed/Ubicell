@@ -3,7 +3,6 @@ import tornado.web
 
 import user_actions
 
-from tornado import database
 
 def auth_friend(method):
     @functools.wraps(method)
@@ -20,3 +19,9 @@ def auth_friend(method):
         else:
           return method(self, *args, **kwargs)
     return wrapper
+
+
+def notify_dec(method):
+    @functools.wraps(method)
+    def wrapper(self,*args, **kwargs):
+        pass
