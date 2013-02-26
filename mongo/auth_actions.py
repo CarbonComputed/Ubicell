@@ -8,6 +8,8 @@ import hashlib
 import random
 
 from bson import json_util
+from bson.objectid import ObjectId
+
 import pymongo
 import models
 
@@ -55,7 +57,7 @@ def check_exists(db,field,item):
 	item = db.user.find_one({field : item},{})
 	return item != None
 
-def do_register(db,user):
+def do_register(db,fs,user,request):
 	# TODO : Insert User into corresponding school collection/ register request
 	# A user should be added to the register request collection:
 	#When a user verifies email, then they are inserted into user/university collection
@@ -83,8 +85,9 @@ def do_register(db,user):
 	aboutme = user['about'][0].strip()
 	if len(aboutme) >  400:
 		return RegError.DEFAULT_ERROR
-
-
+	#print request.files
+	fileinfo = request.files['pic'][0]
+	#Check length
 	user  = {'UserName' : username, 'Password' : password,'FirstName' : firstname, 'LastName' : lastname, 'Email' : email ,
 			 'Gender' : gender , 'About' : aboutme, 'School' : { 
 			 													'University' : university,
@@ -93,7 +96,12 @@ def do_register(db,user):
 
 			 								}
 			 }
-	return db.user.update({'UserName' : username},user,upsert=True)
+	uid = db.user.insert(user)
+	metadata = {'Owner' : uid, 'Profile' :True}
+	fileid = fs.put(fileinfo['body'],filename=fileinfo['filename'],metadata =metadata)
+
+	db.user.update({'_id' : ObjectId(uid)},{ '$set': { 'ProfileImg': fileid},})
+	return 200
 
 
 

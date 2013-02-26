@@ -1,8 +1,8 @@
 <html>
 <head>
-	<link rel="stylesheet" href="../static/styles/base2.css" type="text/css" />
-	<link rel="stylesheet" href="../static/styles/switch.css" type="text/css" />
-	<link rel="stylesheet" href="../static/styles/me.css" type="text/css" />
+	<link rel="stylesheet" href="../../static/styles/base2.css" type="text/css" />
+	<link rel="stylesheet" href="../../static/styles/switch.css" type="text/css" />
+	<link rel="stylesheet" href="../../static/styles/me.css" type="text/css" />
 </head>
 <body>
 	<div id="background-grad"></div>
@@ -11,7 +11,7 @@
 	<div id="top-nav">
 		<div id="logo">
 			<h1>uPlace</h1>
-			<img src="../static/images/logo3.png" height="35px" width="45px">
+			<img src="../../static/images/logo3.png" height="35px" width="45px">
 		</div>
 		<div class="clear"></div>
 		<span>
@@ -31,14 +31,14 @@
 	</div>
 	<div id="Main-Content">
 		<div id="user-data">
-			<img src="https://sphotos-b.xx.fbcdn.net/hphotos-ash3/14805_10151469493508969_1668933023_n.jpg" height="150" width="150">
+			<img src="/images?picid={{escape(userdata['ProfileImg']['$oid'])}}" height="150" width="150">
 			<div class="user-description">
 				<h2>{{escape(userdata['FirstName'])}} {{escape(userdata['LastName'])}}</h2></br>
-				<h3>Computer Science, 2015</h3>
-				<p>I plan on graduating soon.</p>
+				<h3>{{escape(userdata['School']['Major'])}}, {{userdata['School']['GradYear']}}</h3>
+				<p>About Me: {{escape(userdata['About'])}}</p>
 			</br>
-				<a href="#">Photos</a>
-				<a href="#">Friends</a>
+				<a href="Photos">Photos</a>
+				<a href="Friends">Friends</a>
 			</div>
 
 		</div>

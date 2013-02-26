@@ -12,6 +12,7 @@ import uuid
 from tornado.options import define, options
 
 from bson.json_util import dumps,loads
+from bson.objectid import ObjectId
 
 from constants import *
 
@@ -36,11 +37,12 @@ class Application(tornado.web.Application):
 		(r"/auth/register",RegisterHandler),
 		# (r'/auth/login/google',GoogleHandler),
 		# (r'/auth/login/facebook',FacebookHandler),
-		(r'/user/([a-z\d.]{5,})/?',UserHandler),
-		(r'/user/([a-z\d.]{5,})/friends',UserFriendHandler),
-		(r'/user/([a-z\d.]{5,})/status',StatusHandler),
-		(r'/user/([a-z\d.]{5,})/wall',WallHandler),
+		(r'/user/([A-Za-z\d.]{5,})/?',UserHandler),
+		(r'/user/([A-Za-z\d.]{5,})/friends',UserFriendHandler),
+		(r'/user/([A-Za-z\d.]{5,})/status',StatusHandler),
+		(r'/user/([A-Za-z\d.]{5,})/wall',WallHandler),
 		(r'/actions/respond_friend',FriendActionHandler),
+		(r'/images',ImageHandler)
 		
 		]
 		settings = dict(
@@ -67,6 +69,10 @@ class BaseHandler(tornado.web.RequestHandler):
 	@property
 	def mc(self):
 		return self.application.mc
+
+	@property
+	def fs(self):
+		return self.application.fs
 
 	def get_current_user(self):
 		user_json = self.get_secure_cookie("userdata")
@@ -115,8 +121,11 @@ class RegisterHandler(BaseHandler):
 		self.render("register.html")
 	def post(self):
 		user = self.request.arguments
-		resp = auth_actions.do_register(self.db,user)
-		print resp
+		resp = auth_actions.do_register(self.db,self.fs,user,self.request)
+		if resp == 200:
+			self.redirect("/")
+		else:
+			self.redirect("/auth/register")
 
 
 class UserHandler(BaseHandler):
@@ -137,6 +146,9 @@ class UserHandler(BaseHandler):
 		if UserName == user['UserName']:
 			user2 = user
 			user2['UserStatus'] = UserStatus.USER_ME
+			print user2['ProfileImg']['$oid']
+			self.render("me.html",userdata=user2)
+
 		elif friend is None and friend_requested is None and friend_requesting is None:
 
 			user2['UserStatus'] = UserStatus.USER_NEI
@@ -150,7 +162,8 @@ class UserHandler(BaseHandler):
 			#raise tornado.web.HTTPError(403)
 		#get user data
 		#render page
-		self.render("user.html",userdata=user2)
+		else:
+			self.render("user.html",userdata=user2)
 
 class UserFriendHandler(UserHandler):
 	@tornado.web.authenticated
@@ -235,6 +248,18 @@ class FacebookHandler(tornado.web.RequestHandler,
         self.finish()
         # Save the user using, e.g., set_secure_cookie()
         # Save the user with, e.g., set_secure_cookie()
+
+class ImageHandler(BaseHandler):
+	@tornado.web.authenticated
+
+	def get(self):
+		picid = self.get_argument('picid')
+		profilepic = self.fs.get(ObjectId(picid))
+		if profilepic.metadata['Profile'] !=True:
+			raise tornado.web.HTTPError(400,'Forbidden')
+		self.set_header('Content-Type', 'image/*')
+		self.finish(profilepic.read())
+
 def main():
     tornado.options.parse_command_line()
     #self.db = database.Connection("localhost", "ProjectTakeOver",user="root",password="")
