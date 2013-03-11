@@ -29,10 +29,17 @@ def do_login(db,username,password):
 	m = hashlib.md5()
 	m.update(password)
 	hashed = m.hexdigest()
-	login = db.user.find_one({'UserName' : username, 'Password' : hashed})
+	login = db.user.find_one({'UserName' : username.lower(), 'Password' : hashed},{'Wall' : 0, 'Friends' : 0 ,'FriendsRequested' : 0,'FriendsRequesting' : 0})
 	if login is not None:
 		del login['Password']
 		login['_id'] = str(login['_id'])
+		return login
+	else:
+		login = db.user.find_one({'Email' : username, 'Password' : hashed})
+		if login is not None:
+			del login['Password']
+			login['_id'] = str(login['_id'])
+			return login
 
 	print 'Login',login
 	return login
@@ -66,12 +73,12 @@ def do_register(db,fs,user,request):
 	m = hashlib.md5()
 	m.update(password)
 	password = m.hexdigest()
-	username = user['UserName'][0].strip()
+	username = user['UserName'][0].strip().lower()
 	if check_exists(db,'UserName',username):
 		return RegError.USERNAME_INUSE
-	firstname = user['FullName'][0].split()[0].strip()
-	lastname = user['FullName'][0].split()[1].strip()
-	email = user['Email'][0].strip()
+	firstname = user['FullName'][0].split()[0].strip().lower()
+	lastname = user['FullName'][0].split()[1].strip().lower()
+	email = user['Email'][0].strip().lower()
 	if validate_email(email) == False or check_exists(db,'Email',email):
 		return RegError.INVALID_EMAIL
 	gender = user['gender'][0].strip()
@@ -87,10 +94,16 @@ def do_register(db,fs,user,request):
 		return RegError.DEFAULT_ERROR
 	#print request.files
 	fileinfo = request.files['pic'][0]
+
+
+	uniid = db.university.find_one({'Name' : university},{'_id' : 1})
+	if uniid is None:
+		uniid = db.university.insert({'Name' : university})
+	print uniid['_id']
 	#Check length
 	user  = {'UserName' : username, 'Password' : password,'FirstName' : firstname, 'LastName' : lastname, 'Email' : email ,
 			 'Gender' : gender , 'About' : aboutme, 'School' : { 
-			 													'University' : university,
+			 													'University' : ObjectId(uniid['_id']),
 			 													'Major' : major,
 			 													'GradYear' : gradyear
 
@@ -101,6 +114,7 @@ def do_register(db,fs,user,request):
 	fileid = fs.put(fileinfo['body'],filename=fileinfo['filename'],metadata =metadata)
 
 	db.user.update({'_id' : ObjectId(uid)},{ '$set': { 'ProfileImg': fileid},})
+	db.university.update({'_id' : ObjectId(uniid['_id'])},{ '$push': { 'Students': ObjectId(uid)},})
 	return 200
 
 

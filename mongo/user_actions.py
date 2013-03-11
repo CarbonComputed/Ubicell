@@ -16,11 +16,7 @@ def get_my_data(db,_id):
 		del user['Password']
 	return user
 
-def get_user_data(db,username):
-	user_json = db.user.find_one("Select * from User where UserName = %s",username)
-	if user_json != None:
-		del user_json['Password']
-	return user_json
+
 
 def get_friend_data(db,mc,username):
 	#db.user.find_one({'UserName' : username},{'_id' : 1, 'UserName' : 1 ,'FirstName' : 1, 'LastName' : 1})
@@ -33,6 +29,9 @@ def get_friend_data(db,mc,username):
 			pass
 	return row
 
+def get_simple_data(db,userid):
+	user = db.user.find_one({'_id' : ObjectId(userid)},{'Wall' : 0, 'Friends' : 0 ,'FriendsRequested' : 0,'FriendsRequesting' : 0,'Password' : 0})
+	return user
 
 def send_friend_request(db,userid,friendid):
 
@@ -83,7 +82,7 @@ def get_friends(db,userid):
 
 
 def is_friends_with_byid(db,userid,fid):
-	check = db.user.find_one({'_id' : ObjectId(userid)},{'Friends' : 1}[fid])
+	check = db.user.find_one({'_id' : ObjectId(userid)},{'Friends' : 1})
 
 	return check
 
@@ -112,10 +111,10 @@ def is_friend_requesting(db,userid,f_username):
 		check = None
 	return check
 
-def is_friends_with_byid(db,userid,fid):
-	check = db.user.find_one({'_id' : ObjectId(userid)},{'Friends' : 1}[fid])
+# def is_friends_with_byid(db,userid,fid):
+# 	check = db.user.find_one({'_id' : ObjectId(userid)},{'Friends' : 1}[fid])
 
-	return check
+# 	return check
 
 def is_friend_requested_byid(db,userid,fid):
 	check = db.user.find_one({'_id' : ObjectId(userid)},{'FriendsRequested' : 1}[fid])
@@ -133,6 +132,10 @@ def get_user_photos(db,fs,f_username):
 		pid = photo['_id']
 		photos[pid] = fs.get(ObjectId(pid))
 	return photos
+
+def validPost(db,postowner,postid):
+	check = db.user.find({'_id' : ObjectId(postowner),'Wall._id' : ObjectId(postid)})
+	return check != None
 
 def main():
 	#print "Testing User Data"

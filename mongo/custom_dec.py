@@ -20,6 +20,26 @@ def auth_friend(method):
           return method(self, *args, **kwargs)
     return wrapper
 
+def authenticated_post(method):
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        userid = self.get_current_user()['_id']
+        fid = self.get_argument('commenter',default=None,strip = True)
+        print fid
+        postowner = self.get_argument('post_owner',default=None,strip = True)
+        if fid is None:
+            return method(self, *args, **kwargs)
+        #db = database.Connection("localhost", "ProjectTakeOver",user="root",password="")
+        db = self.db
+        if user_actions.valid_post(db,postowner,postid) is False:
+            raise tornado.web.HTTPError(403)
+
+        if user_actions.is_friends_with_byid(db,userid,friend_username) is None:
+          raise tornado.web.HTTPError(403)
+        else:
+          return method(self, *args, **kwargs)
+    return wrapper
+
 
 def notify_dec(method):
     @functools.wraps(method)

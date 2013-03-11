@@ -89,12 +89,10 @@ a{
 }
 
 #logo{
-    bottom: 0px;
-    margin: 0;
+
     padding-left: 25px;
     padding-top: 10px;
     width: 120px;
-    float: left;
 }
 
 #logo img{

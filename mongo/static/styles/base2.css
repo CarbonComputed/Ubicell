@@ -12,8 +12,11 @@ body ,html{
         min-width: 1100px;
         width: auto;
          overflow-x: hidden;
-        background: rgb(242,244,245);
-        
+        background-image:url('../images/gradient_texture.png');
+  /*       background: gray;
+            background-image: -webkit-linear-gradient(left, rgb(54,52,52) 14%, rgb(163,163,163) 90%);
+            */
+
 
 }
 
@@ -39,8 +42,8 @@ body ,html{
 #top-nav {
     margin: 0;
     width: 100%;
-    margin-left: 0%;
-    margin-right: 0%;
+    margin-left: 0;
+    margin-right: 0;
     height: 55px;
     position: fixed;
     /* Adds shadow to the bottom of the bar */
@@ -64,15 +67,39 @@ body ,html{
         );
 /*    background-image:url('../images/3040.jpg');
 background-repeat:repeat-x;*/
+float: left;
+    min-width: 600px;
+    white-space: nowrap;
     background: white;
     z-index: 100;
 }
+.minwidth { min-width:600px; width: auto !important; width: 600px; }
+#left-top-nav{
+    width: 25%;
+    height: 100%;
+ display: inline-block;
+    float: left;
+
+}
+#center-top-nav{
+    width: 50%;
+    float: left;
+        height: 100%;
+         display: inline-block;
+
+}
+#right-top-nav{
+    width: 25%;
+ display: inline-block;
+    height: 100%;
+    float: left;
+}
 #top-nav span {
-    position: absolute;
-    bottom: 5px;
+    display:inline-block;    
     padding-right: 5px;
-    text-align: right;
-    width: 97%;
+    width: 100%;
+    padding-top: 15px;
+    padding-left: 75px;
     color: #222;
 
 }
@@ -85,9 +112,13 @@ a{
   transition:color .2s ease-out, background 1s ease-in;
   */
 }
+#top-nav a{
+    background: gray;
+}
+
+
 #top-nav span a,i {
     padding: 5px 5px 5px 5px;
-    background: gray;
     text-decoration:none;
     color: white;
     border-radius: 3px;
@@ -95,29 +126,36 @@ a{
 
 }
 
+
+
+#top-nav i{
+
+    background: gray;
+}
+
+
+
 #logo{
-    bottom: 0px;
-    margin: 0;
     padding-left: 25px;
     padding-top: 10px;
-    width: 120px;
-    float: left;
+
 }
 
 #logo img,object{
-
     float: left;
+
     padding-left: 10px;
 
 }
 #logo h1 {
     padding-top: 10px;
-
     vertical-align: middle;
     font-size: 16px;
     color: black;
-    float: right;
+    width: auto;
     letter-spacing: 2px;
+
+    display:inline-block; 
 
 }
 #top-nav span a:visited{
@@ -141,6 +179,7 @@ a{
     float: left;
     width: 15%;
     height: 100%;
+
 
 }
 #Main-Content{
@@ -220,7 +259,7 @@ a{
     border-radius: 5px;
 }
 
-#status-sec{
+#Status-sec{
     padding-top: 10px;
     padding-bottom: 10px;
     padding-left: 10px;
@@ -228,9 +267,13 @@ a{
     border-bottom:solid orange;
     border-radius: 0px;
     border-bottom-width:0px;
-    margin: 5px 0px 5px 0px;
+    margin: 0;
     background: rgb(92,92,92);
     background: white;
+}
+
+#status-sec{
+    padding: 10px 10px 10px 10px;
 }
 
 #status-sec img{
@@ -272,11 +315,21 @@ a{
 
 
 #search-area{
-    margin-left: 10%;
-    margin-right: 10%;
-    padding-top: 25px;
-    width: 80%;
-    height: 15%;
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 15px;
+
+}
+
+#search-area input{
+    margin-right: 0;
+    padding-right: 0;
+
+}
+#search-area a,i{
+    text-decoration: none;
+
 
 }
 
@@ -290,4 +343,13 @@ a{
     -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
     margin: 5px 5px 5px 5px;
     float: right;
+}
+
+#top-nav a:hover{
+    background: orange;
+}
+
+#top-nav ul a:hover {
+    background: gray;
+
 }

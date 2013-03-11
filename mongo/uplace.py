@@ -16,6 +16,7 @@ from bson.objectid import ObjectId
 
 from constants import *
 
+
 import pymongo
 import gridfs
 #import pylibmc
@@ -41,8 +42,12 @@ class Application(tornado.web.Application):
 		(r'/user/([A-Za-z\d.]{5,})/friends',UserFriendHandler),
 		(r'/user/([A-Za-z\d.]{5,})/status',StatusHandler),
 		(r'/user/([A-Za-z\d.]{5,})/wall',WallHandler),
+		(r'/user/me',MeHandler),
 		(r'/actions/respond_friend',FriendActionHandler),
-		(r'/images',ImageHandler)
+		(r'/actions/post',PostHandler),
+		(r'/actions/friend_vote',FriendVoteHandler),
+		(r'/images',ImageHandler),
+		(r'/search',SearchHandler)
 		
 		]
 		settings = dict(
@@ -60,6 +65,8 @@ class Application(tornado.web.Application):
 		self.mc = None
 		self.fs = gridfs.GridFS(self.db)
 		#self.mc = pylibmc.Client(["127.0.0.1"], binary=True, behaviors={"tcp_nodelay": True,"ketama": True})
+
+
 
 class BaseHandler(tornado.web.RequestHandler):
 	@property
@@ -84,7 +91,11 @@ class MainHandler(BaseHandler):
 	@tornado.web.authenticated
 	def get(self):
 		user = self.get_current_user()
-		self.render("index.html",userdata=user)
+		feed = core_actions.get_feed(self.db,user['_id'])['result']
+		self.render("base.html",userdata=user,db = self.db,feed = feed)
+
+	def post(self):
+		pass
 
 class AuthLoginHandler(BaseHandler):
     @tornado.web.asynchronous
@@ -120,6 +131,9 @@ class RegisterHandler(BaseHandler):
 	def get(self):
 		self.render("register.html")
 	def post(self):
+		self.clear_cookie('user')
+		self.clear_cookie("userdata")
+
 		user = self.request.arguments
 		resp = auth_actions.do_register(self.db,self.fs,user,self.request)
 		if resp == 200:
@@ -140,6 +154,7 @@ class UserHandler(BaseHandler):
 		friend = user_actions.is_friends_with(self.db,user['_id'],UserName)
 		friend_requested = user_actions.is_friend_requested(self.db,user['_id'],UserName)
 		friend_requesting = user_actions.is_friend_requesting(self.db,user['_id'],UserName)
+		feed = core_actions.get_user_feed(self.db,user2['_id'])['result']
 		if user2 is None:
 			raise tornado.web.HTTPError(404)
 		user2['UserStatus'] = UserStatus.USER_FRI
@@ -147,11 +162,14 @@ class UserHandler(BaseHandler):
 			user2 = user
 			user2['UserStatus'] = UserStatus.USER_ME
 			print user2['ProfileImg']['$oid']
-			self.render("me.html",userdata=user2)
+			feed = core_actions.get_user_feed(self.db,user['_id'])['result']
 
+			self.render("me.html",userdata=user2,feed=feed)
+			return
 		elif friend is None and friend_requested is None and friend_requesting is None:
 
 			user2['UserStatus'] = UserStatus.USER_NEI
+
 		elif friend_requesting != None:
 
 			user2['UserStatus'] = UserStatus.USER_ACC
@@ -162,8 +180,26 @@ class UserHandler(BaseHandler):
 			#raise tornado.web.HTTPError(403)
 		#get user data
 		#render page
+		print user2['ProfileImg']
+		feed = core_actions.get_user_feed(self.db,user2['_id'])['result']
+
+		self.render("user.html",userdata=user2,feed=feed,db=self.db)
+	def post(self,UserName):
+		userid = self.get_current_user()['_id']
+		message = self.get_argument('message',strip=True)
+		posttype = int(self.get_argument('posttype',strip=True))
+
+		friend = user_actions.is_friends_with(self.db,userid,UserName)
+		friendid = friend['_id']
+		if posttype is PostType.WALL_POST:
+			return core_actions.post_wall(self.db,None,friendid,message,userid)
+		elif posttype is PostType.REPLY_POST:
+			postid = self.get_argument('postid',strip=True)
+			replyid = self.get_argument('replyid',default = None,strip=True)
+			return core_actions.post_wall(self.db,None,userid,message)
 		else:
-			self.render("user.html",userdata=user2)
+			print 'huh?'
+			return 500;
 
 class UserFriendHandler(UserHandler):
 	@tornado.web.authenticated
@@ -218,6 +254,32 @@ class FriendActionHandler(BaseHandler):
 			print 'Default',resp
 			raise tornado.web.HTTPError(500)
 
+class PostHandler(BaseHandler):
+	@tornado.web.authenticated
+	@custom_dec.authenticated_post
+
+	def get(self):
+		userid = self.get_current_user()['_id']
+		print userid
+		feed = core_actions.get_feed(self.db,userid)
+		print feed
+		self.finish(dumps(feed))
+
+	def post(self):
+		userid = self.get_current_user()['_id']
+		message = self.get_argument('message',strip=True)
+		posttype = int(self.get_argument('posttype',strip=True))
+		if posttype is PostType.WALL_POST:
+			return core_actions.post_wall(self.db,None,userid,message)
+		elif posttype is PostType.REPLY_POST:
+			postid = self.get_argument('postid',strip=True)
+			replyid = self.get_argument('replyid',default = None,strip=True)
+			return core_actions.post_wall(self.db,None,userid,message)
+		else:
+			print 'huh?'
+			return 500;
+
+
 class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
     @tornado.web.asynchronous
     def get(self):
@@ -257,8 +319,45 @@ class ImageHandler(BaseHandler):
 		profilepic = self.fs.get(ObjectId(picid))
 		if profilepic.metadata['Profile'] !=True:
 			raise tornado.web.HTTPError(400,'Forbidden')
-		self.set_header('Content-Type', 'image/*')
+		self.set_header('Content-Type', 'image/jpg')
 		self.finish(profilepic.read())
+
+class MeHandler(BaseHandler):
+	@tornado.web.authenticated
+
+	def get(self):
+		self.redirect("/user/"+self.get_current_user()['UserName'])
+
+
+class FriendVoteHandler(BaseHandler):
+	@tornado.web.authenticated
+	#Check if post is owned by friend
+
+	def post(self):
+		powner = self.get_argument('post_owner',strip=True)
+		postid = self.get_argument('post_id',strip=True)
+		vote = self.get_argument('vote_type',strip=True)
+		uid = self.get_current_user()['_id']
+		if user_actions.validPost(self.db,powner,postid) is False  or user_actions.is_friends_with_byid(self.db,uid,powner) is False:
+			reply = 500;
+		if vote == 'up':
+			reply = core_actions.upvote_post(self.db,uid,postid)
+		else:
+			reply = core_actions.downvote_post(self.db,uid,postid)
+		print reply
+		return reply
+
+class SearchHandler(BaseHandler):
+	@tornado.web.authenticated
+
+	def get(self):
+		userid = self.get_current_user()['_id']
+		uniid = self.get_current_user()['School']['University']['$oid']
+		query = self.get_argument('query',strip = True)
+		results = core_actions.search(self.db,userid,uniid,query)
+		self.render('search.html',userdata= self.get_current_user(),results = results)
+			
+
 
 def main():
     tornado.options.parse_command_line()
