@@ -294,9 +294,16 @@ def downvote_comment(db,userid,postid,replyid):
 
 def get_replies(userid,powner, postid,orderBy = None):
 	logger.info("Retrieving Replies")
-	coll = User._get_collection()
-	reps = coll.find({ '_id'  : ObjectId(powner),'Wall._id' : ObjectId(postid)},{'Wall.$.Reply' : 1})[0]['Wall'][0]['Reply']
-	return reps
+	#coll = User._get_collection()
+	#reps = coll.find({ '_id'  : ObjectId(powner),'Wall._id' : ObjectId(postid)},{'Wall.$.Reply' : 1})[0]['Wall'][0]['Reply']
+	print 'post',postid
+	print 'postowner',powner
+	user = User.objects(id=powner,Wall__id=ObjectId(postid)).first()
+	userwall = user.Wall
+	post = funcs.find(userwall,'id',ObjectId(postid))
+	print post.Reply
+	return post.Reply
+
 
 def build_tree(lst):
 	tree = {}
@@ -315,7 +322,7 @@ def print_graph(graph,parentid,depth = 0):
 		for node in lst :
 			indent = ('   ' * depth)
 			print indent + str(node['Message'])
-			print_graph(graph,node['_id'],depth+1)
+			print_graph(graph,node['id'],depth+1)
 
 
 def get_feed(userid,includeMe=True,orderBy=None,numResults=60,startNum =1):

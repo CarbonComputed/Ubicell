@@ -112,6 +112,11 @@ a{
   transition:color .2s ease-out, background 1s ease-in;
   */
 }
+
+#reply-box{
+    display: none;
+}
+
 #top-nav a{
     background: gray;
 }
@@ -136,8 +141,10 @@ a{
 
 
 #logo{
-    padding-left: 25px;
-    padding-top: 10px;
+    /*padding-left: 25px;
+    padding-top: 10px;*/
+    height: inherit;
+
 
 }
 
@@ -148,7 +155,7 @@ a{
 
 }
 #logo h1 {
-    padding-top: 10px;
+    padding-top: 15px;
     vertical-align: middle;
     font-size: 16px;
     color: black;
@@ -209,11 +216,16 @@ a{
     border-bottom-width:1px;
 }
 .status_box{
+
     width: 70%;
     font-size: 18px;
     height: inherit;
     vertical-align: middle;
     resize: none;
+    padding: 7px 10px;
+       -webkit-box-shadow: inset 2px 2px 2px 0px #dddddd;
+    -moz-box-shadow: inset 2px 2px 2px 0px #dddddd;
+    box-shadow: inset 2px 2px 2px 0px #dddddd;
 
 }
 .status_button{
@@ -353,3 +365,8 @@ a{
     background: gray;
 
 }
+
+#Main-Content #reply-sec{
+    text-align: left;
+}
+

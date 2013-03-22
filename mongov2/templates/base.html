@@ -28,7 +28,7 @@
 			<div id="logo">
 				<a href="/" class="fill-div"></a>
 				<h1>uPlace</h1>
-				<img src="/static/images/logo2.svg" height="60px" width="100px">
+				<img src="/static/images/logo2.svg" href="/" height="60px" width="100px">
 			</div>
 		</div>
 		<div id="center-top-nav">
@@ -87,7 +87,7 @@
 						{%from actions import *%}
 						{%set user = user_actions.get_simple_data(post['Wall']['FriendId'])%}
 					<div id="Status-sec" data-postid={{post['Wall']['id']}} data-ownerid={{post['_id']}}>
-					<a href="/user/{{post['UserName']}}"><img src="/images?picid={{str(user['ProfileImg'])}}" href="/user/{{post['UserName']}}" height="52" width="52"></a>
+					<a href="/user/{{user['UserName']}}"><img src="/images?picid={{str(user['ProfileImg'])}}" href="/user/{{user['UserName']}}" height="52" width="52"></a>
 					<div id="status-post">
 						<p><a class="Name" href="/user/{{user['UserName']}}">{{user['FirstName'].capitalize()}} {{user['LastName'].capitalize()}}<i class="icon-caret-right" style="color:black;padding-bottom:5px;"></i><a class="Name" href="/user/{{post['UserName']}}">{{post['FirstName'].capitalize()}} {{post['LastName'].capitalize()}}</a></p>
 						<p class="post">{{post['Wall']['Message']}}</p>
@@ -174,7 +174,7 @@
 	});
 
 	function loadReplies(){
-		$('#reply-sec').load('/actions/get_replies?post_id=513f4aac407450377d9dc435&owner_id=513deb988f24a02f86542aaa');
+		$('#reply-sec').load('/actions/get_replies?post_id=514b65d24074506c927d6db8&owner_id=5149cb8b8f24a067b266a305');
 	}
 
 	function searchFriends(){

@@ -370,6 +370,7 @@ class ReplyLoader(BaseHandler):
 		print 'pid',postid
 		replies = core_actions.get_replies(userid,powner,postid)
 		t = core_actions.build_tree(replies)
+		core_actions.print_graph(t,ObjectId(postid))
 		print 'out',t.get(postid)
 		self.render('reply.html',replies=t,depth = 0, 
             render_replies=self.render_replies,parentid=ObjectId(postid))

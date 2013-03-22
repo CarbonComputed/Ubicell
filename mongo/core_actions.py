@@ -200,24 +200,27 @@ def downvote_comment(db,userid,postid,replyid):
 	pass
 
 
-def get_replies(db,userid,postid,orderBy = None):
-	reps = db.user.find({'_id' : userid, 'Wall._id' : postid},{'Wall.Reply' : 1})['Wall']['Reply']
+def get_replies(db,userid,powner, postid,orderBy = None):
+	reps = db.user.find({ '_id'  : ObjectId(powner),'Wall._id' : ObjectId(postid)},{'Wall.$.Reply' : 1})[0]['Wall'][0]['Reply']
 	return reps
 
-def build_tree(lst,parentid,tree = {}):
+def build_tree(lst):
+	tree = {}
 	for node in lst:
 		pid = node['ParentId']
-		lst = tree.get(pid, [])
-		lst.append(node)
-		tree[pid] = lst
+		print pid
+		lst2 = tree.get(pid, [])
+		lst2.append(node)
+		tree[pid] = lst2
 	return tree
 
 def print_graph(graph,parentid,depth = 0):
 	lst = graph.get(parentid)
+	#sort lst by confidence
 	if lst != None:
 		for node in lst :
 			indent = ('   ' * depth)
-			print indent + str(node)
+			print indent + str(node['Message'])
 			print_graph(graph,node['_id'],depth+1)
 
 
@@ -278,8 +281,9 @@ if __name__ == "__main__":
 	#user = {'UserID' : 5, 'UserName' : "jillian"}
 	db = pymongo.MongoClient().uplace
 
-	res = search(db,"51379ac240745012adf2209a","51379ac240745012adf22099",'Mart')
-	print res[0]
+	post_wall(db,None,"513deb988f24a02f86542aaa","i like this reply","513deb988f24a02f86542aaa", "513f4aac407450377d9dc435","513f86a68f24a038a58d6bed")
+	#res = search(db,"51379ac240745012adf2209a","51379ac240745012adf22099",'Mart')
+	#print res[0]
 	# #post_wall(db,None,'511747a18f24a0069b7ed655','511747a18f24a0069b7ed655','hey how are you? testing replies 2')
 	# #post_wall(db,None,'5119cf32decedf8257ef6acf','This post sucks test!','511747a18f24a0069b7ed655','512a48518f24a04b77946888','512a49548f24a04b9b74ad6b',2)
 	# feed =  get_feed(db,"512d83848f24a00badf60d48",numResults=2)
@@ -297,9 +301,9 @@ if __name__ == "__main__":
 	# node7 = {'_id' : 8, 'ParentId' : 7}
 	# node8 = {'_id' : 9, 'ParentId' : 4}
 	# nodes = [node1,node2,node3,node4,node5,node6,node7,node8]
-	# t = build_tree(nodes,1)
-	# print t
-	# print_graph(t,1)
+	# replies = get_replies(db,"513deb988f24a02f86542aaa","513deb988f24a02f86542aaa","513f4aac407450377d9dc435")
+	# t = build_tree(replies)
+	# print_graph(t,ObjectId('513f4aac407450377d9dc435'))
 
 
 #	post_replyReply(db,None,'511747a18f24a0069b7ed655','5119cf32decedf8257ef6acf','512863be8f24a049f1935578',,'testing10')

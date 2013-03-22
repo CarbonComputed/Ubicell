@@ -5,6 +5,7 @@
 	<link rel="stylesheet" href="../static/styles/base2.css" type="text/css" />
 	<link rel="stylesheet" href="../static/styles/reg.css" type="text/css" />
 	<link rel="stylesheet" href="../static/styles/font-awesome.css" type="text/css" />
+	<script src="/static/jquery-1.9.1.min.js"></script>
 
 	<link rel="stylesheet" href="../static/styles/autocomplete.css" type="text/css" />
 	<script src="../static/js/schools.js"></script>
@@ -45,7 +46,7 @@
 			</div>
 			Male <input type="radio" name="gender" value="Male" checked> 
 			Female <input type="radio" name="gender" value="Female" ><br>
-			University: <input type="text" name="university" id="Uni"><br>
+			University: <input type="text" name="university" id="Uni" autocomplete="off" ><br>
 			Major: <input type="text" name="major">
 			Grad Year: <select name="yearpicker" id="yearpicker" ></select><br><br>
 			About Me: <textarea style="vertical-align: middle;" name="about"></textarea><br><br><br>
@@ -104,6 +105,10 @@
   //       clearTimeout( delay );
   //       delay = setTimeout( search, wait );
   //   });
+	$(document).click(function() {
+	    $('#autocomplete').hide();
+
+	});
 
 	$('#Uni').keyup(function(e) {
 		$('#autocomplete').show();

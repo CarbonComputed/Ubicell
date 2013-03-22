@@ -1,18 +1,4 @@
-<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg">
- <!-- Created with SVG-edit - http://svg-edit.googlecode.com/ -->
- <defs>
-  <filter height="200%" width="200%" y="-50%" x="-50%" id="svg_8_blur">
-   <feGaussianBlur stdDeviation="0.8" in="SourceGraphic"/>
-  </filter>
- </defs>
- <g>
-  <title>Layer 1</title>
-  <circle stroke="#000000" transform="rotate(-180 8.58968e+9 -3.79808e+9) matrix(0.846117 0 0 0.789335 -798.387 232.144)" id="svg_1" r="40.95132" cy="36.49007" cx="956.75793" stroke-width="5" fill="#1c1414"/>
-  <g filter="url(#svg_8_blur)" id="svg_8">
-   <path transform="rotate(135 354.804 250.148)" stroke="#000000" id="svg_6" d="m312.851013,258.867004c0,0 39.839996,-39.237 83.905975,0c-0.200989,-0.201019 -0.401978,-0.402008 -0.602997,-0.604004" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="5" fill="none"/>
-   <path stroke="#000000" fill="#1c1414" stroke-width="5" stroke-dasharray="null" stroke-linejoin="null" stroke-linecap="null" d="m335.298004,201.332993c0,17.859009 -15.506012,32.325012 -34.649017,32.325012c-19.143982,0 -34.649994,-14.466003 -34.649994,-32.325012c0,-17.857986 15.506012,-32.32399 34.649994,-32.32399c19.143005,0 34.649017,14.466003 34.649017,32.32399z" id="svg_5"/>
-   <path stroke="#000000" id="svg_2" d="m258,132c0,0 40.359985,-39.748199 85,0c-0.20401,-0.203995 -0.40799,-0.408005 -0.612,-0.612" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="5" fill="none"/>
-   <path transform="rotate(-135 247.089 249.736)" stroke="#000000" id="svg_7" d="m205.136002,258.454987c0,0 39.839996,-39.236984 83.905991,0c-0.200989,-0.200989 -0.402985,-0.401978 -0.604004,-0.603973" stroke-linecap="null" stroke-linejoin="null" stroke-dasharray="null" stroke-width="5" fill="none"/>
-  </g>
- </g>
-</svg>
+<?xml version="1.0" standalone="yes"?>
+
+<svg version="1.1" viewBox="0.0 0.0 960.0 720.0" fill="none" stroke="none" stroke-linecap="square" stroke-miterlimit="10" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><clipPath id="p.0"><path d="m0 0l960.0 0l0 720.0l-960.0 0l0 -720.0z" clip-rule="nonzero"></path></clipPath><g clip-path="url(#p.0)"><path fill="#000000" fill-opacity="0.0" d="m0 0l960.0 0l0 720.0l-960.0 0z" fill-rule="nonzero"></path><path fill="#000000" d="m211.28539 496.1827l45.25197 -90.503876l118.44095 0l45.251953 90.503876l-45.251953 90.503876l-118.44095 0z" fill-rule="nonzero"></path><path stroke="#f3f3f3" stroke-width="2.0" stroke-linejoin="round" stroke-linecap="butt" d="m211.28539 496.1827l45.25197 -90.503876l118.44095 0l45.251953 90.503876l-45.251953 90.503876l-118.44095 0z" fill-rule="nonzero"></path><path fill="#000000" d="m539.7697 313.30627l45.252014 -90.50389l118.44092 0l45.251953 90.50389l-45.251953 90.50391l-118.44092 0z" fill-rule="nonzero"></path><path stroke="#f3f3f3" stroke-width="2.0" stroke-linejoin="round" stroke-linecap="butt" d="m539.7697 313.30627l45.252014 -90.50389l118.44092 0l45.251953 90.50389l-45.251953 90.50391l-118.44092 0z" fill-rule="nonzero"></path><path fill="#000000" d="m375.45236 404.9239l45.251953 -90.50391l118.44095 0l45.251953 90.50391l-45.251953 90.503876l-118.44095 0z" fill-rule="nonzero"></path><path stroke="#f3f3f3" stroke-width="2.0" stroke-linejoin="round" stroke-linecap="butt" d="m375.45236 404.9239l45.251953 -90.50391l118.44095 0l45.251953 90.50391l-45.251953 90.503876l-118.44095 0z" fill-rule="nonzero"></path><path fill="#000000" d="m375.23654 223.81729l45.251953 -90.50391l118.44095 0l45.251953 90.50391l-45.251953 90.503876l-118.44095 0z" fill-rule="nonzero"></path><path stroke="#f3f3f3" stroke-width="2.0" stroke-linejoin="round" stroke-linecap="butt" d="m375.23654 223.81729l45.251953 -90.50391l118.44095 0l45.251953 90.50391l-45.251953 90.503876l-118.44095 0z" fill-rule="nonzero"></path></g></svg>
+

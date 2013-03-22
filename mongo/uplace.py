@@ -47,7 +47,8 @@ class Application(tornado.web.Application):
 		(r'/actions/post',PostHandler),
 		(r'/actions/friend_vote',FriendVoteHandler),
 		(r'/images',ImageHandler),
-		(r'/search',SearchHandler)
+		(r'/search',SearchHandler),
+		(r'/actions/get_replies',ReplyLoader)
 		
 		]
 		settings = dict(
@@ -93,6 +94,8 @@ class MainHandler(BaseHandler):
 		user = self.get_current_user()
 		feed = core_actions.get_feed(self.db,user['_id'])['result']
 		self.render("base.html",userdata=user,db = self.db,feed = feed)
+
+
 
 	def post(self):
 		pass
@@ -274,7 +277,8 @@ class PostHandler(BaseHandler):
 		elif posttype is PostType.REPLY_POST:
 			postid = self.get_argument('postid',strip=True)
 			replyid = self.get_argument('replyid',default = None,strip=True)
-			return core_actions.post_wall(self.db,None,userid,message)
+			ownerid = self.get_argument('ownerid',default = None,strip=True)
+			return core_actions.post_wall(self.db,None,ownerid,message,commenter = userid,postid=postid,replyid = replyid)
 		else:
 			print 'huh?'
 			return 500;
@@ -357,6 +361,30 @@ class SearchHandler(BaseHandler):
 		results = core_actions.search(self.db,userid,uniid,query)
 		self.render('search.html',userdata= self.get_current_user(),results = results)
 			
+
+class ReplyLoader(BaseHandler):
+	@tornado.web.authenticated
+	#@custom_dec.authenticated_get
+
+
+	def get(self):
+		#Check if friends
+		userid = self.get_current_user()['_id']
+		postid = self.get_argument('post_id',strip = True)
+		powner = self.get_argument('owner_id',strip = True)
+		print 'userid',userid
+		print 'powner',powner
+		print 'pid',postid
+		replies = core_actions.get_replies(self.db,userid,powner,postid)
+		t = core_actions.build_tree(replies)
+		print 'out',t.get(postid)
+		self.render('reply.html',replies=t,depth = 0, 
+            render_replies=self.render_replies,parentid=ObjectId(postid))
+
+	def render_replies(self, replies,parentid,depth=0): 
+		return self.render_string('reply.html', 
+            replies=replies,parentid=parentid,depth = depth, 
+            render_replies=self.render_replies)
 
 
 def main():
