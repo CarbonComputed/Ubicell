@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+<html>
+<head>
+	{%block scripts%}
+		<link rel="stylesheet" href="/static/styles/me.css" type="text/css" />
+
+	{%end%}
+
+</head>
+<body>
+	{%block container%}
+
+	<div id="container">
+		<div id="left-side-bar">
+
+		</div>
+		<div id="Main-Content">
+			<div id="user-data">
+				<img src="/images?picid={{userdata['ProfileImg']}}" height="150" width="150">
+				<div class="user-description">
+					<h2>{{escape(userdata['FirstName']).capitalize()}} {{escape(userdata['LastName']).capitalize()}}</h2></br>
+					<h3>{{escape(userdata['School']['Major'])}}, {{userdata['School']['GradYear']}}</h3>
+					<p>About Me: {{escape(userdata['About'])}}</p>
+				</br>
+				{%from constants import * %}
+				{%if userdata['UserStatus'] == UserStatus.USER_REQ%}
+				<h3>Friend Requested</h3>
+				{%end %}
+				{%if userdata['UserStatus'] == UserStatus.USER_ACC%}
+				<a id="friendaction" data-id="" data-userstatus="{{UserStatus.USER_ACC}}" href="#" onclick="sendRequest(this)">Accept Friend</a>
+				{%end %}
+				{%if userdata['UserStatus'] == UserStatus.USER_NEI%}
+				<a id="friendaction" data-id="" data-userstatus="{{UserStatus.USER_NEI}}" href="#" onclick="sendRequest(this)">Send Friend Request</a>
+				{%end %}
+				<a href="Photos">Photos</a>
+				<a href="Friends">Friends</a>
+			</div>
+
+		</div>
+		<div class="clear"></div>
+		{%if userdata['UserStatus'] == UserStatus.USER_FRI%}
+		<div id="Status">
+			<form onsubmit="post();return false;">
+				<textarea id="status_text" class="status_box" type="text" name="status" ></textarea>
+				<input class="status_button" type="submit" value="Post!">
+			</form>
+		</div>
+		<div class ="clear"></div>
+		<div id="Status-Feed">
+				{%for post in feed%}
+<!--  -->			{%if post['Wall']['FriendId'] != post['Wall']['UserId'] %}
+						{%from actions import *%}
+						{%set user = user_actions.get_simple_data(post['Wall']['FriendId'])%}
+					{%else%}
+						{%set user = userdata%}
+					{%end%}
+					
+				<div id="Status-sec" data-postid={{post['Wall']['id']}} data-ownerid={{post['_id']}}>
+					<a href="/user/{{user['UserName']}}"><img src="/images?picid={{str(user['ProfileImg'])}}"  height="52" width="52"></a>
+					<div id="status-post">
+						<a class="Name" href="/user/{{user['UserName']}}">{{user['FirstName'].capitalize()}} {{user['LastName'].capitalize()}}</a></br>
+						<p class="post">{{post['Wall']['Message']}}</p>
+						<a href="#" style="float:left;background:white;font-size:11px;padding-top:10px;color:black;">Load Comments</a>
+
+					</div>
+					<div id="Votes">
+						<a href="#" onclick="vote(this,'up')" ><i class="icon-arrow-up"></i></a>
+						<p>{{post['Wall']['Upvotes']-post['Wall']['Downvotes']}}</p>
+						<a href="#" onclick="vote(this,'down')"><i class="icon-arrow-down"></i></a>
+						<div class="clear"></div>
+
+					</div>
+					<div class="clear"></div>
+
+				</div>
+				{%end%}
+		{%end%}
+	</div>
+</div>
+{%end%}
+
+</div>
+{%block funcs%}
+
+<script type="text/javascript">
+
+function post(){
+		
+		{% from constants import * %}
+		var message = $('#status_text').val();
+		var posttype = parseInt({{PostType.WALL_POST}});
+		console.log(posttype);
+		$.ajax({
+			  type: "POST",
+			  url: '/user/{{userdata['UserName']}}',
+			  data: { 'message' : message, 'posttype' : posttype},
+			  success: function(){ alert('success');
+			  },
+			  dataType: 'json'
+			});
+		var currpage = window.location.pathname;
+		console.log(currpage);
+		$('#status_text').val('');
+		$('#Status-Feed').load('/user/{{userdata['UserName']}} #Status-Feed > *').hide().fadeIn('slow');
+
+	
+}
+
+function sendRequest(element){
+			var userstatus = $(element).data()['userstatus'];
+			$.ajax({
+			  type: "POST",
+			  url: '/actions/respond_friend',
+			  data: { 'Action' : 1, 'UserStatus' : userstatus , '_id' : "{{userdata['_id']}}"},
+			  success: function(){ alert('success');
+			  },
+			  dataType: 'json'
+			});
+		$('#Main-Content').load('/user/{{userdata['UserName']}} #Main-Content > *');
+}
+function capitaliseFirstLetter(string)
+{
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+</script>
+{%end%}
+
+</body>
+</html>

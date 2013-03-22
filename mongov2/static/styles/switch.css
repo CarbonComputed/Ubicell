@@ -1,0 +1,71 @@
+    .onoffswitch {
+    position: relative; width: 129px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+    }
+    .onoffswitch-checkbox {
+    display: none;
+    }
+    .onoffswitch-label {
+    display: block; overflow: hidden; cursor: pointer;
+    border: 2px solid #999999; border-radius: 20px;
+    }
+    .onoffswitch-inner {
+    width: 200%; margin-left: -100%;
+    -moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
+    -o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
+    }
+    .onoffswitch-inner:before, .onoffswitch-inner:after {
+    float: left; width: 50%; height: 30px; padding: 0; line-height: 30px;
+    font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+    -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+    }
+    .onoffswitch-inner:before {
+    content: "Friends";
+    padding-left: 8px;
+    background-color: gray; color: #FFFFFF;
+    text-align: left;
+    }
+
+    .onoffswitch:hover  .onoffswitch-inner:before{
+        background: orange;
+    }
+
+    .onoffswitch:hover  .onoffswitch-inner:after{
+        background: orange;
+    }
+    .onoffswitch-inner:after {
+    content: "University";
+    padding-right: 8px;
+    background-color: #FFFFFF; color: gray;
+    text-align: right;
+    }
+
+
+
+
+    .onoffswitch-switch {
+    width: 18px; margin: 6px;
+            background-color: gray;
+
+    border: 2px solid #999999; border-radius: 20px;
+    position: absolute; top: 0; bottom: 0; right: 95px;
+    -moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
+    -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
+    }
+
+    
+    .onoffswitch-inner:before:hover {
+        background-color: orange;
+    }
+
+ 
+    .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+    margin-left: 0;
+    background-color: gray;
+    }
+    .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+    right: 0px;
+    background: #FFFFFF;
+
+
+    }

@@ -1,0 +1,13 @@
+
+{%set lst = replies.get(parentid)%}
+{%if lst != None%}
+{% for reply in lst %} 
+    <div class="reply" style="margin-left:60px;    border-left:solid gray;
+    border-left-width:1px;padding-left:5px;"> 
+        <p style="margin:0;">{{ reply['Message'] }}</p>
+        <div class="replies"> 
+            {%raw render_replies(replies,reply['_id'],depth+1) %} 
+        </div>
+    </div> 
+{%end%}
+{% end %} 

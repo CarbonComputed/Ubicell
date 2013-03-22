@@ -1,0 +1,25 @@
+#Main-Content{
+	color: gray;
+	text-align: left;
+	padding: 10px 10px 10px 10px;
+}
+
+#Main-Content h1{
+	font-size: 18px;
+}
+
+#result img{
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: 10px;
+}
+
+#sub-res{
+	display: inline-block;
+	vertical-align:middle;
+}
+
+#result a,a:visited{
+		color: black;
+
+}
