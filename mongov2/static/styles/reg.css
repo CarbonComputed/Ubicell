@@ -1,20 +1,23 @@
 
+body{
+		/*background-image: none;*/
 
+}
 #container{
 	height: 75%;
 	font-size: 18px;
 }
 
 #left-side-bar{
-	background: transparent;
+	/*background: white;*/
 
 	min-width: 320px;
 	
 }
 
 #Main-Content{
-	background: transparent;
-
+	/*background: white;*/
+    background: transparent;
 	text-align: right;
 	-webkit-box-shadow: 0;
     -moz-box-shadow: 0;

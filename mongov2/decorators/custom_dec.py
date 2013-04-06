@@ -1,7 +1,7 @@
 import functools
 import tornado.web
 
-import user_actions
+import actions.user_actions
 
 
 def auth_friend(method):

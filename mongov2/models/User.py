@@ -32,6 +32,7 @@ class User(Document):
 	FriendsRequesting = ListField(ObjectIdField())
 	FriendsRequested = ListField(ObjectIdField())
 	Wall = ListField(EmbeddedDocumentField('Post'))
+	Nots = ListField(EmbeddedDocumentField('Notification'))
 
 if __name__ == "__main__":
 	connect('uplace')

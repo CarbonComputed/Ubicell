@@ -12,10 +12,12 @@ body ,html{
         min-width: 1100px;
         width: auto;
          overflow-x: hidden;
-        background-image:url('../images/gradient_texture.png');
-  /*       background: gray;
-            background-image: -webkit-linear-gradient(left, rgb(54,52,52) 14%, rgb(163,163,163) 90%);
-            */
+        background-image:url('../images/hexwb.jpg');
+background-repeat:no-repeat;
+background-size:cover;
+         /*background: gray;*/
+            /*background-image: -webkit-linear-gradient(left, rgb(54,52,52) 14%, rgb(163,163,163) 90%);*/
+            
 
 
 }
@@ -75,31 +77,31 @@ float: left;
 }
 .minwidth { min-width:600px; width: auto !important; width: 600px; }
 #left-top-nav{
-    width: 25%;
+    width: 15%;
     height: 100%;
  display: inline-block;
     float: left;
 
 }
 #center-top-nav{
-    width: 50%;
+    width: 55%;
     float: left;
         height: 100%;
          display: inline-block;
 
 }
 #right-top-nav{
-    width: 25%;
+    width: 30%;
  display: inline-block;
     height: 100%;
     float: left;
 }
-#top-nav span {
+.nav-bar{
     display:inline-block;    
     padding-right: 5px;
     width: 100%;
     padding-top: 15px;
-    padding-left: 75px;
+    padding-left: 55px;
     color: #222;
 
 }
@@ -115,14 +117,20 @@ a{
 
 #reply-box{
     display: none;
+    margin-left: 115px;
+    padding-top: 10px;
+    font-size: 10px;
+
 }
+
+
 
 #top-nav a{
     background: gray;
 }
 
 
-#top-nav span a,i {
+.nav-bar a,i {
     padding: 5px 5px 5px 5px;
     text-decoration:none;
     color: white;
@@ -145,6 +153,7 @@ a{
     padding-top: 10px;*/
     height: inherit;
 }
+
 
 #logo img,object{
     float: left;
@@ -199,6 +208,7 @@ a{
     box-shadow: 0px 0px 8px 0px #000000;*/
     border-radius: 10px;
     background: white;
+
 }
 
 #Status{
@@ -256,7 +266,7 @@ a{
 }
 
 .post{
-    font-size: 14px;
+    /*font-size: 14px;*/
     padding-top: 10px;
 
 
@@ -289,20 +299,22 @@ a{
 }
 #status-sec p{
     color: black;
+    width: auto;
 }
 
 #Votes{
-    float: right;
-    padding-top: 5px;
-    margin-right: 5px;
+    float: left;
+    /*padding-top: 5px;*/
+    margin-right: 15px;
     text-decoration: none;
     border-radius: 5px;
-    background: gray;
+    background: white;
     text-align: center;
+    height:inherit;
 }
 
 #Votes i{
-    color: white;
+    color: gray;
     padding-top: 5px;
     padding-bottom: 5px;
     text-decoration: none;
@@ -310,11 +322,12 @@ a{
     padding-right: 5px;
 
 }
+
 #Votes i:hover{
     color: orange;
 }
 #Votes p{
-    color: white;
+    color: gray;
     padding-left: 5px;
     padding-right: 5px;
     text-decoration: none;
@@ -323,9 +336,9 @@ a{
 
 
 #search-area{
-    width: 300px;
-    margin-left: auto;
-    margin-right: auto;
+    width: 400px;
+    /*margin-left: auto;*/
+    /*margin-right: auto;*/
     padding-top: 15px;
 
 }
@@ -364,5 +377,103 @@ a{
 
 #Main-Content #reply-sec{
     text-align: left;
+    
 }
 
+#reply-box textarea{
+    width: 100%;
+    height: 50px;
+}
+
+#reply_text_id{
+
+}
+
+#top-nav #right-top-nav .icon-globe{
+    color:black;
+    background: white;
+        position: relative;
+
+}
+
+#top-nav #right-top-nav .icon-globe:hover{
+    color:orange !important; 
+/*    -webkit-box-shadow: 0px 0px 3px 5px orange;
+-moz-box-shadow: 0px 0px 3px 5px orange;
+box-shadow: 0px 0px 3px 5px orange; */
+}
+
+#not{
+    /*width: 50px;*/
+    /*margin-right: 0;*/
+    display: inline-block;
+    position: relative;
+}
+.notification-count {
+    position:absolute;
+    top:-4px;
+    right:-4px;
+    background-color:#FF0000;
+    color:#fff;
+    padding:2px;
+    font-family:tahoma, arial, 'sans-serif';
+    font-size:9px;
+    font-weight:bold;
+}
+
+#not-menu{
+    position:absolute;
+/*    top:-4px;
+    right:-4px;*/
+    background-color:rgba(0,0,0,0.85);;
+    color:#fff;
+    padding:2px;
+    font-family:tahoma, arial, 'sans-serif';
+    font-size:13px;
+    font-weight:bold;
+    
+    width: 250px;
+    height: 500px;
+    z-index: 99;
+    white-space: normal;
+    /*overflow-x: auto; */
+}
+
+.not-item{
+    height: 60px;
+    border-bottom:solid gray;
+    border-bottom-width:1px;
+    padding: 5px 5px 5px 5px;
+    position: relative;
+
+}
+
+.not-item:hover{
+    background: gray;
+    cursor: pointer;
+}
+
+.not-item p{
+     
+}
+
+.not-item span{
+      position:absolute; 
+  width:100%;
+  height:100%;
+  top:0;
+  left: 0;
+
+  /* edit: added z-index */
+  z-index: 1;
+
+  /* edit: fixes overlap error in IE7/8, 
+     make sure you have an empty gif */
+  background-image: url('empty.gif');
+
+}
+.not-item img{
+    float: left;
+    
+    margin-right: 5px ;
+}

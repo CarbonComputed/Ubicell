@@ -48,7 +48,9 @@ class Application(tornado.web.Application):
 		(r'/actions/friend_vote',FriendVoteHandler),
 		(r'/images',ImageHandler),
 		(r'/search',SearchHandler),
-		(r'/actions/get_replies',ReplyLoader)
+		(r'/actions/get_replies',ReplyLoader),
+		(r'/actions/edit_profile',EditProfileHandler),
+		(r'/actions/get_nots',NotificationHandler)
 		
 		]
 		settings = dict(
@@ -82,9 +84,12 @@ class MainHandler(BaseHandler):
 		
 		print user['_id']['$oid']
 
-		feed = core_actions.get_feed(user['_id']['$oid'])['result']
+		uid = user['_id']['$oid']
+		feed = core_actions.get_feed(uid)['result']
 		#print feed
-		self.render("base.html",userdata=user,feed = feed)
+		nots=core_actions.get_notifications(uid)
+		nots.reverse()
+		self.render("base.html",userdata=user,feed = feed,nots=nots)
 
 
 
@@ -156,6 +161,8 @@ class UserHandler(BaseHandler):
 		if user2 is None:
 			raise tornado.web.HTTPError(404)
 		user2['UserStatus'] = UserStatus.USER_FRI
+		nots=core_actions.get_notifications(uid)
+		nots.reverse()
 		print user2['UserStatus']
 		if UserName == user['UserName']:
 			user2 = user
@@ -163,7 +170,7 @@ class UserHandler(BaseHandler):
 			#print user2['ProfileImg']['$oid']
 			feed = core_actions.get_user_feed(uid)['result']
 
-			self.render("me.html",userdata=user2,feed=feed)
+			self.render("me.html",userdata=user2,feed=feed,nots=nots)
 			return
 		elif friend is False and friend_requested is False and friend_requesting is False:
 			user2['UserStatus'] = UserStatus.USER_NEI
@@ -179,7 +186,8 @@ class UserHandler(BaseHandler):
 		#print user2['ProfileImg']
 		feed = core_actions.get_user_feed(user2['_id'])['result']
 		print user2['UserStatus']
-		self.render("user.html",userdata=user2,feed=feed)
+
+		self.render("user.html",userdata=user2,feed=feed,nots=nots)
 	def post(self,UserName):
 		userid = self.get_current_user()['_id']['$oid']
 		message = self.get_argument('message',strip=True)
@@ -270,6 +278,7 @@ class PostHandler(BaseHandler):
 		elif posttype is PostType.REPLY_POST:
 			postid = self.get_argument('postid',strip=True)
 			replyid = self.get_argument('replyid',default = None,strip=True)
+			print 'replyid',replyid
 			ownerid = self.get_argument('ownerid',default = None,strip=True)
 			return core_actions.post_wall(ownerid,message,commenter = userid,postid=postid,replyid = replyid)
 		else:
@@ -335,12 +344,23 @@ class FriendVoteHandler(BaseHandler):
 		postid = self.get_argument('post_id',strip=True)
 		vote = self.get_argument('vote_type',strip=True)
 		uid = self.get_current_user()['_id']['$oid']
+		isreply = self.get_argument('is_reply',strip=True)
 		#if user_actions.validPost(self.db,powner,postid) is False  or user_actions.is_friends_with_byid(self.db,uid,powner) is False:
 		#	reply = 500;
-		if vote == 'up':
-			reply = core_actions.upvote_post(powner,uid,postid)
+		print 'isrepl',isreply
+		if isreply == "true":
+			replyid = self.get_argument('reply_id',strip=True)
+			if vote == 'up':
+				reply = core_actions.upvote_comment(powner,uid,postid,replyid)
+			else:
+				reply = core_actions.downvote_comment(powner,uid,postid,replyid)
+
 		else:
-			reply = core_actions.downvote_post(powner,uid,postid)
+			if vote == 'up':
+				reply = core_actions.upvote_post(powner,uid,postid)
+			else:
+				reply = core_actions.downvote_post(powner,uid,postid)
+
 		print reply
 		return reply
 
@@ -352,8 +372,47 @@ class SearchHandler(BaseHandler):
 		uniid = self.get_current_user()['School']['University']['$oid']
 		query = self.get_argument('query',strip = True)
 		results = core_actions.search(userid,uniid,query)
-		self.render('search.html',userdata= self.get_current_user(),results = results)
-			
+		nots=core_actions.get_notifications(userid['$oid'])
+		nots.reverse()
+		self.render('search.html',userdata= self.get_current_user(),results = results,nots=nots)
+		
+
+class EditProfileHandler(BaseHandler):
+	@tornado.web.authenticated
+
+	def get(self):
+		self.render('editprofile.html',user=self.get_current_user())
+
+	def post(self):
+		userid = self.get_current_user()['_id']
+		user = User.objects(id=userid)
+		password = self.get_argument('Password',default=user.Password,strip=True)
+		name = self.get_argument('FullName',default=(user.FirstName + " "+user.LastName),strip=True)
+		gender = self.get_argument('Gender',default=user.Gender,strip=True)
+		major = self.get_argument('major',default=user.School.Major,strip=True)
+		gradyear = self.get_argument('gradyear',default=user.School.GradYear,strip=True)
+		about = self.get_argument('about',default=user.About,strip=True)
+		if password != user.Password:
+			m = hashlib.md5()
+			m.update(password)
+			password = m.hexdigest()
+
+		user.Password =  password
+		user.FirstName = name.split()[0]
+		user.LastName = name.split()[1]
+		user.Gender = gender
+		user.School.Major = major
+		user.School.GradYear = gradyear
+		user.About = about
+
+		profimg = ProfileImage(Owner=usermodel.id)
+		profimg.Image.put(fileinfo['body'],content_type = 'image/jpeg',Owner=usermodel.id)
+		profimg.save()
+
+		user.ProfileImg = profimg.id
+		user.save()
+
+
 
 class ReplyLoader(BaseHandler):
 	@tornado.web.authenticated
@@ -380,6 +439,19 @@ class ReplyLoader(BaseHandler):
             replies=replies,parentid=parentid,depth = depth, 
             render_replies=self.render_replies)
 
+
+class NotificationHandler(BaseHandler):
+	@tornado.web.authenticated
+
+	def post(self):
+		userid = self.get_current_user()['_id']['$oid']
+		core_actions.read_notifications(userid)
+
+	def get(self):
+		userid = self.get_current_user()['_id']['$oid']
+		nots = core_actions.get_notifications(userid)
+		print nots
+		self.finish(tornado.escape.json_encode(nots))
 
 def main():
     tornado.options.parse_command_line()

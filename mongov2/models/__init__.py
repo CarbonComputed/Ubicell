@@ -1,3 +1,3 @@
 
 
-__all__ = ["School","Post","ProfileImage","Reply","University","User"]
+__all__ = ["School","Post","ProfileImage","Reply","University","User","Notification"]

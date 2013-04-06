@@ -15,6 +15,10 @@ from mongokit import Document, Connection
 
 from models.User import *
 
+from models.Notification import *
+
+import core_actions
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -56,6 +60,11 @@ def send_friend_request(userid,friendid):
 
 	friend.save()
 	user.save()
+
+
+	n = FriendRequestNot(Message=(user.FirstName.capitalize() + " " + user.LastName.capitalize() +" sent a friend request"),Friend=userid)
+
+	core_actions.push_notification(friendid,n)
 	# print friend
 	# print user
 
@@ -92,6 +101,9 @@ def accept_friend_request(userid,friendid):
 	friend.save()
 	user.save()
 
+	n = FriendRequestNot(Message=(user.FirstName.capitalize()  + " " + user.LastName.capitalize() +" accepted friend request"),Friend=userid)
+
+	core_actions.push_notification(friendid,n)
 	# friend = db.user.find_one({'_id' : ObjectId(friendid)},{'_id' : 1, 'UserName' : 1, 'FirstName' : 1 , 'LastName' : 1 })
 	# user = db.user.find_one({'_id' : ObjectId(userid)},{'_id' : 1, 'UserName' : 1, 'FirstName' : 1 , 'LastName' : 1 })
 

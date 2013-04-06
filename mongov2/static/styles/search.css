@@ -8,18 +8,23 @@
 	font-size: 18px;
 }
 
-#result img{
+.result img{
 	display: inline-block;
-	vertical-align: middle;
+	/*vertical-align: middle;*/
 	margin-right: 10px;
 }
 
 #sub-res{
 	display: inline-block;
-	vertical-align:middle;
+	/*vertical-align:middle;*/
 }
 
-#result a,a:visited{
+.result{
+	display: inline-block;
+	padding: 10px 25px 10px 10px;
+}
+
+.result a,a:visited{
 		color: black;
 
 }

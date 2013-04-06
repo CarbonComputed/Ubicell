@@ -22,7 +22,7 @@
 }
 
 ::selection {
-    background: transparent; 
+    /*background: transparent; */
 }
 
 ::-moz-selection {

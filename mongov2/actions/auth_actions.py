@@ -19,12 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 
-
 EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 
 
-def login(username,password):
+def login(username,password,callback=None):
 	m = hashlib.md5()
 	m.update(password)
 	hashed = m.hexdigest()
@@ -34,12 +33,15 @@ def login(username,password):
 		if login.first() is None:
 			return None
 	logger.info(username + " has logged in")
+	if callback != None:
+		return callback(login.first())
+
 	return login.first()
 
 
 
 
-def register(user,request):
+def register(user,request,callback=None):
 	# TODO : Insert User into corresponding school collection/ register request
 	# A user should be added to the register request collection:
 	#When a user verifies email, then they are inserted into user/university collection

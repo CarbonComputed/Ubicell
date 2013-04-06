@@ -55,7 +55,22 @@
 					{%else%}
 						{%set user = userdata%}
 					{%end%}
-					
+<div id="Votes">
+						{%set color = 'gray'%}
+						{% if ObjectId(current_user['_id']['$oid']) in post['Wall']['Upvoters'] %}
+							{%set color = 'orange'%}
+						{%end%}
+						<a style="color:{{color}};" href="#" onclick="vote(this,'up')" ><i style="color:{{color}};" class="icon-arrow-up"></i></a>
+
+						<p>{{post['Wall']['Upvotes']-post['Wall']['Downvotes']}}</p>
+						{%set color = 'gray'%}
+						{% if ObjectId(current_user['_id']['$oid']) in post['Wall']['Downvoters'] %}
+							{%set color = 'orange'%}
+						{%end%}
+						<a href="#" onclick="vote(this,'down')"><i style="color:{{color}};" class="icon-arrow-down"></i></a>
+						<div class="clear"></div>
+
+					</div>
 				<div id="Status-sec" data-postid={{post['Wall']['id']}} data-ownerid={{post['_id']}}>
 					<a href="/user/{{user['UserName']}}"><img src="/images?picid={{str(user['ProfileImg'])}}"  height="52" width="52"></a>
 					<div id="status-post">
@@ -64,13 +79,7 @@
 						<a href="#" style="float:left;background:white;font-size:11px;padding-top:10px;color:black;">Load Comments</a>
 
 					</div>
-					<div id="Votes">
-						<a href="#" onclick="vote(this,'up')" ><i class="icon-arrow-up"></i></a>
-						<p>{{post['Wall']['Upvotes']-post['Wall']['Downvotes']}}</p>
-						<a href="#" onclick="vote(this,'down')"><i class="icon-arrow-down"></i></a>
-						<div class="clear"></div>
 
-					</div>
 					<div class="clear"></div>
 
 				</div>

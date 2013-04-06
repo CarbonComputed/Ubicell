@@ -107,7 +107,8 @@ def post_wall(userid,message,commenter=None, postid=None,replyid = None,depth=1)
 def upvote_post(ownerid,userid,postid):
 	user = User.objects(id=ownerid,Wall__id=ObjectId(postid)).first()
 	userwall = user.Wall
-	post = funcs.find(userwall,'id',ObjectId(postid))
+	index = funcs.index(userwall,'id',ObjectId(postid))
+	post = user.Wall[index]
 	
 	upvotes = post.Upvotes
 	downvotes = post.Downvotes
@@ -115,15 +116,17 @@ def upvote_post(ownerid,userid,postid):
 	downvoters = post.Downvoters
 	if ObjectId(userid) in upvoters:
 		return UpvoteResp.VOTED_ALREADY
-	user.Wall.remove(post)
-	upvotes += 1
+	# user.Wall.remove(post)
 	if ObjectId(userid) not in downvoters:
+		upvotes += 1
 		upvoters.append(ObjectId(userid))
 	try:
+		downvotes -= 1
 		downvoters.remove(ObjectId(userid))
 	except ValueError:
-		pass
-	hotness = ranking.hot(upvotes,downvotes,datetime.datetime.now())
+		downvotes += 1
+
+	hotness = ranking.hot(upvotes,downvotes,post.Time)
 	post.Upvoters = upvoters
 	post.Downvoters = downvoters
 	post.Upvotes = upvotes
@@ -131,7 +134,7 @@ def upvote_post(ownerid,userid,postid):
 	post.Hotness = hotness
 
 	
-	user.Wall.append(post)
+	user.Wall[index] = post
 	user.save()
 	#post = User.objects(id=userid['$oid'],Wall__id=ObjectId(postid)).first()
 	
@@ -198,38 +201,72 @@ def upvote_post(ownerid,userid,postid):
 def downvote_post(ownerid,userid,postid):
 	user = User.objects(id=ownerid,Wall__id=ObjectId(postid)).first()
 	userwall = user.Wall
-	post = funcs.find(userwall,'id',ObjectId(postid))
+	index = funcs.index(userwall,'id',ObjectId(postid))
+	post = user.Wall[index]
 	
+
 	upvotes = post.Upvotes
 	downvotes = post.Downvotes
 	upvoters = post.Upvoters
 	downvoters = post.Downvoters
 	if ObjectId(userid) in downvoters:
 		return UpvoteResp.VOTED_ALREADY
-	user.Wall.remove(post)
-	downvotes += 1
+	# user.Wall.remove(post)
+	
 	if ObjectId(userid) not in upvoters:
+		downvotes += 1
 		downvoters.append(ObjectId(userid))
 	try:
+		upvotes -= 1
 		upvoters.remove(ObjectId(userid))
 	except ValueError:
-		pass
-	hotness = ranking.hot(upvotes,downvotes,datetime.datetime.now())
+		upvotes += 1
+	hotness = ranking.hot(upvotes,downvotes,post.Time)
 	post.Upvoters = upvoters
 	post.Downvoters = downvoters
 	post.Upvotes = upvotes
 	post.Downvotes = downvotes
 	post.Hotness = hotness
-
+	#print post==user.Wall[index]
+	#print post is user.Wall[index]
 	
-	user.Wall.append(post)
+	user.Wall[index] = post
 	user.save()
 	#post = User.objects(id=userid['$oid'],Wall__id=ObjectId(postid)).first()
 	
 	return 200
 
-def upvote_comment(db,userid,postid,replyid):
-	pass
+def upvote_comment(ownerid,userid,postid,replyid):
+	user = User.objects(id=ownerid,Wall__id=ObjectId(postid)).first()
+	userwall = user.Wall
+	post_index = funcs.index(userwall,'id',ObjectId(postid))
+	reply_index = funcs.index(user.Wall[post_index].Reply,'id',ObjectId(replyid))
+	reply = user.Wall[post_index].Reply[reply_index]
+	upvotes = reply.Upvotes
+	downvotes = reply.Downvotes
+	upvoters = reply.Upvoters
+	downvoters = reply.Downvoters
+
+	if ObjectId(userid) in upvoters:
+		return UpvoteResp.VOTED_ALREADY
+	# user.Wall.remove(post)
+	if ObjectId(userid) not in downvoters:
+		upvotes += 1
+		upvoters.append(ObjectId(userid))
+	try:
+		downvotes -= 1
+		downvoters.remove(ObjectId(userid))
+	except ValueError:
+		downvotes += 1
+
+	hotness = ranking.confidence(upvotes,downvotes)
+	reply.Upvoters = upvoters
+	reply.Downvoters = downvoters
+	reply.Upvotes = upvotes
+	reply.Downvotes = downvotes
+	reply.Hotness = hotness
+	user.Wall[post_index].Reply[reply_index] = reply
+	user.save()
 
 # def downvote_post(userid,postid):
 # 	coll = User._get_collection()
@@ -288,8 +325,38 @@ def upvote_comment(db,userid,postid,replyid):
 
 # 	return RespSuccess.DEFAULT_SUCCESS
 
-def downvote_comment(db,userid,postid,replyid):
-	pass
+def downvote_comment(ownerid,userid,postid,replyid):
+	user = User.objects(id=ownerid,Wall__id=ObjectId(postid)).first()
+	userwall = user.Wall
+	post_index = funcs.index(userwall,'id',ObjectId(postid))
+	reply_index = funcs.index(user.Wall[post_index].Reply,'id',ObjectId(replyid))
+	reply = user.Wall[post_index].Reply[reply_index]
+	upvotes = reply.Upvotes
+	downvotes = reply.Downvotes
+	upvoters = reply.Upvoters
+	downvoters = reply.Downvoters
+
+	if ObjectId(userid) in downvoters:
+		return UpvoteResp.VOTED_ALREADY
+	# user.Wall.remove(post)
+	
+	if ObjectId(userid) not in upvoters:
+		downvotes += 1
+		downvoters.append(ObjectId(userid))
+	try:
+		upvotes -= 1
+		upvoters.remove(ObjectId(userid))
+	except ValueError:
+		upvotes += 1
+
+	hotness = ranking.confidence(upvotes,downvotes)
+	reply.Upvoters = upvoters
+	reply.Downvoters = downvoters
+	reply.Upvotes = upvotes
+	reply.Downvotes = downvotes
+	reply.Hotness = hotness
+	user.Wall[post_index].Reply[reply_index] = reply
+	user.save()
 
 
 def get_replies(userid,powner, postid,orderBy = None):
@@ -384,12 +451,44 @@ def search(userid,universityid,query,query_type = None):
 	return results
 
 
+def push_notification(userid,notification):
+	user = User.objects(id=userid).first()
+	user.Nots.append(notification)
+	user.save()
+
+
+def read_notifications(userid):
+	user = User.objects(id=userid).first()
+	for Not in user.Nots:
+		Not.Read = True
+	user.save()
+
+def get_notifications(userid):
+	user = User.objects(id=userid).first()
+	return user.Nots
+
+def get_unread_notifications(userid):
+	user = User.objects(id=userid).first()
+	nots = []
+	for n in user.Nots:
+		if n.Read == False:
+			nots.append(n)
+	return nots
+
+def clear_notification(userid,notid):
+	pass
+
+def main():
+	connect("uplace")
+
+	post_wall("5149CB8B8F24A067B266A305","i like this reply","5149CB8B8F24A067B266A305", "514B65D24074506C927D6DB8","514CD7EC407450737085D361")
+
 if __name__ == "__main__":
 	#db = database.Connection("localhost", "ProjectTakeOver",user="root",password="root")
 	#user = {'UserID' : 5, 'UserName' : "jillian"}
-	db = pymongo.MongoClient().uplace
+	connect("uplace")
 
-	post_wall(db,None,"513deb988f24a02f86542aaa","i like this reply","513deb988f24a02f86542aaa", "513f4aac407450377d9dc435","513f86a68f24a038a58d6bed")
+	post_wall("5149CB8B8F24A067B266A305","i like this reply","5149CB8B8F24A067B266A305", "514B65D24074506C927D6DB8","514CD7EC407450737085D361")
 	#res = search(db,"51379ac240745012adf2209a","51379ac240745012adf22099",'Mart')
 	#print res[0]
 	# #post_wall(db,None,'511747a18f24a0069b7ed655','511747a18f24a0069b7ed655','hey how are you? testing replies 2')
