@@ -1,5 +1,5 @@
 <html>
-<title>Ubicell</title>
+<title>uPlace</title>
 <head>
 	<script src="../static/jquery-1.9.1.min.js"></script>
 	<link rel="stylesheet" href="../static/styles/base2.css" type="text/css" />
@@ -15,8 +15,8 @@
 
 	<div id="top-nav">
 		<div id="logo">
-			
-				<a href="/"><img src="/static/images/logo_word6.svg" height="55px" width="175px"></a>
+			<h1>uPlace</h1>
+				<img src="/static/images/logo2.svg" height="60px" width="100px">
 
 		</div>
 		<div class="clear"></div>
@@ -26,14 +26,12 @@
 	<div id="container">
 
 	<div id="left-side-bar">
-		<form id="regForm" action="register" onSubmit="return validateForm(this)" method="post" enctype="multipart/form-data">
+		<form id="regForm" action="/actions/edit_profile" onSubmit="return validateForm(this)" method="post" enctype="multipart/form-data">
 
 		<div id="reg-block">
-				Name: <input type="text" name="FullName" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"> </span><br>
-				Username: <input type="text" name="UserName" pattern="[a-z\d.]{5,}" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
-				Password: <input type="password" name="Password" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
-				Confirm Password: <input type="password" name="confPassword" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
-				Email: <input type="email" name="Email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.+-]+\.edu$" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
+				Name: <input type="text" name="FullName" value="{{user['FirstName'].capitalize()}} {{user['LastName'].capitalize()}}"><br>
+				Password: <input type="password" name="Password"><br>
+				Confirm Password: <input type="password" name="confPassword"><br>
 
 		</div>
 	</div>
@@ -41,16 +39,15 @@
 		<div id="extra-info">
 			<div id="profile-pic">
 			  <label for="pic">Profile Picture</label>
-			  <input type="file" required="true" name="pic" accept="image/*" onchange="readURL(this);" style="vertical-align:middle;width: 90px;">
+			  <input type="file" name="pic" accept="image/*" onchange="readURL(this);" style="vertical-align:middle;width: 90px;">
 			  <img id="pro-pic" src="#" alt="your image" height = "65px" width="65px" style="margin: 0;padding: 0;vertical-align: middle;" />
 			</div>
 			Male <input type="radio" name="gender" value="Male" checked> 
 			Female <input type="radio" name="gender" value="Female" ><br>
-			University: <input required="true" type="text" name="university" id="Uni" autocomplete="off" ><br>
-			Major: <input type="text" name="major">
-			Grad Year: <select name="yearpicker" id="yearpicker" ></select><br><br>
-			About Me: <textarea style="vertical-align: middle;" name="about"></textarea><br><br><br>
-			<input type="submit" value="Register" class="status_button" >
+			Major: <input type="text" name="major" value="{{user['School']['Major']}}">
+			Grad Year: <select name="yearpicker" id="yearpicker" value="{{user['School']['GradYear']}}" >{{user['School']['GradYear']}}" </select><br><br>
+			About Me: <textarea style="vertical-align: middle;" name="about" value="{{user['About']}}"></textarea><br><br><br>
+			<input type="submit" value="Submit" class="status_button" >
 
 		</div>
 	</form>
@@ -78,97 +75,12 @@
 
 
 	}
-
-	$("#reg-block").focusin( function(e) {
-		var input = e.target;
-		var name = $(input).attr("name");
-		if(name=="UserName"){
-			console.log("here");
-			displayMessage(input,"Username must contain at least 5 characters");
-		}
-		else{
-			displayMessage(input,"dafaq");
-		}
-			// validate(e.target);
-			// if(res == true){
-			// 	makeCheck(e.target);
-			// }
-			// else{
-			// 	makeX(e.target);
-			// }
-	});
-
-		$("#reg-block").focusout( function(e) {
-			validate(e.target);
-
-			 
-			// if(res == true){
-			// 	makeCheck(e.target);
-			// }
-			// else{
-			// 	makeX(e.target);
-			// }
-	});
+	
 	var resizeTimer;
 	$(window).resize(function() {
 	    clearTimeout(resizeTimer);
 	    resizeTimer = setTimeout(adjust, 100);
 	});
-
-	function validate(input){
-		var value = input.value;
-		var name = $(input).attr("name");
-		if(name == "UserName"){
-			if(value.match(/[a-z\d.]{5,}/)){
-				makeCheck(input);
-				hideMessage(input);
-			}
-			else{
-				makeX(input);
-				
-
-			}
-			// if(checkUserAvailability(value)){
-			// 	makeCheck(e.target);
-			// }
-			// else{
-			// 	makeX(e.target);
-			// 	displayError(input,"Username not available");
-			// }
-		}
-		if(name == "confPassword"){
-			var val = $('[name=Password]').val();
-			if(val != value){
-				makeX(input);
-				displayMessage(input,"Passwords don't match");
-			}
-			else{
-				hideMessage(input);
-			}
-		}
-	}
-
-	function hideMessage(input){
-		$(input).next().next('span.error-box').fadeOut();
-	}
-
-	function displayMessage(input,message){
-		console.log($(input).next().next('span.error-box'));
-		$(input).next().next('span.error-box').text(message);
-		$(input).next().next('span.error-box').hide().fadeIn();
-	}
-
-	function makeCheck(input){
-		$(input).next().toggleClass('icon-remove',false);
-		$(input).next().toggleClass('icon-ok',true);
-		$(input).next().css("color","green");
-	}
-
-	function makeX(input){
-		$(input).next().toggleClass('icon-remove',true);
-		$(input).next().toggleClass('icon-ok',false);
-		$(input).next().css("color","red");
-	}
 
 	 // var $input = $('#Uni');
 	 // $input.keypress( function( e ) {
@@ -190,10 +102,7 @@
   //       clearTimeout( delay );
   //       delay = setTimeout( search, wait );
   //   });
-	$(document).click(function() {
-	    $('#autocomplete').hide();
 
-	});
 
 	$('#Uni').keyup(function(e) {
 		$('#autocomplete').show();
@@ -240,7 +149,7 @@
 	function checkUserAvailability(UserName){
 
 	}
-        function readURL(input) {
+    function readURL(input) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
 

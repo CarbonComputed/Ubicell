@@ -1,0 +1,58 @@
+
+
+{%set lst = replies.get(parentid)%}
+{%if lst != None%}
+        {%from bson.objectid import ObjectId%}
+
+        {%import actions.user_actions%}
+
+{%set lst = sorted(lst,key=lambda rep: (rep['Upvotes'] - rep['Downvotes']),reverse=True)%}
+
+{% for reply in lst %} 
+    <div class="reply" data-postid={{reply['id']}} style="margin-left:60px;    border-left:solid gray;
+    border-left-width:1px;padding-left:5px;padding-top:5px;background-color:white;"> 
+        <!-- <p style="margin:0;">{{ reply['Message'] }}</p> -->
+        <div id="Votes" style="">
+        	{%set color = 'gray'%}
+        	{% if ObjectId(current_user['_id']['$oid']) in reply['Upvoters'] %}
+        	{%set color = 'orange'%}
+        	{%end%}
+        	<a  href="#" onclick="voteReply(this,'up');return false;" ><i style="color:{{color}};" class="icon-arrow-up"></i></a>
+        	<p>{{reply['Upvotes']-reply['Downvotes']}}</p>
+        	{%set color = 'gray'%}
+        	{% if ObjectId(current_user['_id']['$oid']) in reply['Downvoters'] %}
+        	{%set color = 'orange'%}
+        	{%end%}
+        	<a href="#" onclick="voteReply(this,'down');return false;"><i style="color:{{color}};" class="icon-arrow-down"></i></a>
+        	<div class="clear"></div>
+
+        </div>
+
+        {%set rep_user = actions.user_actions.get_simple_data(reply['UserId'])%}
+  
+					<div id="status-post" data-postid={{reply['id']}}>
+                              <a href="/user/{{rep_user['UserName']}}"><img style="float:left;" src="/images?picid={{str(rep_user['ProfileImg'])}}" href="/user/{{rep_user['UserName']}}" height="32" width="32"></a>
+                        <div class="status-info">
+						<a class="Name" style="" href="/user/{{rep_user['UserName']}}">{{rep_user['FirstName'].capitalize()}} {{rep_user['LastName'].capitalize()}}</a></br>
+						<p class="post" style="">{{reply['Message']}}</p>
+						<!-- <a href="#" onclick="loadReplies();return false;" style="float:left;background:white;font-size:11px;padding-top:10px;color:black;">Load Comments</a> -->
+						<a href="#" data-postid={{reply['id']}} onclick="displayReplyReply(this);return false;"style="float:left;background:white;padding-top:10px;color:black;padding-left:0px; font-size:10px;">Reply</a>
+					</div>
+                </div>
+					<div class="clear"></div>
+					<div id="reply-box" data-postid={{reply['id']}}  style="text-align:left;"> 
+						<form>
+							<textarea id="reply_text_id" class="reply_text"></textarea>
+							<div >
+								<a id="rep_link" onclick="replyreply(this);return false;" href="#">Reply</a>
+								<a onclick="hideReply(this);return false;" href="#">Cancel</a>
+							</div>
+						</form>
+					</div>
+        <div class="replies" style="margin-top:10px; background-color:white;"> 
+        {%raw render_replies(replies,reply['id'],depth+1) %} 
+        </div>
+    </div> 
+
+{%end%}
+{% end %} 

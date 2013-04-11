@@ -1,0 +1,89 @@
+#Main-Content{
+	text-align: middle;
+}
+
+#user-data{
+	margin-top: 25px;
+
+    margin-bottom: 25px;
+    padding: 10px 10px 10px 10px;
+    width: auto;
+    height: auto;
+    border-bottom:solid white;
+    border-bottom-width:0px;
+    overflow: auto;
+    background: white;
+    border-radius: 3px;
+    text-align: right;
+
+
+}
+
+
+
+#user-data img{
+	-webkit-box-shadow: 0px 0px 8px 0px #000000;
+    -moz-box-shadow: 0px 0px 8px 0px #000000;
+    box-shadow: 0px 0px 8px 0px #000000;
+    float: left;
+    margin-right: 30px;
+    
+    /*display: block;*/
+}
+
+#user-data a{
+    color: black;
+    /*display: block;*/
+}
+
+#user-data h6{
+    padding-top: 5px;
+    padding-right: 5px;
+}
+.proimg{
+    float: left;
+    margin: 0;
+    width: 150px;
+    height: 150px;
+    position: relative;
+}
+.proimg .changepro{
+    position: absolute;
+    float: right;
+    top: 0px;
+    right: 0px;
+    z-index: 1;
+    margin: 4px 4px 4px 4px;
+    padding: 2px 2px 2px 2px;
+    background: white;
+    color: black;
+    -webkit-box-shadow: 0px 0px 8px 0px #000000;
+    -moz-box-shadow: 0px 0px 8px 0px #000000;
+    box-shadow: 0px 0px 8px 0px #000000;
+    border-radius: 1px;
+    text-decoration: none;
+    border-style:outset;
+    border-width:2px;
+}
+
+.changepro a{
+    color: black;
+    text-decoration: none;
+
+}
+
+.user-description {
+	color: gray;
+}
+.user-description a{
+    color: black;
+}
+
+#Status{
+	margin-left: auto;
+	margin-right: auto;
+	width: 100%;
+}
+
+#status-feed{
+}

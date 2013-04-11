@@ -1,0 +1,25 @@
+Blocker:
+	Ability to edit profile.
+	-University feed. 
+	Friend Checks
+	Photo view
+		Add multiple photos
+		Remove photos
+	Friend View
+	Registration checks.
+	Captcha
+	Remove Friends
+	Async code
+	Add Friend link next to people.
+
+Features:
+	Delete Comments
+	Events
+	Clubs/Groups
+	Admin upgrade
+	Hover over name
+
+Extra:
+	Clean up javascript/html code.
+
+

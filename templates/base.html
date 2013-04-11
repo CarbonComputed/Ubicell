@@ -1,0 +1,526 @@
+
+{%from bson.objectid import ObjectId%}
+{%import actions.core_actions%}
+{%from tornado.escape import linkify%}
+<html>
+<title>Ubicell</title>
+<head>
+	<link rel="stylesheet" href="/static/styles/base2.css" type="text/css" />
+	<link rel="stylesheet" href="/static/styles/font-awesome.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="/static/styles/dropdown.css?1.3" />
+
+	<link rel="stylesheet" href="/static/styles/switch.css" type="text/css" />
+	<script src="/static/jquery-1.9.1.min.js"></script>
+
+	<script src="/static/js/dropdown.js"></script>
+	<script type="text/javascript" src="/static/js/modernizr.custom.79639.js"></script> 
+
+	{%block scripts%}
+
+	{%end%}
+
+</head>
+<body>
+	<div id="background-grad"></div>
+
+	<div class="clear"></div>
+	{%block nav%}
+	<div id="top-nav">
+
+		<div id="left-top-nav">
+			<div id="logo">
+				<a href="/" class="fill-div"></a>
+				
+
+				<img src="/static/images/logo_word6.svg" href="/" height="55px" width="175px">
+			</div>
+		</div>
+		<div id="center-top-nav">
+
+			<div id="search-area">
+				<form action="#" onsubmit="searchFriends();return false;">
+				<input class="search_box" type="text" name="search" placeholder="Search..." >
+				<!-- <a class="btn" href="#" onclick="searchFriends()"><i class="icon-search"></i></a> -->
+				</form>
+			</div>
+		</div>
+		<div id="right-top-nav">
+			<div id="not">
+			{%set nc = len(actions.core_actions.get_unread_notifications(current_user['_id']['$oid']))%}
+			{%if nc > 0%}
+			<a href="#" onclick="toggleNotifications();return false;" style="text-decoration:none;"> <i style="color:orange;" class="icon-globe icon-large"><span class="notification-count">{{nc}}</span></i></a>
+			
+			{%else%}
+				<a href="#" onclick="toggleNotifications();return false;" style="text-decoration:none;"> <i style="color:black;" class="icon-globe icon-large"><span style="display:none;" class="notification-count">{{nc}}</span></i></a>
+			{%end%}
+				{%from actions import *%}
+				{%from models.Notification import *%}
+				<div id="not-menu-cont">
+				<div id="not-menu">
+
+					{%for n in nots%}
+					<div class="not-item">
+						{%if isinstance(n,FriendRequestNot)%}
+						{%set friend = user_actions.get_simple_data(n.Friend)%}
+						<a href="/user/{{friend.UserName}}" class="fill-div"><span></span></a>
+						<img src="/images?picid={{str(friend.ProfileImg)}}" href="/user/{{friend.UserName}}" height="52" width="52">
+						<p>{{n.Message}}</p>
+						{%end%}
+					</div>
+					{%end%}
+
+
+			</div>
+			</div>
+			</div>
+			<span class="nav-bar">
+				<a href="/">Feed</a>
+				<a href="/user/{{escape(current_user['UserName'])}}">Profile</a>
+				<!-- <a class = "btn" id="setting" href="#"><i class="icon-cogs"></i></a> -->
+				<div id="dd" class="wrapper-dropdown-2" tabindex="1"><i id="tab" class="icon-cogs icon-small"></i>
+					<ul class="dropdown">
+						<li><a href="#"><i class="icon-envelope icon-small"></i>Send File</a></li>
+						<li><a href="/actions/edit_profile"><i class="icon-edit icon-small"></i>Edit Profile</a></li>
+						<li><a href="/auth/logout"><i class="icon-signout icon-small"></i>Logout</a></li>
+					</ul>
+				</div>
+			</div>
+		</span>
+	</div>
+	</div>
+	{% end %}
+	<div class="clear"></div>
+	{%block container%}
+	<div id="container">
+		<div id="left-side-bar">
+			<ul class="sidebar">
+				<a href="#"><li>Groups ></li></a>
+				<a href="#"><li>Events ></li></a>
+			</ul>
+		</div>
+		<div id="Main-Content">
+			<a href="#"><h2 style="float:left;color:gray;margin: 5px 5px 5px 5px;">Feed</h2></a>
+			<div class="onoffswitch">
+				<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+				<label class="onoffswitch-label" for="myonoffswitch" >
+					<div class="onoffswitch-inner"></div>
+					<div class="onoffswitch-switch"></div>
+				</label>
+			</div>
+			<div class="clear"></div>
+
+			<div id="Status">
+				<form action="#" onsubmit="post();return false;">
+					<textarea id="status_text" class="status_box" type="text" name="status" placeholder="Whatsup {{current_user['FirstName'].capitalize()}}?"></textarea>
+					<input class="status_button" type="submit" value="Post!" >
+				</form>
+			</div>
+			<div id="Status-Feed">
+				{%for post in feed%}
+<!--  -->			{%if post['Wall']['FriendId'] != post['Wall']['UserId'] %}
+						{%from actions import *%}
+						{%set user = user_actions.get_simple_data(post['Wall']['FriendId'])%}
+					<div id="Status-sec" data-postid={{post['Wall']['id']}} data-ownerid={{post['_id']}}>
+											<div id="Votes">
+						{%set color = 'gray'%}
+						{% if ObjectId(current_user['_id']['$oid']) in post['Wall']['Upvoters'] %}
+							{%set color = 'orange'%}
+						{%end%}
+						<a style="color:{{color}};" href="#" onclick="vote(this,'up');return false;" ><i style="color:{{color}};" class="icon-arrow-up"></i></a>
+
+						<p>{{post['Wall']['Upvotes']-post['Wall']['Downvotes']}}</p>
+						{%set color = 'gray'%}
+						{% if ObjectId(current_user['_id']['$oid']) in post['Wall']['Downvoters'] %}
+							{%set color = 'orange'%}
+						{%end%}
+						<a href="#" onclick="vote(this,'down');return false;"><i style="color:{{color}};" class="icon-arrow-down"></i></a>
+						<div class="clear"></div>
+
+					</div>
+
+					<div id="status-post">
+
+											<a href="/user/{{user['UserName']}}"><img src="/images?picid={{str(user['ProfileImg'])}}" href="/user/{{user['UserName']}}" height="52" width="52"></a>
+											<div class="status-info">
+						<p><a class="Name" href="/user/{{user['UserName']}}">{{user['FirstName'].capitalize()}} {{user['LastName'].capitalize()}}</a><i class="icon-caret-right" style="color:black;margin-top:5px;"></i><a class="Name" href="/user/{{post['UserName']}}">{{post['FirstName'].capitalize()}} {{post['LastName'].capitalize()}}</a></p>
+						<p class="post">{% raw linkify(post['Wall']['Message'])%}</p>
+						<a href="#" onclick="toggleReplies(this);return false;"style="float:left;background:white;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
+						<a href="#" onclick="displayReply(this);return false;" style="float:left;background:white;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>						
+
+					</div>
+				</div>
+
+					<div class="clear"></div>
+							<div id="reply-box" data-postid={{post['Wall']['id']}}  style="text-align:left;"> 
+								<form>
+									<textarea id="reply_text_id" class="reply_text"></textarea>
+									<div >
+										<a id="rep_link" onclick="reply(this);return false;" href="#">Reply</a>
+										<a onclick="hideReply(this);return false;" href="#">Cancel</a>
+									</div>
+								</form>
+							</div>
+							{%block reply_sec%}
+
+							{%end%}
+							<div class="reply-sec" style= "padding-top:15px;font-size:75%;background:white;">
+
+							</div>
+				</div>
+					{%else%}
+						{%set user = userdata%}
+					
+						<div id="Status-sec" data-postid={{post['Wall']['id']}} data-ownerid={{post['_id']}}>
+							<div id="Votes">
+								{%set color = 'gray'%}
+								{% if ObjectId(current_user['_id']['$oid']) in post['Wall']['Upvoters'] %}
+								{%set color = 'orange'%}
+								{%end%}
+								<a  href="#" onclick="vote(this,'up');return false;" ><i style="color:{{color}};" class="icon-arrow-up"></i></a>
+								<p>{{post['Wall']['Upvotes']-post['Wall']['Downvotes']}}</p>
+								{%set color = 'gray'%}
+								{% if ObjectId(current_user['_id']['$oid']) in post['Wall']['Downvoters'] %}
+								{%set color = 'orange'%}
+								{%end%}
+								<a href="#" onclick="vote(this,'down');return false;"><i style="color:{{color}};" class="icon-arrow-down"></i></a>
+								<div class="clear"></div>
+
+							</div>
+
+							<div id="status-post">
+															<a href="/user/{{post['UserName']}}"><img src="/images?picid={{str(post['ProfileImg'])}}" href="/user/{{post['UserName']}}" height="52" width="52"></a>
+								<div class="status-info">
+								<a class="Name" href="/user/{{post['UserName']}}">{{post['FirstName'].capitalize()}} {{post['LastName'].capitalize()}}</a></br>
+								<p class="post">{% raw linkify(post['Wall']['Message'])%}</p>
+								<a href="#" onclick="toggleReplies(this);return false;" style="float:left;background:white;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
+								<a href="#" onclick="displayReply(this);return false;"style="float:left;background:white;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>
+								<p></p>
+								</div>
+							</div>
+
+							<div class="clear"></div>
+							<div id="reply-box" data-postid={{post['Wall']['id']}}  style="text-align:left;"> 
+								<form>
+									<textarea id="reply_text_id" class="reply_text"></textarea>
+									<div >
+										<a id="rep_link" onclick="reply(this);return false;" href="#">Reply</a>
+										<a onclick="hideReply(this);return false;" href="#">Cancel</a>
+									</div>
+								</form>
+							</div>
+							{%block reply_sec%}
+
+							{%end%}
+							<div class="reply-sec" style= "padding-top:15px;font-size:75%;background:white;">
+
+							</div>
+						</div>
+
+
+				{%end%}
+				{%end%}
+
+
+			</div>
+		</div>
+	{%end%}
+
+	</div>
+</body>
+
+
+<script type="text/javascript">
+	$(document).ready(function() {
+ 		 $('#reply-box').hide();
+ 		 $('.reply-sec').hide();
+ 		 $('#not-menu-cont').hide();
+
+	});
+	// {%set c = 'black'%}
+	// console.log({{len(actions.core_actions.get_unread_notifications(current_user['_id']['$oid']))}});
+	// {%if len(actions.core_actions.get_unread_notifications(current_user['_id']['$oid'])) > 0%}
+
+	// 	{%set c = 'orange'%}
+	// 	$('.notification-count').show();
+	// {%end%}
+	//  $('.icon-globe').css('color','{{c}}')
+	 // $('.icon-globe:hover').css('color','orange')
+
+
+	
+
+	function loadReplies(ele){
+
+		var ssec = $(ele).closest('#Status-sec')
+		var nele = ssec.find('.reply-sec');
+		var postid = ssec.data()['postid'];
+		var ownerid = ssec.data()['ownerid'];
+		var checked = !$('.onoffswitch-checkbox').is(':checked');
+		if($('.onoffswitch-checkbox').length <= 0){
+			checked = false;
+		}
+		//var postid = 
+		$(nele).load('/actions/get_replies?post_id='+postid+'&owner_id='+ownerid+'&is_uni='+checked).hide().fadeIn(300);
+	}
+
+	function hideReplies(ele){
+		var ssec = $(ele).closest('#Status-sec')
+		var nele = ssec.find('.reply-sec');
+		$(nele).fadeOut(300);
+	}
+	function toggleReplies(ele){
+		if(ele.innerHTML == "Show Comments"){
+			ele.innerHTML = "Hide Comments";
+			loadReplies(ele);
+		}
+		else{
+			ele.innerHTML = "Show Comments";
+			hideReplies(ele);
+		}
+	}
+
+	function searchFriends(){
+		var query = $('.search_box').val();
+		$('head').append('<link rel="stylesheet" type="text/css" href="/static/styles/search.css">');
+	//	$('#Main-Content').load("/search?" + $.param({ query : query}) + " #Main-Content > *").hide().fadeIn(700);
+		window.location = ("/search?" + $.param({ query : query}));
+	}
+
+	function vote(ele,type){
+		var postid = $(ele).closest('#Status-sec').data()['postid'];
+		var ownerid = $(ele).closest('#Status-sec').data()['ownerid'];
+		console.log(postid);
+		var element = $(ele).closest('#Status-sec');
+		var vote_type = "";
+		var is_uni = !$('.onoffswitch-checkbox').is(':checked');
+		if($('.onoffswitch-checkbox').length <= 0){
+			is_uni = false;
+		}
+		console.log(is_uni);
+		if(type == 'up'){
+			vote_type = "up";
+		}
+		else{
+			vote_type = "down";
+		}
+		$.ajax({
+			  type: "POST",
+			  url: '/actions/friend_vote',
+			  data: { 'vote_type' : vote_type,'post_owner' : ownerid,'post_id' : postid,'is_reply' : "false",'is_uni' : is_uni},
+			  success: function(){ alert('success');
+			  },
+			  dataType: 'json'
+			});
+		   	var checked = $('.onoffswitch-checkbox').is(':checked');
+		if($('.onoffswitch-checkbox').length <= 0){
+			checked = false;
+		}
+   		if(checked){
+   			$("#Status-sec[data-postid='" + postid + "']").load("/ #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(700);
+
+   		}
+   		else{
+   			$("#Status-sec[data-postid='" + postid + "']").load("/?University=True #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(700);
+
+   		
+
+   		}
+	}
+
+	function voteReply(post,type){
+		var ele = $(post).closest('#Status-sec');
+		var postid = ele.data()['postid'];
+		var ownerid = ele.data()['ownerid'];
+		var replyid = $(post).closest('.reply').data()['postid'];
+		var isReply = "true";
+		var vote_type = "";
+		var is_uni = !$('.onoffswitch-checkbox').is(':checked');
+		if($('.onoffswitch-checkbox').length <= 0){
+			is_uni = false;
+		}
+		if(type == 'up'){
+			vote_type = "up";
+		}
+		else{
+			vote_type = "down";
+		}
+		$.ajax({
+			  type: "POST",
+			  url: '/actions/friend_vote',
+			  data: { 'vote_type' : vote_type,'post_owner' : ownerid,'post_id' : postid,'reply_id' : replyid,'is_reply' : isReply,'is_uni' : is_uni},
+			  success: function(){ alert('success');
+			  },
+			  dataType: 'json'
+			});
+		$(".reply[data-postid='" + replyid + "']").load('/actions/get_replies?post_id='+postid+'&owner_id='+ownerid+'&is_uni='+is_uni+" .reply[data-postid='" + replyid + "'] > *").hide().fadeIn(700);
+	}
+	function post(){
+		{% from constants import * %}
+		var message = $('#status_text').val();
+		var posttype = parseInt({{PostType.WALL_POST}});
+		var is_uni = !$('.onoffswitch-checkbox').is(':checked');
+		console.log(posttype);
+		$.ajax({
+			  type: "POST",
+			  url: '/actions/post',
+			  data: { 'message' : message, 'posttype' : posttype,'is_uni' : is_uni},
+			  success: function(){ alert('success');
+			  },
+			  dataType: 'json'
+			});
+   		var checked = $('.onoffswitch-checkbox').is(':checked');
+   		if($('.onoffswitch-checkbox').length <= 0){
+			checked = false;
+		}
+   		if(checked){
+			$('#Status-Feed').load('/ #Status-Feed > *').hide().fadeIn('slow');
+		}
+		else{
+			$('#Status-Feed').load('/?University=True #Status-Feed > *').hide().fadeIn('slow');
+		}
+		$('#status_text').val('');
+
+	}
+
+	function reply(post){
+		var ele = $(post).closest('#Status-sec');
+		var postid = ele.data()['postid'];
+		var ownerid = ele.data()['ownerid'];
+		var message = 	$("#reply-box[data-postid='" + postid+ "'] textarea").val();
+		var is_uni = !$('.onoffswitch-checkbox').is(':checked');
+		if($('.onoffswitch-checkbox').length <= 0){
+			is_uni = false;
+		}
+		console.log(message);
+		//var replyid = postid;
+		{% from constants import * %}
+		var posttype = parseInt({{PostType.REPLY_POST}});
+
+		$.ajax({
+			  type: "POST",
+			  url: '/actions/post',
+			  data: { 'message' : message, 'posttype' : posttype, 'postid' : postid,'ownerid' : ownerid,'is_uni' : is_uni},
+			  success: function(){ alert('success');
+			  },
+			  dataType: 'json'
+			});
+		hideReply(post);
+		loadReplies(post);
+
+	}
+
+	function replyreply(post){
+		var ele = $(post).closest('#Status-sec');
+		var postid = ele.data()['postid'];
+		var ownerid = ele.data()['ownerid'];
+		//console.log(post);
+		//console.log(ownerid);
+		var replyid = $(post).closest('.reply').data()['postid'];
+		//console.log(replyid);
+		var message = 	$("#reply-box[data-postid='" + replyid+ "'] textarea").val();
+
+		var is_uni = !$('.onoffswitch-checkbox').is(':checked');
+		if($('.onoffswitch-checkbox').length <= 0){
+			is_uni = false;
+		}
+		//console.log(message);
+		
+		{% from constants import * %}
+		var posttype = parseInt({{PostType.REPLY_POST}});
+
+		$.ajax({
+			  type: "POST",
+			  url: '/actions/post',
+			  data: { 'message' : message, 'posttype' : posttype, 'postid' : postid,'ownerid' : ownerid,'replyid' : replyid,'is_uni':is_uni},
+			  success: function(){ alert('success');
+			  },
+			  dataType: 'json'
+			});
+		hideReply(post);
+		loadReplies(post);
+
+
+	}
+	function displayReply(post){
+		var ele = $(post).closest('#Status-sec').data()['postid'];
+		$("#reply-box[data-postid='" + ele + "']").slideDown(300);
+	}
+
+	function displayReplyReply(post){
+		var ele = $(post).closest('.reply').find('#reply-box').data()['postid'];
+		console.log(ele);
+		$("#reply-box[data-postid='" + ele + "']").slideDown(300);
+	}
+
+	function hideReply(post){
+		$(post).closest('#reply-box').slideUp(300);
+	}
+	function getPosts(){
+		var feed=		$.ajax({
+			  type: "GET",
+			  url: '/actions/post',
+			  data: { },
+			  success: function(){ alert('success');
+			  },
+			  dataType: 'json'
+			});
+		console.log(feed);
+	}
+$("#logo").click(function(){
+     // window.location=$(this).find("a").attr("href"); 
+     window.location = ("/");
+     return false;
+});
+
+
+
+$(".onoffswitch-checkbox").click(function(){
+     // window.location=$(this).find("a").attr("href"); 
+   	var checked = $('.onoffswitch-checkbox').is(':checked');
+   	if(checked){
+   		$('#Status-Feed').load('/ #Status-Feed > *').hide().fadeIn('slow');
+   	}
+   	else{
+   		$('#Status-Feed').load('/?University=True #Status-Feed > *').hide().fadeIn('slow');
+
+
+   	}
+});
+
+
+
+
+function toggleNotifications(){
+	var isvis = $('#not-menu-cont').is(":visible");
+	// console.log(hid);
+	if(isvis == false){
+			$.ajax({
+			  type: "POST",
+			  url: '/actions/get_nots',
+			  data: { },
+			  success: function(){ alert('success');
+			  },
+			  dataType: 'json'
+			});
+			$('#not .icon-globe').load('/ #not .icon-globe > *');
+			$('#not .icon-globe').css('color','black');
+			// $('#not-menu').hide();
+	}
+	
+	 $('#not-menu-cont').fadeToggle();
+
+
+
+}
+
+
+// $('.notification-count').hide();
+
+$('#logo img').css('cursor', 'pointer');
+
+$('#logo img:hover').css('background', 'gray');
+
+</script>
+{%block funcs%}
+{%end%}
+</html>

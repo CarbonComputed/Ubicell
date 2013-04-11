@@ -1,0 +1,102 @@
+
+body{
+		/*background-image: none;*/
+
+}
+#container{
+	height: 75%;
+	font-size: 16px;
+}
+
+#left-side-bar{
+	/*background: white;*/
+
+	min-width: 320px;
+	/*padding-right: 100px;*/
+	
+}
+
+#Main-Content{
+	/*background: white;*/
+    background: transparent;
+	text-align: right;
+	-webkit-box-shadow: 0px 0px 0px 0px #000000;
+    -moz-box-shadow: 0px 0px 0px 0px #000000;
+    box-shadow: 0px 0px 0px 0px #000000;
+
+}
+
+p{
+	float: right;
+}
+/*#Main-Content{
+	
+	text-align: center;
+	background: transparent;
+	
+}*/
+#reg-block{
+	font-size: 16px;
+	text-align: right;
+
+}
+
+#reg-block input{
+	margin: 5px 5px 5px 5px;
+	padding: 8px 8px 8px 8px;
+	border-radius: 5px;
+
+	/*margin-right: 15px;*/
+}
+#profile-pic{
+	text-align: right;
+	padding-bottom: 10px;
+}
+#extra-info{
+	position: relative;
+	text-align: right;
+	padding: 10px 10px 10px 10px;
+	padding-right: 30%;
+	padding-top: 50px;
+}
+#extra-info input,select{
+	margin: 5px 5px 5px 5px;
+	padding: 8px 8px 8px 8px;
+		border-radius: 5px;
+
+}
+
+
+
+.error-box{
+	text-align: left;
+	display: none;
+	z-index: 1;
+	padding-bottom: 10px;
+	border-radius: 3px;
+	width: auto;
+	height: auto;
+	background: rgba(0,0,0,.75);
+	color: white;
+	position: absolute;
+	padding: 10px 10px 10px 10px;
+	margin-left: 10px;
+/*	top:0;
+	left: 100px;*/
+}
+
+.error-box:after{
+	    content: "";
+    width: 0;
+    height: 0;
+    position: absolute;
+    top: 10%;
+    left: -8px;
+    margin-top: 2px;
+width: 0px;
+height: 0px;
+border-style: solid;
+border-width: 4px 8px 4px 0;
+border-color: transparent rgba(0,0,0,.75) transparent transparent;
+    /*border-color: #4cbeff transparent;*/
+}

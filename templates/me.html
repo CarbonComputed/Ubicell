@@ -6,46 +6,32 @@
 		<link rel="stylesheet" href="/static/styles/me.css" type="text/css" />
 
 	{%end%}
-
 </head>
 <body>
 	{%block container%}
-
 	<div id="container">
 		<div id="left-side-bar">
 
 		</div>
 		<div id="Main-Content">
 			<div id="user-data">
-				<img src="/images?picid={{userdata['ProfileImg']}}" height="150" width="150">
+				<div class="proimg">
+					<img  src="/images?picid={{escape(userdata['ProfileImg']['$oid'])}}" height="150" width="150">
+					<span class="changepro"><a href="/actions/changepro">Edit</a></span>
+				</div>
 				<div class="user-description">
 					<h2>{{escape(userdata['FirstName']).capitalize()}} {{escape(userdata['LastName']).capitalize()}}</h2></br>
 					<h3>{{escape(userdata['School']['Major'])}}, {{userdata['School']['GradYear']}}</h3>
 					<p>About Me: {{escape(userdata['About'])}}</p>
 				</br>
-				{%from constants import * %}
-				{%if userdata['UserStatus'] == UserStatus.USER_REQ%}
-				<h3>Friend Requested</h3>
-				{%end %}
-				{%if userdata['UserStatus'] == UserStatus.USER_ACC%}
-				<a id="friendaction" data-id="" data-userstatus="{{UserStatus.USER_ACC}}" href="#" onclick="sendRequest(this)">Accept Friend</a>
-				{%end %}
-				{%if userdata['UserStatus'] == UserStatus.USER_NEI%}
-				<a id="friendaction" data-id="" data-userstatus="{{UserStatus.USER_NEI}}" href="#" onclick="sendRequest(this)">Send Friend Request</a>
-				{%end %}
 				<a href="Photos">Photos</a>
 				<a href="Friends">Friends</a>
-				{%if userdata['UserStatus'] == UserStatus.USER_FRI%}
-			</br>
-				<a href="#"><h6>Unfriend</h6></a>
-				{%end%}
 			</div>
 
 		</div>
 		<div class="clear"></div>
-		{%if userdata['UserStatus'] == UserStatus.USER_FRI%}
 		<div id="Status">
-			<form onsubmit="post();return false;">
+			<form action="#" onsubmit="post();return false;">
 				<textarea id="status_text" class="status_box" type="text" name="status" ></textarea>
 				<input class="status_button" type="submit" value="Post!">
 			</form>
@@ -53,12 +39,6 @@
 		<div class ="clear"></div>
 		<div id="Status-Feed">
 				{%for post in feed%}
-<!--  -->			{%if post['Wall']['FriendId'] != post['Wall']['UserId'] %}
-						{%from actions import *%}
-						{%set user = user_actions.get_simple_data(post['Wall']['FriendId'])%}
-					{%else%}
-						{%set user = userdata%}
-					{%end%}
 
 						<div id="Status-sec" data-postid={{post['Wall']['id']}} data-ownerid={{post['_id']}}>
 							<div id="Votes">
@@ -101,16 +81,17 @@
 							{%block reply_sec%}
 
 							{%end%}
-							<div class="reply-sec" style= "padding-top:15px;font-size:75%;background:white;">
+							<div class="reply-sec" style= "display:none;padding-top:15px;font-size:75%;background:white;">
 
 							</div>
 						</div>
 				{%end%}
-		{%end%}
+
+		</div>
+
 	</div>
 </div>
 {%end%}
-
 </div>
 {%block funcs%}
 
@@ -124,7 +105,7 @@ function post(){
 		console.log(posttype);
 		$.ajax({
 			  type: "POST",
-			  url: '/user/{{userdata['UserName']}}',
+			  url: '/actions/post',
 			  data: { 'message' : message, 'posttype' : posttype},
 			  success: function(){ alert('success');
 			  },
@@ -133,28 +114,11 @@ function post(){
 		var currpage = window.location.pathname;
 		console.log(currpage);
 		$('#status_text').val('');
+
 		$('#Status-Feed').load('/user/{{userdata['UserName']}} #Status-Feed > *').hide().fadeIn('slow');
 
 	
 }
-
-function sendRequest(element){
-			var userstatus = $(element).data()['userstatus'];
-			$.ajax({
-			  type: "POST",
-			  url: '/actions/respond_friend',
-			  data: { 'Action' : 1, 'UserStatus' : userstatus , '_id' : "{{userdata['_id']}}"},
-			  success: function(){ alert('success');
-			  },
-			  dataType: 'json'
-			});
-		$('#Main-Content').load('/user/{{userdata['UserName']}} #Main-Content > *');
-}
-function capitaliseFirstLetter(string)
-{
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
 	function vote(ele,type){
 		var postid = $(ele).closest('#Status-sec').data()['postid'];
 		var ownerid = $(ele).closest('#Status-sec').data()['ownerid'];
@@ -195,12 +159,14 @@ function capitaliseFirstLetter(string)
 
    		}
 	}
-
-
-
-
+$('.changepro').hide();
+$('.proimg').hover(function(){
+    $('.changepro').show();
+}, function() {
+   $('.changepro').hide();
+});
 </script>
-{%end%}
 
+{%end%}
 </body>
 </html>
