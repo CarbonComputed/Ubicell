@@ -6,49 +6,52 @@ import json
 from constants import *
 
 
-import auth_actions
+from . import auth_actions
 
 from bson.objectid import ObjectId
 
-from mongokit import Document, Connection
+# from mongokit import Document, Connection
 
 
 from models.User import *
 
 from models.Notification import *
 
-import core_actions
+import actions.core_actions
 
 import logging
 logger = logging.getLogger(__name__)
 
-def get_my_data(_id):
+def get_my_data(_id,callback=None):
 	user= User.objects(id=_id).exclude("Password").first()
 	if user != None:
 		del user['Password']
-	return user
+	return callback(user)
 
 
 
-def get_friend_data(username):
+def get_friend_data(username,callback=None):
 	#db.user.find_one({'UserName' : username},{'_id' : 1, 'UserName' : 1 ,'FirstName' : 1, 'LastName' : 1})
 	user = User.objects(UserName=username).exclude("FriendsRequesting","FriendsRequested").first()
+	if callback != None:
+		return callback(user)
 	return user
 
-def get_simple_data(userid):
+
+def get_simple_data(userid,callback=None):
 	user = User.objects(id=userid).exclude("Wall","Friends","FriendsRequested","FriendsRequesting","Password").first()
+	if callback != None:
+		return callback(user)
 	return user
 
-def send_friend_request(userid,friendid):
+def send_friend_request(userid,friendid,callback=None):
 
 	friend = User.objects(id=friendid).first()
 	user = User.objects(id=userid).first()
 
 	if friend in user.Friends or friend in user.FriendsRequested or friend in user.FriendsRequesting:
-		print 'test'
 		return
 	if user in friend.Friends or user in friend.FriendsRequested or user in friend.FriendsRequesting:
-		print 'test'
 		return
 
 
@@ -75,13 +78,15 @@ def send_friend_request(userid,friendid):
 
 
 	# req = RespSuccess.DEFAULT_SUCCESS
+	if callback != None:
+		return callback(200)
 	return 200
 
-def accept_friend_request(userid,friendid):
+def accept_friend_request(userid,friendid,callback=None):
 
 	#TODO : Check if user already in Friends, Check if users are already requested/ing
 	req = RespSuccess.DEFAULT_SUCCESS
-	print userid,friendid
+	print(userid,friendid)
 	friend = User.objects(id=friendid).first()
 	user = User.objects(id=userid).first()
 
@@ -113,29 +118,34 @@ def accept_friend_request(userid,friendid):
 
 
 
+	if callback != None:
+		return callback(200)
 	return 200
 
 
 def get_friend_requests(userid):
 	req = None
-	print db.user.find_one({'_id' : ObjectId(userid)})
+	print(db.user.find_one({'_id' : ObjectId(userid)}))
 	return req
 
-def get_friends(userid):
+def get_friends(userid,callback=None):
 	#friends = db.user.find({'Friends._id' : userid}, {'Password' : 0})
 	user = User.objects(id=userid).first()
-
+	if callback != None:
+		return callback(user.Friends)
 	return user.Friends
 
 
-def is_friends_with_byid(userid,fid):
+def is_friends_with_byid(userid,fid,callback=None):
 #	check = db.user.find_one({'_id' : ObjectId(userid)},{'Friends' : 1})
 
 	user = User.objects(id=userid).first()
 	check = ObjectId(fid) in user.Friends
+	if callback != None:
+		return callback(check)
 	return check
 
-def is_friends_with(userid,f_username):
+def is_friends_with(userid,f_username,callback=None):
 	#_id = db.user.find_one({'UserName' : f_username},{})
 	#try:
 	#	check = db.user.find_one({'UserName' : f_username,"Friends._id" : ObjectId(userid)},{'Friends' : 1})
@@ -143,19 +153,22 @@ def is_friends_with(userid,f_username):
 	#	check = None
 	user = User.objects(UserName=f_username).first()
 	check = ObjectId(userid) in user.Friends
+	if callback != None:
+		return callback(check)
 	return check
 
-def is_friend_requested(userid,f_username):
+def is_friend_requested(userid,f_username,callback=None):
 	# try:
 	# 	check = db.user.find_one({'UserName' : f_username,"FriendsRequesting._id" : ObjectId(userid)},{'FriendsRequesting' : 1})
 	# except:
 	# 	check = None
 	user = User.objects(UserName=f_username).first()
 	check = ObjectId(userid) in user.FriendsRequesting
+	if callback != None:
+		return callback(check)
 	return check
 
-
-def is_friend_requesting(userid,f_username):
+def is_friend_requesting(userid,f_username,callback=None):
 	# _id = db.user.find_one({'UserName' : f_username},{})
 	# try:
 	# 	check = db.user.find_one({'UserName' : f_username, "FriendsRequested._id" : ObjectId(userid)},{'FriendsRequested' : 1})
@@ -163,6 +176,8 @@ def is_friend_requesting(userid,f_username):
 	# 	check = None
 	user = User.objects(UserName=f_username).first()
 	check = ObjectId(userid) in user.FriendsRequested
+	if callback != None:
+		return callback(check)
 	return check
 
 # def is_friends_with_byid(db,userid,fid):
@@ -170,15 +185,19 @@ def is_friend_requesting(userid,f_username):
 
 # 	return check
 
-def is_friend_requested_byid(userid,fid):
+def is_friend_requested_byid(userid,fid,callback=None):
 	# check = db.user.find_one({'_id' : ObjectId(userid)},{'FriendsRequested' : 1}[fid])
 	user = User.objects(id=userid).first()
 	check = ObjectId(userid) in user.FriendsRequested
+	if callback != None:
+		return callback(check)
 	return check
 
-def is_friend_requesting_byid(userid,fid):
+def is_friend_requesting_byid(userid,fid,callback=None):
 	user = User.objects(id=userid).first()
 	check = ObjectId(userid) in user.FriendsRequesting
+	if callback != None:
+		return callback(check)
 	return check
 
 

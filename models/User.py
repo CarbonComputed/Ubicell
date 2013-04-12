@@ -39,8 +39,8 @@ if __name__ == "__main__":
 	user = User.objects(FirstName='k2')
 	user = User(Gender="Male",FirstName = 'k3',LastName ='C3',UserName='test4',Password='test4',Email='asdfasad2f@rit.edu')
 	user.save()
-	print user.first().id
-	print User.objects().count()
+	# print user.first().id
+	# print User.objects().count()
 
 
 

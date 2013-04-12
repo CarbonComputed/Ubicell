@@ -5,10 +5,9 @@ from bson.objectid import ObjectId
 
 from constants import *
 
-from tornado import database
 import datetime
 from collections import defaultdict
-import user_actions
+from . import user_actions
 
 from util import *
 import pymongo
@@ -26,7 +25,10 @@ from models.User import *
 import logging
 from util import *
 
+
 logger = logging.getLogger(__name__)
+
+
 
 def tree(): return defaultdict(tree)
 def dicts(t): return {k: dicts(t[k]) for k in t}
@@ -43,14 +45,9 @@ postLock = Condition()
 
 # 	return RespSuccess.DEFAULT_SUCCESS
 
-def post_replyWall(db,mc,userid,commenter,message):
-	post = {'_id' : ObjectId(), 'UserId' : ObjectId(commenter), 'Message' : message, 'Time' : datetime.datetime.now()}
 
-	db.user.update({'_id' : ObjectId(userid)},{'$push' : { 'Wall' : post}})
 
-	return RespSuccess.DEFAULT_SUCCESS
-
-def post_wall(userid,message,commenter=None, postid=None,replyid = None,depth=1):
+def post_wall(userid,message,commenter=None, postid=None,replyid = None,depth=1,callback=None):
 	#TODO : leave link(id) to parent
 	if postid is None:
 		hotness = ranking.hot(1,0,datetime.datetime.now())
@@ -70,7 +67,7 @@ def post_wall(userid,message,commenter=None, postid=None,replyid = None,depth=1)
 		# db.user.update({'_id' : ObjectId(userid)},{'$push' : { 'Wall' : post}})
 	else:
 		if commenter is None:
-			return RespError.DEFAULT_ERROR
+			return callback(RespError.DEFAULT_ERROR)
 		confidence = ranking.confidence(1,0)
 		if replyid is None:
 			replyid = postid  #first set of comments 
@@ -78,7 +75,7 @@ def post_wall(userid,message,commenter=None, postid=None,replyid = None,depth=1)
 		reply = Reply(id=ObjectId(),ParentId=replyid,UserId=commenter,Message=message,Time=datetime.datetime.now(),
 			Hotness=confidence,Upvotes=1,Downvotes=0,Upvoters=[commenter],Downvoters=[])
 		user = User.objects(id=userid).first()
-		print user.Wall
+		# print user.Wall
 		post = funcs.find(user.Wall,'id',ObjectId(postid))
 		post.Reply.append(reply)
 		
@@ -100,11 +97,12 @@ def post_wall(userid,message,commenter=None, postid=None,replyid = None,depth=1)
 		# q = {'Wall._id' : ObjectId(postid),find_rstr : ObjectId(replyid),'_id' : ObjectId(userid)},{'$push' : { push_rstr : post}}
 		# print q
 		# print db.user.update({'Wall._id' : ObjectId(postid),find_rstr : ObjectId(replyid),'_id' : ObjectId(userid)},{'$push' : { push_rstr : post}})
-
+	if callback != None:
+		return callback(RespSuccess.DEFAULT_SUCCESS)
 	return RespSuccess.DEFAULT_SUCCESS
 
 
-def upvote_post(ownerid,userid,postid):
+def upvote_post(ownerid,userid,postid,callback = None):
 	user = User.objects(id=ownerid,Wall__id=ObjectId(postid)).first()
 	userwall = user.Wall
 	index = funcs.index(userwall,'id',ObjectId(postid))
@@ -115,7 +113,7 @@ def upvote_post(ownerid,userid,postid):
 	upvoters = post.Upvoters
 	downvoters = post.Downvoters
 	if ObjectId(userid) in upvoters:
-		return UpvoteResp.VOTED_ALREADY
+		return callback(UpvoteResp.VOTED_ALREADY)
 	# user.Wall.remove(post)
 	if ObjectId(userid) not in downvoters:
 		upvotes += 1
@@ -138,7 +136,9 @@ def upvote_post(ownerid,userid,postid):
 	user.save()
 	#post = User.objects(id=userid['$oid'],Wall__id=ObjectId(postid)).first()
 	
-	return 200
+	if callback != None:
+		return callback(RespSuccess.DEFAULT_SUCCESS)
+	return RespSuccess.DEFAULT_SUCCESS
 # def upvote_post(userid,postid):
 # 	coll = User._get_collection()
 # 	postLock.acquire()
@@ -198,7 +198,7 @@ def upvote_post(ownerid,userid,postid):
 
 # 	return RespSuccess.DEFAULT_SUCCESS
 
-def downvote_post(ownerid,userid,postid):
+def downvote_post(ownerid,userid,postid,callback=None):
 	user = User.objects(id=ownerid,Wall__id=ObjectId(postid)).first()
 	userwall = user.Wall
 	index = funcs.index(userwall,'id',ObjectId(postid))
@@ -210,7 +210,7 @@ def downvote_post(ownerid,userid,postid):
 	upvoters = post.Upvoters
 	downvoters = post.Downvoters
 	if ObjectId(userid) in downvoters:
-		return UpvoteResp.VOTED_ALREADY
+		return callback(UpvoteResp.VOTED_ALREADY)
 	# user.Wall.remove(post)
 	
 	if ObjectId(userid) not in upvoters:
@@ -234,9 +234,11 @@ def downvote_post(ownerid,userid,postid):
 	user.save()
 	#post = User.objects(id=userid['$oid'],Wall__id=ObjectId(postid)).first()
 	
-	return 200
+	if callback != None:
+		return callback(RespSuccess.DEFAULT_SUCCESS)
+	return RespSuccess.DEFAULT_SUCCESS
 
-def upvote_comment(ownerid,userid,postid,replyid):
+def upvote_comment(ownerid,userid,postid,replyid,callback=None):
 	user = User.objects(id=ownerid,Wall__id=ObjectId(postid)).first()
 	userwall = user.Wall
 	post_index = funcs.index(userwall,'id',ObjectId(postid))
@@ -248,7 +250,7 @@ def upvote_comment(ownerid,userid,postid,replyid):
 	downvoters = reply.Downvoters
 
 	if ObjectId(userid) in upvoters:
-		return UpvoteResp.VOTED_ALREADY
+		return callback(UpvoteResp.VOTED_ALREADY)
 	# user.Wall.remove(post)
 	if ObjectId(userid) not in downvoters:
 		upvotes += 1
@@ -267,6 +269,9 @@ def upvote_comment(ownerid,userid,postid,replyid):
 	reply.Hotness = hotness
 	user.Wall[post_index].Reply[reply_index] = reply
 	user.save()
+	if callback != None:
+		return callback(RespSuccess.DEFAULT_SUCCESS)
+	return RespSuccess.DEFAULT_SUCCESS
 
 # def downvote_post(userid,postid):
 # 	coll = User._get_collection()
@@ -325,7 +330,7 @@ def upvote_comment(ownerid,userid,postid,replyid):
 
 # 	return RespSuccess.DEFAULT_SUCCESS
 
-def downvote_comment(ownerid,userid,postid,replyid):
+def downvote_comment(ownerid,userid,postid,replyid,callback=None):
 	user = User.objects(id=ownerid,Wall__id=ObjectId(postid)).first()
 	userwall = user.Wall
 	post_index = funcs.index(userwall,'id',ObjectId(postid))
@@ -337,7 +342,7 @@ def downvote_comment(ownerid,userid,postid,replyid):
 	downvoters = reply.Downvoters
 
 	if ObjectId(userid) in downvoters:
-		return UpvoteResp.VOTED_ALREADY
+		return callback(UpvoteResp.VOTED_ALREADY)
 	# user.Wall.remove(post)
 	
 	if ObjectId(userid) not in upvoters:
@@ -357,18 +362,23 @@ def downvote_comment(ownerid,userid,postid,replyid):
 	reply.Hotness = hotness
 	user.Wall[post_index].Reply[reply_index] = reply
 	user.save()
+	if callback != None:
+		return callback(RespSuccess.DEFAULT_SUCCESS)
+	return RespSuccess.DEFAULT_SUCCESS
 
-
-def get_replies(userid,powner, postid,orderBy = None):
+@funcs.run_async
+def get_replies(userid,powner, postid,orderBy = None,callback=None):
 	logger.info("Retrieving Replies")
 	#coll = User._get_collection()
 	#reps = coll.find({ '_id'  : ObjectId(powner),'Wall._id' : ObjectId(postid)},{'Wall.$.Reply' : 1})[0]['Wall'][0]['Reply']
-	print 'post',postid
-	print 'postowner',powner
+	# print 'post',postid
+	# print 'postowner',powner
 	user = User.objects(id=powner,Wall__id=ObjectId(postid)).first()
 	userwall = user.Wall
 	post = funcs.find(userwall,'id',ObjectId(postid))
-	print post.Reply
+	# print post.Reply
+	if callback != None:
+		return callback(post.Reply)
 	return post.Reply
 
 
@@ -376,7 +386,7 @@ def build_tree(lst):
 	tree = {}
 	for node in lst:
 		pid = node['ParentId']
-		print pid
+		# print pid
 		lst2 = tree.get(pid, [])
 		lst2.append(node)
 		tree[pid] = lst2
@@ -388,11 +398,13 @@ def print_graph(graph,parentid,depth = 0):
 	if lst != None:
 		for node in lst :
 			indent = ('   ' * depth)
-			print indent + str(node['Message'])
+			print((indent + str(node['Message'])))
 			print_graph(graph,node['id'],depth+1)
 
 
-def get_feed(userid,includeMe=True,orderBy=None,numResults=60,startNum =1):
+@funcs.run_async
+def get_feed(userid,includeMe=True,orderBy=None,numResults=60,startNum =1,callback=None):
+	# gctr += 1
 
 	logger.info("Retrieving main feed")
 	coll = User._get_collection()
@@ -405,9 +417,12 @@ def get_feed(userid,includeMe=True,orderBy=None,numResults=60,startNum =1):
 	for field in feed['result']:
 		if field != None:
 			del field['Password']
+	if callback != None:
+		return callback(feed)
 	return feed
 
-def get_user_feed(userid,orderBy=None,numResults=20,startNum =1):
+@funcs.run_async
+def get_user_feed(userid,orderBy=None,numResults=20,startNum =1,callback=None):
 	logger.info("Retrieving user feed")
 	coll = User._get_collection()
 	feed = coll.aggregate([
@@ -419,25 +434,30 @@ def get_user_feed(userid,orderBy=None,numResults=20,startNum =1):
 	for field in feed['result']:
 		if field != None:
 			del field['Password']
+	if callback != None:
+		return callback(feed)
 	return feed
 
-def get_posts(userid,orderBy = None, numResults=20, startNum = 1):
+@funcs.run_async
+def get_posts(userid,orderBy = None, numResults=20, startNum = 1,callback=None):
 	
 	try:
 	#	wall = db.user.find_one({'_id' : ObjectId(userid)}, {'Wall' : 1, '_id' : 0})['Wall']
 		wall = User.objects(_id=userid).only("Wall")
-	except Exception, e:
-		print e
+	except Exception as e:
+		print (e)
 	
+	if callback != None:
+		return callback(wall)
 	return wall
 	
-
-def search(userid,universityid,query,query_type = None):
+@funcs.run_async
+def search(userid,universityid,query,query_type = None,callback=None):
 	coll = User._get_collection()
 
 	query = query.strip()
 	queries = query.split()
-	print queries
+	print (queries)
 	if len(queries) <= 1:
 		query = '^'+query.lower();
 		results = coll.find({'School.University' :  ObjectId(universityid), '$or' : [ {'FirstName' : {'$regex' : query}},{'LastName' : {'$regex' : query}},{'UserName' : {'$regex' : query}}]})
@@ -448,6 +468,8 @@ def search(userid,universityid,query,query_type = None):
 		lquery = '^'+lastname.lower();
 
 		results = coll.find({'School.University' :  ObjectId(universityid), '$or' : [ {'FirstName' : {'$regex' : fquery}},{'LastName' : {'$regex' : lquery}},{'UserName' : {'$regex' : query}}]})
+	if callback != None:
+		return callback(results)
 	return results
 
 
@@ -457,22 +479,29 @@ def push_notification(userid,notification):
 	user.save()
 
 
-def read_notifications(userid):
+def read_notifications(userid,callback=None):
 	user = User.objects(id=userid).first()
 	for Not in user.Nots:
 		Not.Read = True
 	user.save()
+	if callback != None:
+		return callback(200)
+	return 200
 
-def get_notifications(userid):
+def get_notifications(userid,callback=None):
 	user = User.objects(id=userid).first()
+	if callback != None:
+		return callback(user.Nots)
 	return user.Nots
 
-def get_unread_notifications(userid):
+def get_unread_notifications(userid,callback=None):
 	user = User.objects(id=userid).first()
 	nots = []
 	for n in user.Nots:
 		if n.Read == False:
 			nots.append(n)
+	if callback != None:
+		return callback(nots)
 	return nots
 
 def clear_notification(userid,notid):

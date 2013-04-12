@@ -5,10 +5,9 @@ from bson.objectid import ObjectId
 
 from constants import *
 
-from tornado import database
 import datetime
 from collections import defaultdict
-import user_actions
+from . import user_actions
 
 from util import *
 import pymongo
@@ -29,7 +28,7 @@ from util import *
 logger = logging.getLogger(__name__)
 
 
-def post_wall(userid,message,groupid,commenter=None, postid=None,replyid = None,depth=1):
+def post_wall(userid,message,groupid,commenter=None, postid=None,replyid = None,depth=1,callback=None):
 	#TODO : leave link(id) to parent
 	if postid is None:
 		hotness = ranking.hot(1,0,datetime.datetime.now())
@@ -44,6 +43,7 @@ def post_wall(userid,message,groupid,commenter=None, postid=None,replyid = None,
 		#print userid,user.to_mongo()
 		school.Wall.append(post)
 		school.save()
+
 		# post = {'_id' : ObjectId(),'FriendId' : fid, 'UserId' : ObjectId(userid), 'Message' : message, 'Time' : datetime.datetime.now(),
 		# 'Hotness' : hotness,  'Upvotes' : 1, 'Downvotes' : 0,'Upvoters' : [fid],'Downvoters' : []}
 		# db.user.update({'_id' : ObjectId(userid)},{'$push' : { 'Wall' : post}})
@@ -57,20 +57,25 @@ def post_wall(userid,message,groupid,commenter=None, postid=None,replyid = None,
 		reply = Reply(id=ObjectId(),ParentId=replyid,UserId=commenter,Message=message,Time=datetime.datetime.now(),
 			Hotness=confidence,Upvotes=1,Downvotes=0,Upvoters=[commenter],Downvoters=[])
 		school = University.objects(id=groupid).first()
-		print school.Wall
+		print(school.Wall)
 		post = funcs.find(school.Wall,'id',ObjectId(postid))
 		post.Reply.append(reply)
 		
 		school.save()
+	if callback != None:
+		return callback(200)
+	return 200
 
-def get_feed(groupid,includeMe=True,orderBy=None,numResults=60,startNum =1):
+def get_feed(groupid,includeMe=True,orderBy=None,numResults=60,startNum =1,callback=None):
 
 	logger.info("Retrieving university feed")
 	uni = University.objects(id=groupid)
+	if callback != None:
+		return callback(uni.first().Wall)
 	return uni.first().Wall
 
 
-def upvote_post(ownerid,userid,postid):
+def upvote_post(ownerid,userid,postid,callback=None):
 	school = University.objects(id=ownerid,Wall__id=ObjectId(postid)).first()
 	userwall = school.Wall
 	index = funcs.index(userwall,'id',ObjectId(postid))
@@ -102,9 +107,11 @@ def upvote_post(ownerid,userid,postid):
 	
 	school.Wall[index] = post
 	school.save()
+	if callback != None:
+		return callback(200)
+	return 200
 
-
-def downvote_post(ownerid,userid,postid):
+def downvote_post(ownerid,userid,postid,callback=None):
 	school = University.objects(id=ownerid,Wall__id=ObjectId(postid)).first()
 	userwall = school.Wall
 	index = funcs.index(userwall,'id',ObjectId(postid))
@@ -140,10 +147,12 @@ def downvote_post(ownerid,userid,postid):
 	school.save()
 	#post = User.objects(id=userid['$oid'],Wall__id=ObjectId(postid)).first()
 	
+	if callback != None:
+		return callback(200)
 	return 200
 
 
-def upvote_comment(ownerid,userid,postid,replyid):
+def upvote_comment(ownerid,userid,postid,replyid,callback=None):
 	school = University.objects(id=ownerid,Wall__id=ObjectId(postid)).first()
 	userwall = school.Wall
 	post_index = funcs.index(userwall,'id',ObjectId(postid))
@@ -174,8 +183,11 @@ def upvote_comment(ownerid,userid,postid,replyid):
 	reply.Hotness = hotness
 	school.Wall[post_index].Reply[reply_index] = reply
 	school.save()
+	if callback != None:
+		return callback(200)
+	return 200
 
-def downvote_comment(ownerid,userid,postid,replyid):
+def downvote_comment(ownerid,userid,postid,replyid,callback=None):
 	school = University.objects(id=ownerid,Wall__id=ObjectId(postid)).first()
 	userwall = school.Wall
 	post_index = funcs.index(userwall,'id',ObjectId(postid))
@@ -207,15 +219,21 @@ def downvote_comment(ownerid,userid,postid,replyid):
 	reply.Hotness = hotness
 	school.Wall[post_index].Reply[reply_index] = reply
 	school.save()
+	if callback != None:
+		return callback(200)
+	return 200
 
-def get_replies(userid,powner, postid,orderBy = None):
+def get_replies(userid,powner, postid,orderBy = None,callback=None):
 	logger.info("Retrieving Replies")
 	#coll = User._get_collection()
 	#reps = coll.find({ '_id'  : ObjectId(powner),'Wall._id' : ObjectId(postid)},{'Wall.$.Reply' : 1})[0]['Wall'][0]['Reply']
-	print 'post',postid
-	print 'postowner',powner
+	print('post',postid)
+	print('postowner',powner)
 	user = University.objects(id=userid,Wall__id=ObjectId(postid)).first()
 	userwall = user.Wall
 	post = funcs.find(userwall,'id',ObjectId(postid))
-	print post.Reply
+	print(post.Reply)
+	return post.Reply
+	if callback != None:
+		return callback(post.Reply)
 	return post.Reply

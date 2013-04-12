@@ -10,5 +10,5 @@ class University(Document):
 if __name__ == "__main__":
 	connect('uplace')
 
-	print u.first().id
+	# print u.first().id
 	#u.save()

@@ -25,7 +25,7 @@ def authenticated_post(method):
     def wrapper(self, *args, **kwargs):
         userid = self.get_current_user()['_id']
         fid = self.get_argument('commenter',default=None,strip = True)
-        print fid
+        # print fid
         postowner = self.get_argument('ownerid',default=None,strip = True)
         if fid is None:
             return method(self, *args, **kwargs)
