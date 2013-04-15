@@ -172,6 +172,11 @@ a{
     display:inline-block; 
 
 }*/
+#top-nav span a{
+    color: white;
+    text-decoration:none;
+
+}
 #top-nav span a:visited{
     color: white;
     text-decoration:none;

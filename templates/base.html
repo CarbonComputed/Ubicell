@@ -79,7 +79,8 @@
 				<!-- <a class = "btn" id="setting" href="#"><i class="icon-cogs"></i></a> -->
 				<div id="dd" class="wrapper-dropdown-2" tabindex="1"><i id="tab" class="icon-cogs icon-small"></i>
 					<ul class="dropdown">
-						<li><a href="#"><i class="icon-envelope icon-small"></i>Send File</a></li>
+						<li><a href="#"><i class="icon-envelope icon-small"></i>Make Event</a></li>
+						<li><a href="#"><i class="icon-envelope icon-small"></i>Make Group</a></li>
 						<li><a href="/actions/edit_profile"><i class="icon-edit icon-small"></i>Edit Profile</a></li>
 						<li><a href="/auth/logout"><i class="icon-signout icon-small"></i>Logout</a></li>
 					</ul>
@@ -99,7 +100,7 @@
 			</ul>
 		</div>
 		<div id="Main-Content">
-			<a href="#"><h2 style="float:left;color:gray;margin: 5px 5px 5px 5px;">Feed</h2></a>
+			<a href="#"><h2 id="hhead" style="float:left;color:gray;margin: 5px 5px 5px 5px;">{{current_user['FirstName'].capitalize()}} {{current_user['LastName'].capitalize()}}</h2></a>
 			<div class="onoffswitch">
 				<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
 				<label class="onoffswitch-label" for="myonoffswitch" >
@@ -479,10 +480,12 @@ $(".onoffswitch-checkbox").click(function(){
    	var checked = $('.onoffswitch-checkbox').is(':checked');
    	if(checked){
    		$('#Status-Feed').load('/ #Status-Feed > *').hide().fadeIn('slow');
+   		$('#hhead').html("{{current_user['FirstName'].capitalize()}} {{current_user['LastName'].capitalize()}}");
    	}
    	else{
+   		{%import models.University%}
    		$('#Status-Feed').load('/?University=True #Status-Feed > *').hide().fadeIn('slow');
-
+		$('#hhead').html("{{uniname}}");
 
    	}
 });
@@ -513,6 +516,44 @@ function toggleNotifications(){
 
 }
 
+$(document).ready(function () {
+
+	// if user clicked on button, the overlay layer or the dialogbox, close the dialog	
+	$('a.btn-ok, #dialog-overlay, #dialog-box').click(function () {		
+		$('#dialog-overlay, #dialog-box').hide();		
+		return false;
+	});
+	
+	// if user resize the window, call the same function again
+	// to make sure the overlay fills the screen and dialogbox aligned to center	
+	$(window).resize(function () {
+		
+		//only do it if the dialog box is not hidden
+		if (!$('#dialog-box').is(':hidden')) popup();		
+	});	
+	
+	
+});
+
+//Popup dialog
+function popup(message) {
+		
+	// get the screen height and width  
+	var maskHeight = $(document).height();  
+	var maskWidth = $(window).width();
+	
+	// calculate the values for center alignment
+	var dialogTop =  (maskHeight/3) - ($('#dialog-box').height());  
+	var dialogLeft = (maskWidth/2) - ($('#dialog-box').width()/2); 
+	
+	// assign values to the overlay and dialog box
+	$('#dialog-overlay').css({height:maskHeight, width:maskWidth}).show();
+	$('#dialog-box').css({top:dialogTop, left:dialogLeft}).show();
+	
+	// display the message
+	$('#dialog-message').html(message);
+
+}
 
 // $('.notification-count').hide();
 

@@ -25,6 +25,7 @@ from actions import *
 from decorators import *
 from models.ProfileImage import *
 from models.User import *
+from models.University import *
 from util.funcs import *
 import config
 
@@ -96,13 +97,16 @@ class MainHandler(BaseHandler):
                 # print feed
                 nots= yield gen.Task(core_actions.get_notifications,uid)
                 nots.reverse()
+
+                uniname = University.objects(id=user['School']['University']['$oid']).first().Name
                 # print 'is_uni',is_uni
                 if not is_uni:
-                        self.render("base.html",userdata=user,feed = feed,nots=nots)
+                        self.render("base.html",userdata=user,feed = feed,nots=nots,uniname=uniname)
                 else:
                         uniid = user['School']['University']['$oid']
+
                         feed = yield gen.Task(school_actions.get_feed,uniid)
-                        self.render("UniFeed.html",userdata=user,feed = feed,nots=nots)
+                        self.render("UniFeed.html",userdata=user,feed = feed,nots=nots,uniname=uniname)
 
 
 
@@ -188,15 +192,17 @@ class UserHandler(BaseHandler):
                 user2['UserStatus'] = UserStatus.USER_FRI
                 nots= yield gen.Task(core_actions.get_notifications,uid)
                 nots.reverse()
+                uniname = University.objects(id=user['School']['University']['$oid']).first().Name
                 # print user2['UserStatus']
                 if UserName == user['UserName']:
                         user2 = user
                         user2['UserStatus'] = UserStatus.USER_ME
+                        print user2
                         # print user2['ProfileImg']['$oid']
                         feed = yield gen.Task(core_actions.get_user_feed,uid)
                         feed = feed['result']
 
-                        self.render("me.html",userdata=user2,feed=feed,nots=nots)
+                        self.render("me.html",userdata=user2,feed=feed,nots=nots,uniname=uniname)
                         return
                 elif friend is False and friend_requested is False and friend_requesting is False:
                         user2['UserStatus'] = UserStatus.USER_NEI
@@ -214,7 +220,7 @@ class UserHandler(BaseHandler):
                 feed = feed['result']
                 # print user2['UserStatus']
 
-                self.render("user.html",userdata=user2,feed=feed,nots=nots)
+                self.render("user.html",userdata=user2,feed=feed,nots=nots,uniname=uniname)
 
         @tornado.web.asynchronous
         @gen.coroutine
@@ -238,10 +244,20 @@ class UserHandler(BaseHandler):
                         return
 
 class UserFriendHandler(UserHandler):
+        @tornado.web.asynchronous
+        @gen.coroutine
         @tornado.web.authenticated
         #@custom_dec.auth_friend
         def get(self,UserName):
-                self.write(UserName + "hi!")
+            user= yield gen.Task(user_actions.get_friend_data,UserName)
+            userid = user.id
+            # uniid = self.get_current_user()['School']['University']['$oid']
+            # query = self.get_argument('query',strip = True)
+            friends = yield gen.Task(user_actions.get_friends,userid)
+            nots= yield gen.Task(core_actions.get_notifications,userid)
+            nots.reverse()
+            uniname = University.objects(id=self.get_current_user()['School']['University']['$oid']).first().Name
+            self.render('friends.html',userdata= self.get_current_user(),friends = friends,nots=nots,uniname=uniname)
 
 class StatusHandler(BaseHandler):
     #unused
@@ -463,43 +479,62 @@ class SearchHandler(BaseHandler):
                 results = yield gen.Task(core_actions.search,userid,uniid,query)
                 nots= yield gen.Task(core_actions.get_notifications,userid['$oid'])
                 nots.reverse()
-                self.render('search.html',userdata= self.get_current_user(),results = results,nots=nots)
+                uniname = University.objects(id=self.get_current_user()['School']['University']['$oid']).first().Name
+                self.render('search.html',userdata= self.get_current_user(),results = results,nots=nots,uniname=uniname)
                 
 
 class EditProfileHandler(BaseHandler):
+        @tornado.web.asynchronous
+        @gen.coroutine
         @tornado.web.authenticated
 
         def get(self):
-                self.render('editprofile.html',user=self.get_current_user())
+                userid = self.get_current_user()['_id']['$oid']
+                nots= yield gen.Task(core_actions.get_notifications,userid)
+                nots.reverse()
+                uniname = University.objects(id=self.get_current_user()['School']['University']['$oid']).first().Name
+                self.render('editprofile.html',user=self.get_current_user(),nots=nots,uniname=uniname)
 
         def post(self):
-                userid = self.get_current_user()['_id']
-                user = User.objects(id=userid)
-                password = self.get_argument('Password',default=user.Password,strip=True)
+                userid = self.get_current_user()['_id']['$oid']
+                user = User.objects(id=userid).first()
                 name = self.get_argument('FullName',default=(user.FirstName + " "+user.LastName),strip=True)
-                gender = self.get_argument('Gender',default=user.Gender,strip=True)
+                gender = self.get_argument('gender',default=user.Gender,strip=True)
                 major = self.get_argument('major',default=user.School.Major,strip=True)
-                gradyear = self.get_argument('gradyear',default=user.School.GradYear,strip=True)
+                gradyear = int(self.get_argument('yearpicker',default=user.School.GradYear,strip=True))
                 about = self.get_argument('about',default=user.About,strip=True)
-                if password != user.Password:
-                        m = hashlib.md5()
-                        m.update(password)
-                        password = m.hexdigest()
+                print gender
+                # if password != user.Password:
+                #         m = hashlib.md5()
+                #         m.update(password)
+                #         password = m.hexdigest()
 
-                user.Password =  password
-                user.FirstName = name.split()[0]
-                user.LastName = name.split()[1]
+                # user.Password =  password
+                if len(name) < 2:
+                    user.FirstName = name[0]
+                
+                else:
+                    user.FirstName = name.split()[0]
+                    user.LastName = name.split()[1]
+                
                 user.Gender = gender
                 user.School.Major = major
                 user.School.GradYear = gradyear
                 user.About = about
+                # print self.request.files
+                if len(self.request.files) > 0:
+                    fileinfo = self.request.files['pic'][0]
+                    profimg = ProfileImage(Owner=user.id)
+                    profimg.Image.put(fileinfo['body'],content_type = 'image/jpeg',Owner=user.id)
+                    profimg.save()
+                    user.ProfileImg = profimg.id
 
-                profimg = ProfileImage(Owner=usermodel.id)
-                profimg.Image.put(fileinfo['body'],content_type = 'image/jpeg',Owner=usermodel.id)
-                profimg.save()
-
-                user.ProfileImg = profimg.id
                 user.save()
+                user =  User.objects(id=user.id).exclude("Password","Wall","FriendsRequested","Friends","FriendsRequesting").first()
+                self.set_secure_cookie("userdata", tornado.escape.json_encode(dumps(user.to_mongo())))
+                # self.write("<script>alert(\"success!\") </script>");
+                # self.redirect("/")
+
 
 
 
@@ -564,7 +599,10 @@ class UniversityFeedHandler(BaseHandler):
                 # print feed
                 nots=core_actions.get_notifications(uid)
                 nots.reverse()
-                self.render("UniFeed.html",userdata=user,feed = feed,nots=nots)
+                uniname = University.objects(id=user['School']['University']['$oid']).first().Name
+                self.render("UniFeed.html",userdata=user,feed = feed,nots=nots,uniname=uniname)
+
+
 
 def main():
     tornado.options.parse_command_line()

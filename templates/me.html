@@ -17,7 +17,7 @@
 			<div id="user-data">
 				<div class="proimg">
 					<img  src="/images?picid={{escape(userdata['ProfileImg']['$oid'])}}" height="150" width="150">
-					<span class="changepro"><a href="/actions/changepro">Edit</a></span>
+					<span class="changepro"><a href="/actions/edit_profile">Edit</a></span>
 				</div>
 				<div class="user-description">
 					<h2>{{escape(userdata['FirstName']).capitalize()}} {{escape(userdata['LastName']).capitalize()}}</h2></br>
@@ -25,7 +25,7 @@
 					<p>About Me: {{escape(userdata['About'])}}</p>
 				</br>
 				<a href="Photos">Photos</a>
-				<a href="Friends">Friends</a>
+				<a href="friends">Friends</a>
 			</div>
 
 		</div>

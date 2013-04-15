@@ -30,7 +30,7 @@
 
 		<div id="reg-block">
 				Name: <input type="text" name="FullName" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"> </span><br>
-				Username: <input type="text" name="UserName" pattern="[a-z\d.]{5,}" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
+				Username: <input type="text" name="UserName" pattern="[A-Za-z\d.]{5,}" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
 				Password: <input type="password" name="Password" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
 				Confirm Password: <input type="password" name="confPassword" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
 				Email: <input type="email" name="Email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.+-]+\.edu$" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
@@ -82,13 +82,20 @@
 	$("#reg-block").focusin( function(e) {
 		var input = e.target;
 		var name = $(input).attr("name");
+		var value = input.value;
 		if(name=="UserName"){
 			console.log("here");
 			displayMessage(input,"Username must contain at least 5 characters");
 		}
-		else{
-			displayMessage(input,"dafaq");
+		if(name == "Email"){
+			displayMessage(input,"Email must end in .edu");
+
 		}
+		else{
+
+			// displayMessage(input,"dafaq");
+		}
+
 			// validate(e.target);
 			// if(res == true){
 			// 	makeCheck(e.target);
@@ -116,8 +123,13 @@
 	});
 
 	function validate(input){
+
 		var value = input.value;
 		var name = $(input).attr("name");
+		if(value.length <= 0){
+			hideMessage(input);
+			return false;
+		}
 		if(name == "UserName"){
 			if(value.match(/[a-z\d.]{5,}/)){
 				makeCheck(input);
@@ -125,7 +137,7 @@
 			}
 			else{
 				makeX(input);
-				
+				return false;
 
 			}
 			// if(checkUserAvailability(value)){
@@ -136,16 +148,54 @@
 			// 	displayError(input,"Username not available");
 			// }
 		}
-		if(name == "confPassword"){
-			var val = $('[name=Password]').val();
-			if(val != value){
+		if(name == "Password"){
+			if(value.length < 4){
+				displayMessage(input,"Password is too short");
 				makeX(input);
-				displayMessage(input,"Passwords don't match");
+				return false;
 			}
 			else{
+				makeCheck(input);
+			}
+		}
+		if(name == "confPassword"){
+			var val = $('[name=Password]').val();
+			var passin = $('input[name="Password"]');
+			if(val != value){
+				makeX(input);
+				// makeX(passin);
+				displayMessage(input,"Passwords don't match");
+				return false;
+			}
+			else{
+				// makeCheck(passin);
+				makeCheck(input);
 				hideMessage(input);
 			}
 		}
+		if(name=="Email"){
+			if(value.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.+-]+\.edu$/)){
+				makeCheck(input);
+				hideMessage(input);
+			}
+			else{
+				displayMessage(input,"Invalid Email");
+				makeX(input);
+				return false;
+
+			}	
+		}
+		if(name == "FullName"){
+			if(value.length < 4){
+				displayMessage(input,"Name is too short");
+				makeX(input);
+				return false;
+			}
+			else{
+				makeCheck(input);
+			}
+		}
+		return true;
 	}
 
 	function hideMessage(input){
@@ -190,6 +240,11 @@
   //       clearTimeout( delay );
   //       delay = setTimeout( search, wait );
   //   });
+	// $('[name=confPassword]').click(function() {
+	// 	var cp = $('[name=confPassword]');
+	// 	validate(cp);
+	// });
+
 	$(document).click(function() {
 	    $('#autocomplete').hide();
 
@@ -230,7 +285,19 @@
 		return matches;
 	}
 	function validateForm(form){
+		var myDiv = document.getElementById( "reg-block" );
+		var inputArr = myDiv.getElementsByTagName( "input" );
+		for (var i = 0; i < inputArr.length; i++) {
+			if(validate(inputArr[i])== false){
+				alert("Your "+ inputArr[i].name+ " field is invalid!");
+				return false;
+			}
+		}
+		
+		alert("Thanks for registering!\nA verification email has been sent.");
 		return true;
+
+
 	}
 
 	function checkUniversity(university){
@@ -258,6 +325,7 @@
     		$('#yearpicker').append($('<option />').val(i).html(i));
 		}
 		$('#autocomplete').hide();
+		// validateForm($('#regForm'));
 
     });
 

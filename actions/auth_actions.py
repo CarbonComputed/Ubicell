@@ -27,9 +27,7 @@ EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
 @run_async
 def login(username,password,callback=None):
 	# print 'here!!'
-	print 'user'
-	import time
-	time.sleep(10)
+
 	logger.info("Initiating login")
 	
 	m = hashlib.md5()
@@ -106,6 +104,8 @@ def register(user,request,callback=None):
 	return 200
 
 
+def edit_profile(user,request,callback=None):
+	pass
 
 
 def main():

@@ -1,15 +1,13 @@
 Blocker:
-	Ability to edit profile.
+	-Ability to edit profile.
 	-University feed. 
 	Friend Checks
-	Photo view
-		Add multiple photos
-		Remove photos
-	Friend View
-	Registration checks.
+	-Friend View
+	-Registration checks.
 	Captcha
 	Remove Friends
-	Async code
+	-Async code
+	endless scroll
 	Add Friend link next to people.
 
 Features:
@@ -18,8 +16,19 @@ Features:
 	Clubs/Groups
 	Admin upgrade
 	Hover over name
+	Photo view
+		Add multiple photos
+		Remove photos
 
 Extra:
 	Clean up javascript/html code.
 
+
+---new event page
+---new group page
+---photo upload page
+
+---view photo page
+
+---change password page
 

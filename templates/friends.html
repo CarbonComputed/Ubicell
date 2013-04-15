@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+<html>
+<head>
+    <link rel="stylesheet" href="/static/styles/search.css" type="text/css" />
+
+
+    {%block scripts%}
+        <link rel="stylesheet" href="/static/styles/search.css" type="text/css" />
+
+    {%end%}
+
+</head>
+<body>
+    
+
+    {%block container%}
+    <div id="container">
+        <div id="left-side-bar">
+
+        </div>
+
+        <div id="Main-Content">
+            <h1>Friends</h2></br>
+            {%for result in friends%}
+            <div class="result">
+                <img src="/images?picid={{str(result['ProfileImg'])}}" href="/user/{{result['UserName']}}" height="52" width="52">
+                <div id="sub-res">
+                <a href="/user/{{result['UserName']}}">{{result['FirstName'].capitalize()}}  {{result['LastName'].capitalize()}}</a>
+
+                <h5>Major: {{result['School']['Major']}} </h5>
+                <h6>Class of {{result['School']['GradYear']}}</h6>
+                <h6>About: {{result['About']}}</h6>
+                </div>
+            </div>
+            {%end%}
+        </div>
+    </div>
+    {%end%}
+</body>
+
+
+<script type="text/javascript">
+
+
+</script>
+</html>

@@ -1,62 +1,71 @@
+{% extends "base.html" %}
+
+
 <html>
 <title>uPlace</title>
 <head>
-	<script src="../static/jquery-1.9.1.min.js"></script>
-	<link rel="stylesheet" href="../static/styles/base2.css" type="text/css" />
-	<link rel="stylesheet" href="../static/styles/reg.css" type="text/css" />
-	<link rel="stylesheet" href="../static/styles/font-awesome.css" type="text/css" />
-	<script src="/static/jquery-1.9.1.min.js"></script>
+{%block scripts%}
+        <link rel="stylesheet" href="/static/styles/reg.css" type="text/css" />
 
-	<link rel="stylesheet" href="../static/styles/autocomplete.css" type="text/css" />
-	<script src="../static/js/schools.js"></script>
-
+    <link rel="stylesheet" href="/static/styles/editp.css" type="text/css" />
+    <link rel="stylesheet" href="/static/styles/popup.css" type="text/css" />
+    <script src="/static/js/jquery.form.js"></script> 
+{%end%}
 </head>
 <body>
 
-	<div id="top-nav">
-		<div id="logo">
-			<h1>uPlace</h1>
-				<img src="/static/images/logo2.svg" height="60px" width="100px">
-
-		</div>
-		<div class="clear"></div>
-
-	</div>
 	<div class="clear"></div>
+    {%block container%}
 	<div id="container">
 
 	<div id="left-side-bar">
-		<form id="regForm" action="/actions/edit_profile" onSubmit="return validateForm(this)" method="post" enctype="multipart/form-data">
+		<form id="regForm" action="/actions/edit_profile" method="post" enctype="multipart/form-data">
 
 		<div id="reg-block">
-				Name: <input type="text" name="FullName" value="{{user['FirstName'].capitalize()}} {{user['LastName'].capitalize()}}"><br>
-				Password: <input type="password" name="Password"><br>
-				Confirm Password: <input type="password" name="confPassword"><br>
+                            Name: <input type="text" name="FullName" value="{{user['FirstName'].capitalize()}} {{user['LastName'].capitalize()}}"><br>
+            <div id="profile-pic">
+              <label for="pic">Profile Picture</label>
+              <input type="file" name="pic" accept="image/*" onchange="readURL(this);" style="vertical-align:middle;width: 90px;">
+              <img id="pro-pic" src="#" alt="your image" height = "65px" width="65px" style="margin: 0;padding: 0;vertical-align: middle;" />
+            </div>
 
+
+<!-- 				Password: <input type="password" name="Password"><br>
+				Confirm Password: <input type="password" name="confPassword"><br>
+ -->
 		</div>
 	</div>
 	<div id="Main-Content">
 		<div id="extra-info">
-			<div id="profile-pic">
-			  <label for="pic">Profile Picture</label>
-			  <input type="file" name="pic" accept="image/*" onchange="readURL(this);" style="vertical-align:middle;width: 90px;">
-			  <img id="pro-pic" src="#" alt="your image" height = "65px" width="65px" style="margin: 0;padding: 0;vertical-align: middle;" />
-			</div>
-			Male <input type="radio" name="gender" value="Male" checked> 
-			Female <input type="radio" name="gender" value="Female" ><br>
-			Major: <input type="text" name="major" value="{{user['School']['Major']}}">
-			Grad Year: <select name="yearpicker" id="yearpicker" value="{{user['School']['GradYear']}}" >{{user['School']['GradYear']}}" </select><br><br>
-			About Me: <textarea style="vertical-align: middle;" name="about" value="{{user['About']}}"></textarea><br><br><br>
-			<input type="submit" value="Submit" class="status_button" >
+            {%if user['Gender'] == "Male"%}
+            Male <input type="radio" name="gender" value="Male" checked> 
+            Female <input type="radio" name="gender" value="Female" ><br>
 
+            {%else%}
+            Male <input type="radio" name="gender" value="Male" > 
+            Female <input type="radio" name="gender" value="Female" checked><br>
+            {%end%}
+            Major: <input type="text" name="major" value="{{user['School']['Major']}}">
+            Grad Year: <select name="yearpicker" id="yearpicker" value="{{user['School']['GradYear']}}" >{{user['School']['GradYear']}} </select><br><br>
+            About Me: <textarea style="vertical-align: middle;" name="about" value="{{user['About']}}">{{user['About']}}</textarea><br><br><br>
+            <input type="submit" value="Save" class="status_button" >
 		</div>
 	</form>
 
 	<div id="autocomplete"></div>
 
 	</div>
+</div>
+<div id="dialog-overlay"></div>
+<div id="dialog-box">
+    <div class="dialog-content">
+        <div id="dialog-message"></div>
+        <a id="dbutt" href="#" class="button">Close</a>
+    </div>
+</div>
+{%end%}
 
-
+{%block funcs%}
 	<script type="text/javascript">
 
 	//var colleges = ['Rochester Institute of Technology (RIT)','University of Rochester (UofR)','Rochester College'];
@@ -68,19 +77,19 @@
 	  };
 	}
 	
-	function adjust(){
-		var inp = $('#Uni');
-        var offset = inp.offset();
-		$("#autocomplete").offset({ top: offset.top + 35, left: offset.left});
+	// function adjust(){
+	// 	var inp = $('#Uni');
+ //        var offset = inp.offset();
+	// 	$("#autocomplete").offset({ top: offset.top + 35, left: offset.left});
 
 
-	}
+	// }
 	
-	var resizeTimer;
-	$(window).resize(function() {
-	    clearTimeout(resizeTimer);
-	    resizeTimer = setTimeout(adjust, 100);
-	});
+	// var resizeTimer;
+	// $(window).resize(function() {
+	//     clearTimeout(resizeTimer);
+	//     resizeTimer = setTimeout(adjust, 100);
+	// });
 
 	 // var $input = $('#Uni');
 	 // $input.keypress( function( e ) {
@@ -104,21 +113,21 @@
   //   });
 
 
-	$('#Uni').keyup(function(e) {
-		$('#autocomplete').show();
-		$('#autocomplete').empty();
-        var inp = $('#Uni');
-        var offset = inp.offset();
-        $("#autocomplete").offset({ top: offset.top + 35, left: offset.left});
-		var typetext = $('#Uni').val();
+	// $('#Uni').keyup(function(e) {
+	// 	$('#autocomplete').show();
+	// 	$('#autocomplete').empty();
+ //        var inp = $('#Uni');
+ //        var offset = inp.offset();
+ //        $("#autocomplete").offset({ top: offset.top + 35, left: offset.left});
+	// 	var typetext = $('#Uni').val();
 
-		var matches = matchCollege(colleges,String(typetext));
-		for(var i =0; i< matches.length;i++){
-			var match = matches[i];
-			$('#autocomplete').append('<div class="autocomplete-section"><a id="school-chooser" onclick="linkClicked(this.innerHTML);return false;" href="" >'+match+'</a></div> <div class="clear"</div>');
+	// 	var matches = matchCollege(colleges,String(typetext));
+	// 	for(var i =0; i< matches.length;i++){
+	// 		var match = matches[i];
+	// 		$('#autocomplete').append('<div class="autocomplete-section"><a id="school-chooser" onclick="linkClicked(this.innerHTML);return false;" href="" >'+match+'</a></div> <div class="clear"</div>');
 
-		}
-	});
+	// 	}
+	// });
 	function linkClicked(school){
 		$('#Uni').val(school);
 		$('#autocomplete').hide();
@@ -138,7 +147,18 @@
 		}
 		return matches;
 	}
+$("#dbutt").click(function(){
+    window.location = "/";
+});
+//     $("#regForm").submit(function() {
+
+        
+//     return false;
+// });
+
+
 	function validateForm(form){
+        popup("Preferences Saved!");
 		return true;
 	}
 
@@ -162,17 +182,30 @@
         }
 	$(function() {
      // Handler for .ready() called.
+            var d = {{user['School']['GradYear']}};
+            
      		for (i = new Date().getFullYear()+10; i > 2000; i--)
 		{
-    		$('#yearpicker').append($('<option />').val(i).html(i));
+            if(i != d){
+    		  $('#yearpicker').append($('<option />').val(i).html(i));
+            }
+            else{
+               // console.log({{user['School']['GradYear']}});
+              $('#yearpicker').append($('<option />').val(i).html(i).attr('selected','true'));
+
+            }
 		}
-		$('#autocomplete').hide();
+         $('#pro-pic').attr('src', "/images?picid={{current_user['ProfileImg']['$oid']}}");
+             $('#regForm').ajaxForm(function() { 
+                popup("Preferences Saved"); 
+            }); 
+		// $('#autocomplete').hide();
 
     });
 
 
 	
 	</script>
-</div>
+{%end%}
 </body>
 </html>

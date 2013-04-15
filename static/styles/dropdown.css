@@ -234,8 +234,15 @@ display:inline-block;
 
 
 }
-
 .wrapper-dropdown-2 .dropdown li:nth-child(3) a {
+    border-left-color: #4183C4;
+    border-bottom: 1px solid;
+     border-bottom-color: orange; 
+
+
+
+}
+.wrapper-dropdown-2 .dropdown li:nth-child(4) a {
     border-left-color: #3B5998;
 }
 

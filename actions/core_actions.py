@@ -46,7 +46,7 @@ postLock = Condition()
 # 	return RespSuccess.DEFAULT_SUCCESS
 
 
-
+@funcs.run_async
 def post_wall(userid,message,commenter=None, postid=None,replyid = None,depth=1,callback=None):
 	#TODO : leave link(id) to parent
 	if postid is None:

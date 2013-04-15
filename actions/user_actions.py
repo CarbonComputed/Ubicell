@@ -18,6 +18,7 @@ from models.User import *
 from models.Notification import *
 
 import actions.core_actions
+from util import *
 
 import logging
 logger = logging.getLogger(__name__)
@@ -67,7 +68,7 @@ def send_friend_request(userid,friendid,callback=None):
 
 	n = FriendRequestNot(Message=(user.FirstName.capitalize() + " " + user.LastName.capitalize() +" sent a friend request"),Friend=userid)
 
-	core_actions.push_notification(friendid,n)
+	actions.core_actions.push_notification(friendid,n)
 	# print friend
 	# print user
 
@@ -108,7 +109,7 @@ def accept_friend_request(userid,friendid,callback=None):
 
 	n = FriendRequestNot(Message=(user.FirstName.capitalize()  + " " + user.LastName.capitalize() +" accepted friend request"),Friend=userid)
 
-	core_actions.push_notification(friendid,n)
+	actions.core_actions.push_notification(friendid,n)
 	# friend = db.user.find_one({'_id' : ObjectId(friendid)},{'_id' : 1, 'UserName' : 1, 'FirstName' : 1 , 'LastName' : 1 })
 	# user = db.user.find_one({'_id' : ObjectId(userid)},{'_id' : 1, 'UserName' : 1, 'FirstName' : 1 , 'LastName' : 1 })
 
@@ -128,12 +129,12 @@ def get_friend_requests(userid):
 	print(db.user.find_one({'_id' : ObjectId(userid)}))
 	return req
 
-def get_friends(userid,callback=None):
-	#friends = db.user.find({'Friends._id' : userid}, {'Password' : 0})
-	user = User.objects(id=userid).first()
-	if callback != None:
-		return callback(user.Friends)
-	return user.Friends
+# def get_friends(userid,callback=None):
+# 	#friends = db.user.find({'Friends._id' : userid}, {'Password' : 0})
+# 	user = User.objects(id=userid).first()
+# 	if callback != None:
+# 		return callback(user.Friends)
+# 	return user.Friends
 
 
 def is_friends_with_byid(userid,fid,callback=None):
@@ -213,6 +214,17 @@ def validPost(db,postowner,postid):
 	check = db.user.find({'_id' : ObjectId(postowner),'Wall._id' : ObjectId(postid)})
 	return check != None
 
+@funcs.run_async
+def get_friends(userid,includeMe=True,orderBy=None,numResults=60,startNum =1,callback=None):
+	# gctr += 1
+
+	logger.info("Retrieving main feed")
+	coll = User._get_collection()
+	friends = coll.find({'Friends' : userid})
+	if callback != None:
+		return callback(friends)
+	return friends
+
 def main():
 	connect("uplace")
 
@@ -221,7 +233,7 @@ def main():
 	friendid = "5149CB8B8F24A067B266A305"
 	n = FriendRequestNot(Message=(user.FirstName.capitalize() + " " + user.LastName.capitalize() +" sent a friend request"),Friend=userid)
 
-	core_actions.push_notification(friendid,n)
+	actions.core_actions.push_notification(friendid,n)
 
 if __name__ == "__main__":
 	main()
