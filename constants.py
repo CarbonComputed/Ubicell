@@ -21,6 +21,7 @@ class UserStatus:
 
 class Action:
 	FRIEND_RESP = 1
+	UNFRIEND= 2
 
 class RegError:
 	USERNAME_INUSE = 1

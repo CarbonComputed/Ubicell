@@ -301,7 +301,8 @@ class FriendActionHandler(BaseHandler):
                 act = int(self.get_argument("Action",strip = True))
                 fid = self.get_argument("_id",strip = True)
                 ustat = int(self.get_argument("UserStatus",strip = True))
-
+                if act == Action.UNFRIEND:
+                    user_actions.unfriend(me['_id']['$oid'],fid)
                 # print ustat
                 resp = RespSuccess.DEFAULT_SUCCESS
                 if int(ustat) == UserStatus.USER_NEI:
@@ -590,9 +591,6 @@ class UniversityFeedHandler(BaseHandler):
 
         def get(self):
                 user = self.get_current_user()
-                
-                # print user['_id']['$oid']
-
                 uid = user['_id']['$oid']
                 schoolid = user['School']['University']['$oid']
                 feed = school_actions.get_feed(schoolid)
@@ -603,6 +601,17 @@ class UniversityFeedHandler(BaseHandler):
                 self.render("UniFeed.html",userdata=user,feed = feed,nots=nots,uniname=uniname)
 
 
+def NewClubHandler(BaseHandler):
+    @tornado.web.authenticated
+    
+    def post(self):
+        pass   
+
+def ClubHandler(BaseHandler):
+    @tornado.web.authenticated
+
+    def get(self):
+        pass
 
 def main():
     tornado.options.parse_command_line()

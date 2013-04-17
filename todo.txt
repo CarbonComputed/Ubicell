@@ -13,7 +13,7 @@ Blocker:
 Features:
 	Delete Comments
 	Events
-	Clubs/Groups
+	**Clubs/Groups
 	Admin upgrade
 	Hover over name
 	Photo view

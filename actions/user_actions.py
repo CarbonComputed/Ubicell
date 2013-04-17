@@ -123,6 +123,18 @@ def accept_friend_request(userid,friendid,callback=None):
 		return callback(200)
 	return 200
 
+def unfriend(userid,friendid,callback=None):
+	user = User.objects(id=userid).first()
+	friend = User.objects(id=friendid).first()
+	if friendid in user.Friends:
+		user.Friends.remove(friendid)
+	if userid in friend.Friends:
+		friend.Friends.remove(userid)
+	user.save()
+	friend.save()
+	if callback != None:
+		return callback(200)
+	return 200
 
 def get_friend_requests(userid):
 	req = None
