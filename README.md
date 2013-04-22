@@ -10,6 +10,8 @@ is to make it simpler to use than Facebook, but with added functionality. </p>
 <li>Tornado Framework</li>
 <li>Mongoengine</li>
 <li>MongoDB</li>
+<li>Beautiful Soup</li>
+<li>PIL</li>
 </ul>
 
 <h4>python ubicell.py</h4>

@@ -1,5 +1,6 @@
 from threading import Thread
 from functools import wraps
+import re
 
 def find(lst,object_att,object_val):
 
@@ -28,3 +29,18 @@ def run_async(func):
     return func_hl
 
   return async_func
+
+
+r_domain = re.compile("(?i)(?:.+?://)?(?:www[\d]*\.)?([^/:#?]*)")
+def domain(s):
+    """
+        Takes a URL and returns the domain part, minus www., if
+        present
+    """
+    res = r_domain.findall(s)
+    domain = (res and res[0]) or s
+    return domain.lower()
+
+def safe_eval_str(unsafe_str):
+    return unsafe_str.replace('\\x3d', '=').replace('\\x26', '&')
+
