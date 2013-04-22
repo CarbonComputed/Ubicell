@@ -305,6 +305,7 @@ a{
     padding: 10px 10px 10px 10px;
 }
 
+
 #status-sec img{
     /*float:left;*/
     margin-right: 10px;
@@ -596,4 +597,9 @@ position:absolute;
     width: 85%;
     /*max-width: auto;*/
     float: left;
+}
+
+#newclub{
+    display: none;
+    position: absolute;
 }

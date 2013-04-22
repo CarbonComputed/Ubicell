@@ -230,9 +230,9 @@ def validPost(db,postowner,postid):
 def get_friends(userid,includeMe=True,orderBy=None,numResults=60,startNum =1,callback=None):
 	# gctr += 1
 
-	logger.info("Retrieving main feed")
+	logger.info("Getting Friends")
 	coll = User._get_collection()
-	friends = coll.find({'Friends' : userid})
+	friends = coll.find({'Friends' : ObjectId(userid)})
 	if callback != None:
 		return callback(friends)
 	return friends

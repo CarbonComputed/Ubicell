@@ -1,0 +1,54 @@
+<html>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.12/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/js/tag-it.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/flick/jquery-ui.css">
+<link href="/static/styles/jquery.tagit.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="/static/styles/custom_pop.css" type="text/css" />
+
+<div class="popupform" id="newclub">
+<h3>New Club</h3>
+<form action="#" method="post">
+Name: <input type="text" name="name"><br>
+About: <textarea></textarea><br>
+<ul id="memberTags"></ul>
+<!-- All Friends: <input type="checkbox" ><br> -->
+<ul id="adminTags"></ul>
+<a href="#">Cancel</a>
+<input type="submit" value="Create">
+</form>
+</div>
+
+<script type="text/javascript">
+var availableTags = ["c++", "java", "php", "javascript", "ruby", "python", "c"];
+    $(document).ready(function() {
+        $("#memberTags").tagit({
+            fieldName: "members",
+    availableTags: availableTags,
+    placeholderText: "Members",
+    beforeTagAdded: function(event, ui) {
+        // do something special
+        var text = ui.tag.find('span.tagit-label').text().toLowerCase();
+        console.log(text);
+        return $.inArray(text, availableTags) >= 0;
+    }
+
+});
+    $("#adminTags").tagit({
+        fieldName: "admins",
+    availableTags: availableTags,
+    placeholderText: "Admins",
+    beforeTagAdded: function(event, ui) {
+        // do something special
+        var text = ui.tag.find('span.tagit-label').text().toLowerCase();
+        return $.inArray(text, availableTags) >= 0;
+    }
+
+});
+
+
+    });
+
+
+</script>
+</html>

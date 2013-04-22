@@ -5,16 +5,22 @@
 <html>
 <title>Ubicell</title>
 <head>
+
 	<link rel="stylesheet" href="/static/styles/base2.css" type="text/css" />
+
 	<link rel="stylesheet" href="/static/styles/font-awesome.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="/static/styles/dropdown.css?1.3" />
 
 	<link rel="stylesheet" href="/static/styles/switch.css" type="text/css" />
 	<script src="/static/jquery-1.9.1.min.js"></script>
-
+	<script src="/static/js/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
 	<script src="/static/js/dropdown.js"></script>
 	<script type="text/javascript" src="/static/js/modernizr.custom.79639.js"></script> 
 
+	<script src="/static/js/tag-it.min.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" href="/static/styles/jquery-ui.css" type="text/css" >
+	<link rel="stylesheet" href="/static/styles/jquery.tagit.css" type="text/css">
+	<link rel="stylesheet" href="/static/styles/custom_pop.css" type="text/css" />
 	{%block scripts%}
 
 	{%end%}
@@ -95,7 +101,7 @@
 	<div id="container">
 		<div id="left-side-bar">
 			<ul class="sidebar">
-				<a href="#"><li>Clubs ></li></a>
+				<a href="#" onclick="togglePop();return false;"><li>Clubs ></li></a>
 				<a href="#"><li>Events ></li></a>
 			</ul>
 		</div>
@@ -227,6 +233,18 @@
 	{%end%}
 
 	</div>
+	<div class="popupform" id="newclub">
+<h3>New Club</h3>
+<form action="#" method="post" onsubmit="submitClub(this);return false;">
+Name: <input type="text" name="name"><br>
+About: <textarea name="about">my club</textarea><br>
+<ul id="memberTags"></ul>
+<!-- All Friends: <input type="checkbox" ><br> -->
+<ul id="adminTags"></ul>
+<a href="#" onclick="$('#newclub').fadeOut()">Cancel</a>
+<input type="submit" value="Create">
+</form>
+</div>
 </body>
 
 
@@ -235,8 +253,63 @@
  		 $('#reply-box').hide();
  		 $('.reply-sec').hide();
  		 $('#not-menu-cont').hide();
+ 		 var availableTags = [];
+ 		 var friendIds = [];
 
+	    {%for friend in friends%}
+
+	    	availableTags.push("{{friend['FirstName'].capitalize()}} {{friend['LastName'].capitalize()}}");
+	    	friendIds.push("{{friend['_id']}}");
+	    {%end%}
+	     $("#memberTags").tagit({
+            fieldName: "members",
+    availableTags: availableTags,
+    placeholderText: "Members",
+    singleField: true,
+    beforeTagAdded: function(event, ui) {
+        // do something special
+        var text = ui.tag.find('span.tagit-label').text();
+        var index = $.inArray(text, availableTags);
+        if(index < 0){
+        	return false;
+        }
+        console.log(ui.tag);
+        $(ui.tag.find('span.tagit-label')).data('fid',friendIds[index]);
+
+        return index >= 0;
+    }
+
+});
+    $("#adminTags").tagit({
+        fieldName: "admins",
+    availableTags: availableTags,
+    placeholderText: "Admins",
+    beforeTagAdded: function(event, ui) {
+        // do something special
+        var text = ui.tag.find('span.tagit-label').text().toLowerCase();
+        return $.inArray(text, availableTags) >= 0;
+    }
+
+}); 
+
+
+    console.log(availableTags);
 	});
+
+function submitClub(self){
+		var memberform = $(self).find('#memberTags').find('li').children().data('fid');
+		console.log(memberform);
+		console.log($(self).find('#memberTags'));
+			// $.ajax({
+			//   type: "POST",
+			//   url: '/actions/new_club',
+			//   data: { },
+			//   success: function(){ alert('success');
+			//   },
+			//   dataType: 'json'
+			// });
+
+}
 	// {%set c = 'black'%}
 	// console.log({{len(actions.core_actions.get_unread_notifications(current_user['_id']['$oid']))}});
 	// {%if len(actions.core_actions.get_unread_notifications(current_user['_id']['$oid'])) > 0%}
@@ -534,6 +607,16 @@ $(document).ready(function () {
 	
 	
 });
+
+function togglePop(){
+	var maskHeight = $(window).height();  
+	var maskWidth = $(window).width();
+	var dialogTop =  (maskHeight/3) - ($('#newclub').height())-300;  
+	var dialogLeft = (maskWidth/2) - ($('#newclub').width()/2);
+	$('#newclub').css({top:dialogTop, left:dialogLeft});
+	$("#newclub").fadeToggle();
+
+}
 
 //Popup dialog
 function popup(message) {

@@ -1,0 +1,93 @@
+.popupform{
+    width: 500px;
+    height: 400px;
+    font-family: Calibri;
+    border-width: 3px;
+    border-style: solid;
+    border-radius: 3px;
+    border-color: rgb(96,96,96);
+    text-align: right;
+    -webkit-box-shadow: 0px 0px 8px 0px #000000;
+    -moz-box-shadow: 0px 0px 8px 0px #000000;
+    box-shadow: 0px 0px 8px 0px #000000;
+    background: white;
+}
+
+.popupform h3{
+    height: 30px;
+    color: black;
+    background: white;
+    padding: 5px 5px 5px 5px;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: left;
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-style: solid;
+    border-color: rgb(96,96,96); 
+}
+
+.popupform form{
+    padding: 10px 10px 10px 10px;
+}
+
+.popupform input[name="name"]{
+    height: 35px;
+    margin: 5px 5px 5px 5px;
+    padding: 5px 5px 5px 5px;
+    width: 400px;
+
+}
+
+.popupform textarea{
+    vertical-align: middle;
+    height: 65px;
+    margin: 5px 5px 5px 5px;
+    padding: 5px 5px 5px 5px;
+    width: 400px;
+    resize: none;
+}
+
+.popupform a{
+    color: black;
+}
+
+.popupform a:visited{
+    color: black;
+}
+
+.popupform input[type="submit"]{
+    background: rgb(96,96,96);
+    color: white;
+    padding: 5px 5px 5px 5px;
+    font-size: 14px;
+    border: none;
+    border-radius: 3px;
+}
+
+.popupform input[type="submit"]:hover{
+    background: gray;
+    color: white;
+}
+
+.popupform input[type="checkbox"]{
+    text-align: left;
+}
+
+.popupform ul{
+    margin: 10px 10px 10px 10px;
+}
+
+
+/*.popupform .nameform{
+    vertical-align: middle;
+    height: 65px;
+    width: 385px;
+    margin: 5px 5px 5px 5px;
+    padding: 5px 5px 5px 5px;
+    padding-left: 0px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: gray;
+    display: inline-block;
+}*/

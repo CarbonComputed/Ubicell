@@ -54,7 +54,8 @@ class Application(tornado.web.Application):
                 (r'/actions/get_replies',ReplyLoader),
                 (r'/actions/edit_profile',EditProfileHandler),
                 (r'/actions/get_nots',NotificationHandler),
-                (r'/actions/get_uni_feed',UniversityFeedHandler)
+                (r'/actions/get_uni_feed',UniversityFeedHandler),
+                (r'/actions/new_club',NewClubHandler)
                 
                 ]
                 settings = dict(
@@ -100,13 +101,16 @@ class MainHandler(BaseHandler):
 
                 uniname = University.objects(id=user['School']['University']['$oid']).first().Name
                 # print 'is_uni',is_uni
+                print uid
+                friends = yield gen.Task(user_actions.get_friends,uid)
+                # print friends[0]
                 if not is_uni:
-                        self.render("base.html",userdata=user,feed = feed,nots=nots,uniname=uniname)
+                        self.render("base.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends)
                 else:
                         uniid = user['School']['University']['$oid']
 
                         feed = yield gen.Task(school_actions.get_feed,uniid)
-                        self.render("UniFeed.html",userdata=user,feed = feed,nots=nots,uniname=uniname)
+                        self.render("UniFeed.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends)
 
 
 
@@ -194,6 +198,8 @@ class UserHandler(BaseHandler):
                 nots.reverse()
                 uniname = University.objects(id=user['School']['University']['$oid']).first().Name
                 # print user2['UserStatus']
+
+                friends = yield gen.Task(user_actions.get_friends,uid)
                 if UserName == user['UserName']:
                         user2 = user
                         user2['UserStatus'] = UserStatus.USER_ME
@@ -202,7 +208,7 @@ class UserHandler(BaseHandler):
                         feed = yield gen.Task(core_actions.get_user_feed,uid)
                         feed = feed['result']
 
-                        self.render("me.html",userdata=user2,feed=feed,nots=nots,uniname=uniname)
+                        self.render("me.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends)
                         return
                 elif friend is False and friend_requested is False and friend_requesting is False:
                         user2['UserStatus'] = UserStatus.USER_NEI
@@ -220,7 +226,7 @@ class UserHandler(BaseHandler):
                 feed = feed['result']
                 # print user2['UserStatus']
 
-                self.render("user.html",userdata=user2,feed=feed,nots=nots,uniname=uniname)
+                self.render("user.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends)
 
         @tornado.web.asynchronous
         @gen.coroutine
@@ -257,6 +263,7 @@ class UserFriendHandler(UserHandler):
             nots= yield gen.Task(core_actions.get_notifications,userid)
             nots.reverse()
             uniname = University.objects(id=self.get_current_user()['School']['University']['$oid']).first().Name
+
             self.render('friends.html',userdata= self.get_current_user(),friends = friends,nots=nots,uniname=uniname)
 
 class StatusHandler(BaseHandler):
@@ -494,7 +501,8 @@ class EditProfileHandler(BaseHandler):
                 nots= yield gen.Task(core_actions.get_notifications,userid)
                 nots.reverse()
                 uniname = University.objects(id=self.get_current_user()['School']['University']['$oid']).first().Name
-                self.render('editprofile.html',user=self.get_current_user(),nots=nots,uniname=uniname)
+                friends = yield gen.Task(user_actions.get_friends,userid)
+                self.render('editprofile.html',user=self.get_current_user(),nots=nots,uniname=uniname,friends=friends)
 
         def post(self):
                 userid = self.get_current_user()['_id']['$oid']
@@ -601,11 +609,17 @@ class UniversityFeedHandler(BaseHandler):
                 self.render("UniFeed.html",userdata=user,feed = feed,nots=nots,uniname=uniname)
 
 
-def NewClubHandler(BaseHandler):
+class NewClubHandler(BaseHandler):
     @tornado.web.authenticated
     
+
     def post(self):
-        pass   
+        name = self.get_argument("name",strip=True)
+        about = self.get_argument("about",strip=True)
+        members = self.get_argument("members")
+        admins = self.get_argument("admins",default=[])
+        print members
+        
 
 def ClubHandler(BaseHandler):
     @tornado.web.authenticated
