@@ -668,7 +668,7 @@ $.fn.ajaxSubmit = function(options) {
             if (xhr.status) { // we've set xhr.status
                 status = (xhr.status >= 200 && xhr.status < 300 || xhr.status === 304) ? 'success' : 'error';
             }
-
+            
             // ordering of these callbacks/triggers is odd, but that's how $.ajax does it
             if (status === 'success') {
                 if (s.success)

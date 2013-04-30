@@ -6,6 +6,8 @@ class Club(Document):
     University = ObjectIdField()
     Wall = ListField(EmbeddedDocumentField('Post'))
     Members = ListField(ObjectIdField())
+    MemberRequests = ListField(ObjectIdField())
     Admins = ListField(ObjectIdField())
     BanList = ListField(ObjectIdField())
+    Private = BooleanField()
 

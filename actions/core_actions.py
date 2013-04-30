@@ -24,10 +24,10 @@ from models.Reply import *
 from models.User import *
 import logging
 from util import *
+import threading
 
 
 logger = logging.getLogger(__name__)
-
 
 
 def tree(): return defaultdict(tree)
@@ -35,8 +35,8 @@ def dicts(t): return {k: dicts(t[k]) for k in t}
 
 lock_table = {}
 
-lockTableLock = Lock()
-postLock = Condition()
+lockTableLock = threading.Lock()
+postCV = threading.Condition()
 # def post_wall(db,mc,userid,friendid,message):
 
 # 	post = { '_id' : ObjectId(), 'FriendId' : ObjectId(friendid), 'Message' : message, 'Time' : datetime.datetime.now()}
@@ -101,8 +101,18 @@ def post_wall(userid,message,commenter=None, postid=None,replyid = None,depth=1,
 		return callback(RespSuccess.DEFAULT_SUCCESS)
 	return RespSuccess.DEFAULT_SUCCESS
 
-
+@funcs.run_async
 def upvote_post(ownerid,userid,postid,callback = None):
+	
+	postCV.acquire()
+	while lock_table.get(postid,False):
+		postCV.wait()
+	with lockTableLock:
+		lock_table[postid] = True
+	postCV.release()
+			
+		
+	
 	user = User.objects(id=ownerid,Wall__id=ObjectId(postid)).first()
 	userwall = user.Wall
 	index = funcs.index(userwall,'id',ObjectId(postid))
@@ -113,7 +123,15 @@ def upvote_post(ownerid,userid,postid,callback = None):
 	upvoters = post.Upvoters
 	downvoters = post.Downvoters
 	if ObjectId(userid) in upvoters:
-		return callback(UpvoteResp.VOTED_ALREADY)
+		postCV.acquire()
+		with lockTableLock:
+			lock_table[postid] = False
+		postCV.notify()
+		postCV.release()
+		if callback != None:
+			logger.debug("VOTED_ALREADY %s" % postid)
+			return callback(UpvoteResp.VOTED_ALREADY)
+		return UpvoteResp.VOTED_ALREADY
 	# user.Wall.remove(post)
 	if ObjectId(userid) not in downvoters:
 		upvotes += 1
@@ -131,11 +149,16 @@ def upvote_post(ownerid,userid,postid,callback = None):
 	post.Downvotes = downvotes
 	post.Hotness = hotness
 
-	
+
 	user.Wall[index] = post
 	user.save()
+	postCV.acquire()
+	with lockTableLock:
+		lock_table[postid] = False
+	postCV.notify()
+	postCV.release()
 	#post = User.objects(id=userid['$oid'],Wall__id=ObjectId(postid)).first()
-	
+	logger.debug("Upvote sent %s" % postid)
 	if callback != None:
 		return callback(RespSuccess.DEFAULT_SUCCESS)
 	return RespSuccess.DEFAULT_SUCCESS
@@ -409,6 +432,8 @@ def get_feed(userid,includeMe=True,orderBy=None,numResults=60,startNum =1,callba
 	logger.info("Retrieving main feed")
 	coll = User._get_collection()
 	feed = coll.aggregate([
+		# {'$project' :{'Upvoted' : 
+		# 						 {'$in' : ['$Upvoters', ObjectId(userid)] }}},
 
 		{'$match' :{ '$or': [ {"_id": ObjectId(userid) }, {"Friends": ObjectId(userid) } ] } },
 		{'$unwind' : "$Wall" },
@@ -416,7 +441,23 @@ def get_feed(userid,includeMe=True,orderBy=None,numResults=60,startNum =1,callba
 		{'$limit' : numResults }] )
 	for field in feed['result']:
 		if field != None:
-			del field['Password']
+			try:
+				del field['Password']
+				del field['FriendsRequesting']
+				del field['FriendsRequested']
+				del field['Nots']
+				del field['Clubs']
+			except BaseException as e:
+				logger.debug(e)
+			field['Upvoted'] = False
+			field['Downvoted'] = False
+			if ObjectId(userid) in field['Wall']['Upvoters']:
+				del field['Wall']['Upvoters']
+				field['Upvoted'] = True
+			if ObjectId(userid) in field['Wall']['Downvoters']:
+				del field['Wall']['Downvoters']
+				field['Downvoted'] = True
+
 	if callback != None:
 		return callback(feed)
 	return feed
@@ -433,7 +474,22 @@ def get_user_feed(userid,orderBy=None,numResults=20,startNum =1,callback=None):
 		{'$limit' : numResults }] )
 	for field in feed['result']:
 		if field != None:
-			del field['Password']
+			try:
+				del field['Password']
+				del field['FriendsRequesting']
+				del field['FriendsRequested']
+				del field['Nots']
+				del field['Clubs']
+			except BaseException as e:
+				logger.debug(e)
+			field['Upvoted'] = False
+			field['Downvoted'] = False
+			if ObjectId(userid) in field['Wall']['Upvoters']:
+				del field['Wall']['Upvoters']
+				field['Upvoted'] = True
+			if ObjectId(userid) in field['Wall']['Downvoters']:
+				del field['Wall']['Downvoters']
+				field['Downvoted'] = True
 	if callback != None:
 		return callback(feed)
 	return feed
@@ -445,7 +501,7 @@ def get_posts(userid,orderBy = None, numResults=20, startNum = 1,callback=None):
 	#	wall = db.user.find_one({'_id' : ObjectId(userid)}, {'Wall' : 1, '_id' : 0})['Wall']
 		wall = User.objects(_id=userid).only("Wall")
 	except Exception as e:
-		print (e)
+		logger.error (e)
 	
 	if callback != None:
 		return callback(wall)
@@ -457,7 +513,7 @@ def search(userid,universityid,query,query_type = None,callback=None):
 
 	query = query.strip()
 	queries = query.split()
-	print (queries)
+	logger.debug (queries)
 	if len(queries) <= 1:
 		query = '^'+query.lower();
 		results = coll.find({'School.University' :  ObjectId(universityid), '$or' : [ {'FirstName' : {'$regex' : query}},{'LastName' : {'$regex' : query}},{'UserName' : {'$regex' : query}}]})
@@ -468,6 +524,8 @@ def search(userid,universityid,query,query_type = None,callback=None):
 		lquery = '^'+lastname.lower();
 
 		results = coll.find({'School.University' :  ObjectId(universityid), '$or' : [ {'FirstName' : {'$regex' : fquery}},{'LastName' : {'$regex' : lquery}},{'UserName' : {'$regex' : query}}]})
+	
+	club_coll = Club._get_collection()
 	if callback != None:
 		return callback(results)
 	return results

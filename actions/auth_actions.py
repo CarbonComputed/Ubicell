@@ -2,6 +2,7 @@
 
 
 from constants import *
+from bson.objectid import ObjectId
 
 import hashlib
 import random
@@ -16,10 +17,15 @@ from models.ProfileImage import *
 from models.User import *
 
 from util.funcs import *
+from config import *
+import smtplib
+
+from email.mime.text import MIMEText
+
 
 logger = logging.getLogger(__name__)
 
-
+smtp = smtplib.SMTP('localhost')
 
 EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
@@ -75,6 +81,8 @@ def register(user,request,callback=None):
 	major = user['major'][0].strip()
 	gradyear = int(user['yearpicker'][0].strip())
 	aboutme = user['about'][0].strip()
+
+	regid=ObjectId()
 	#print request.files
 	fileinfo = request.files['pic'][0]
 	uni = University.objects(Name=university).first()
@@ -84,7 +92,7 @@ def register(user,request,callback=None):
 	school = School(University=uni.id,Major=major,GradYear=gradyear)
 	#Check length
 
-	usermodel = User(UserName=username,FirstName=firstname,LastName=lastname,Password=password,Email=email,Gender=gender,School=school,About=aboutme) 
+	usermodel = User(UserName=username,FirstName=firstname,LastName=lastname,Password=password,Email=email,Gender=gender,School=school,About=aboutme,RegId=regid) 
 	usermodel.save()
 
 	profimg = ProfileImage(Owner=usermodel.id)
@@ -99,16 +107,40 @@ def register(user,request,callback=None):
 	uni.Students.append(usermodel.id)
 	uni.save()
 	logger.info(username + " has registered")
+	send_confirmation(email,regid)
 	if callback != None:
 		return callback(200)
 	return 200
 
 
-def edit_profile(user,request,callback=None):
-	pass
+def send_confirmation(email,uniqueid):
+    msg = MIMEText("""
+Welcome to Ubicell!  Your online registration is almost complete. To validate your account please click: 
+        http://www.ubicell.com/verify?regid=%s
+Thank you for signing up.
+
+Sincerely,
+-- 
+Kevin Carbone
+
+    """ % uniqueid)
+    msg['Subject'] = 'Ubicell Conirmation'
+    msg['From'] = 'nobody@ubicell.com'
+    msg['To'] = email
+    print 'test2'
+    smtp = smtplib.SMTP('localhost',timeout=7)
+    # smtp.ehlo()
+    # smtp.starttls()
+    # smtp.ehlo
+    # print 'test1'
+    smtp.sendmail('nobody@ubicell.com', [email], msg.as_string())
+    # print 'test'
+    smtp.quit()
+
 
 
 def main():
+
 	# print "Testing Database Connection"
 	#db = database.Connection("localhost", "ProjectTakeOver",user="root",password="")
 	#print db is not None

@@ -2,6 +2,10 @@
     position: relative; width: 129px;
     -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
     }
+/*    .onoffswitch{
+        width: 129px;
+        float: right;
+    }*/
     .onoffswitch-checkbox {
     display: none;
     }
@@ -20,7 +24,7 @@
     -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
     }
     .onoffswitch-inner:before {
-    content: "Friends";
+    content: attr(titleb);
     padding-left: 8px;
     background-color: rgb(68,68,68); color: #FFFFFF;
     text-align: left;
@@ -34,7 +38,7 @@
         background: orange;
     }
     .onoffswitch-inner:after {
-    content: "University";
+    content: attr(titlea);
     padding-right: 8px;
     background-color: #FFFFFF; color: rgb(68,68,68);
     text-align: right;

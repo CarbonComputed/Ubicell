@@ -10,6 +10,7 @@ import os.path
 import uuid
 
 from tornado.options import define, options
+from tornado.httpclient import HTTPError
 from tornado import gen
 
 from bson.json_util import dumps,loads
@@ -26,10 +27,19 @@ from decorators import *
 from models.ProfileImage import *
 from models.User import *
 from models.University import *
+from models.Club import *
 from util.funcs import *
+from util import scraper
+from util.libsolvemedia import *
 import config
 
+import logging
+logger = logging.getLogger(__name__)
+
+CAPTCHA = SolveMedia(config.CKEY, config.VKEY, config.HKEY)
+
 define("port", default=8000, help="run on the given port", type=int)
+define("debug",default=False,help="Run in debug mode",type=bool)
 
 
 class Application(tornado.web.Application):
@@ -55,8 +65,11 @@ class Application(tornado.web.Application):
                 (r'/actions/edit_profile',EditProfileHandler),
                 (r'/actions/get_nots',NotificationHandler),
                 (r'/actions/get_uni_feed',UniversityFeedHandler),
-                (r'/actions/new_club',NewClubHandler)
-                
+                (r'/actions/new_club',NewClubHandler),
+                (r'/actions/thumbnail',LinkPreviewHandler),
+                (r'/club',ClubHandler),
+                (r'/club/members',ClubMemberHandler),
+                (r'/verify',EmailConfirmHandler)                
                 ]
                 settings = dict(
                         cookie_secret="p5q5askPJeOhs5mXb3QZ9CrNZUlxRWha6CPXif8G",
@@ -101,16 +114,18 @@ class MainHandler(BaseHandler):
 
                 uniname = University.objects(id=user['School']['University']['$oid']).first().Name
                 # print 'is_uni',is_uni
-                print uid
+                # print uid
                 friends = yield gen.Task(user_actions.get_friends,uid)
                 # print friends[0]
+                #print self.request
+                clubs = User.objects(id=uid).first().Clubs
                 if not is_uni:
-                        self.render("base.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends)
+                        self.render("base.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends,clubs=clubs,is_club=False)
                 else:
                         uniid = user['School']['University']['$oid']
 
                         feed = yield gen.Task(school_actions.get_feed,uniid)
-                        self.render("UniFeed.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends)
+                        self.render("UniFeed.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends,code=200,clubs=clubs,is_club=False)
 
 
 
@@ -128,13 +143,16 @@ class AuthLoginHandler(BaseHandler):
     @gen.coroutine
     def post(self):
 
-        print("test")
+        # print("test")
         username = self.get_argument("UserName",strip = True)
         password = self.get_argument("Password",strip = True)
 
         user = yield gen.Task(auth_actions.login,username,password)
         if not user:
             self.redirect("/auth/login")
+            return
+        if not user.Active:
+            self.render("message.html",message="You haven't activated your account yet. Verify your email first.")
             return
 
         #user = user_actions.get_my_data(self.db,user['_id'])
@@ -154,20 +172,44 @@ class AuthLogoutHandler(BaseHandler):
 class RegisterHandler(BaseHandler):
         @tornado.web.asynchronous
         def get(self):
-                self.render("register.html")
+                self.render("register.html",captcha=CAPTCHA)
 
         @tornado.web.asynchronous
         @gen.engine
         def post(self):
                 self.clear_cookie('user')
                 self.clear_cookie("userdata")
-
+                rip = self.request.remote_ip
+                if rip == '127.0.0.1':
+                    rip = config.LOCAL_IP
+                
+                # try:
+                capansw = self.get_argument('adcopy_response',strip=True)
+                chall = self.get_argument('adcopy_challenge',strip=True)
+                capcheck = yield gen.Task(CAPTCHA.check_answer,rip,chall,capansw)
+                if not capcheck['is_valid']:
+                    logger.debug("Incorrect CAPTCHA")
+                    self.set_status(501)
+                    self.write({'error' : True,'msg':"Invalid captcha"})
+                    # self.send_error(status_code=501,msg='Invalid captcha')
+                    self.finish()
+                    return
                 user = self.request.arguments
+                resp = 200
                 resp = yield gen.Task(auth_actions.register,user,self.request)
                 if resp == 200:
-                        self.redirect("/")
+                    self.write({'error' : False,'msg' : 'Success'})
+                    self.finish()
+                    # self.redirect("/")
+                    return
                 else:
-                        self.redirect("/auth/register")
+                    self.write({'error' : True,'msg' : str(resp)})
+                    self.finish()
+                    return
+                # except BaseException as e:
+                #     print e
+                #     self.write({'error' : True})
+                #     self.finish()
 
 
 class UserHandler(BaseHandler):
@@ -203,12 +245,12 @@ class UserHandler(BaseHandler):
                 if UserName == user['UserName']:
                         user2 = user
                         user2['UserStatus'] = UserStatus.USER_ME
-                        print user2
+                        # print user2
                         # print user2['ProfileImg']['$oid']
                         feed = yield gen.Task(core_actions.get_user_feed,uid)
                         feed = feed['result']
 
-                        self.render("me.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends)
+                        self.render("me.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends,is_club=False)
                         return
                 elif friend is False and friend_requested is False and friend_requesting is False:
                         user2['UserStatus'] = UserStatus.USER_NEI
@@ -226,7 +268,7 @@ class UserHandler(BaseHandler):
                 feed = feed['result']
                 # print user2['UserStatus']
 
-                self.render("user.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends)
+                self.render("user.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends,is_club=False)
 
         @tornado.web.asynchronous
         @gen.coroutine
@@ -237,17 +279,19 @@ class UserHandler(BaseHandler):
 
                 friend = yield gen.Task(user_actions.is_friends_with,userid,UserName)
                 friendid = User.objects(UserName=UserName).first().id
+                resp = {'error' : False}
                 if posttype is PostType.WALL_POST:
                         p = yield gen.Task(core_actions.post_wall,friendid,message,userid)
-                        return
+                        self.write(resp)
                 elif posttype is PostType.REPLY_POST:
                         postid = self.get_argument('postid',strip=True)
                         replyid = self.get_argument('replyid',default = None,strip=True)
                         p = yield gen.Task(core_actions.post_wall,userid,message)
-                        return
+                        self.write(resp)
                 else:
                         # print 'huh?'
-                        return
+                        self.write({'error' : True})
+                self.finish()
 
 class UserFriendHandler(UserHandler):
         @tornado.web.asynchronous
@@ -314,15 +358,19 @@ class FriendActionHandler(BaseHandler):
                 resp = RespSuccess.DEFAULT_SUCCESS
                 if int(ustat) == UserStatus.USER_NEI:
                         resp = yield gen.Task(user_actions.send_friend_request,me['_id']['$oid'],fid)
+                        if resp==RespSuccess.DEFAULT_SUCCESS:
+                            self.write({'error':False})
                 elif ustat == UserStatus.USER_REQ:
-                        pass
+                        self.write({'error':True})
                 elif ustat == UserStatus.USER_ACC:
                         resp = yield gen.Task(user_actions.accept_friend_request,me['_id']['$oid'],fid)
+                        self.write({'error':False})
                 else:
-                        raise tornado.web.HTTPError(500)
+                        self.write({'error':True})
                 if resp != RespSuccess.DEFAULT_SUCCESS:
                         # print 'Default',resp
-                        raise tornado.web.HTTPError(500)
+                        self.write({'error':True})
+                self.finish()
 
 class PostHandler(BaseHandler):
         @tornado.web.asynchronous
@@ -343,35 +391,63 @@ class PostHandler(BaseHandler):
                 userid = self.get_current_user()['_id']['$oid']
                 message = self.get_argument('message',strip=True)
                 posttype = int(self.get_argument('posttype',strip=True))
-                isuni = str2bool(self.get_argument('is_uni',strip=True,default=False))
-                if not isuni:
+                isuni = str2bool(self.get_argument('is_uni',strip=True,default='f'))
+                isclub = str2bool(self.get_argument('is_club',strip=True,default='f'))
+
+                post_resp = {'error' : False}
+                if not isuni and not isclub:
+                        logger.debug('not isuni')
                         if posttype is PostType.WALL_POST:
                                 yield gen.Task(core_actions.post_wall,userid,message)
-                                return
+                                self.write(post_resp)
+
                         elif posttype is PostType.REPLY_POST:
                                 postid = self.get_argument('postid',strip=True)
                                 replyid = self.get_argument('replyid',default = None,strip=True)
                                 # print 'replyid',replyid
                                 ownerid = self.get_argument('ownerid',default = None,strip=True)
                                 p = yield gen.Task(core_actions.post_wall,ownerid,message,commenter = userid,postid=postid,replyid = replyid)
-                                return
+                                self.write(post_resp)
+
                         else:
-                                # print 'huh?'
-                                return
-                else:
+                                self.write({'error': True})
+                                
+                elif isuni:
+                        logger.debug('isuni')
                         uniid = User.objects(id=userid).first().School.University
                         if posttype is PostType.WALL_POST:
                                 yield gen.Task(school_actions.post_wall,userid,message,groupid=uniid)
+                                self.write(post_resp)
+
                         elif posttype is PostType.REPLY_POST:
                                 postid = self.get_argument('postid',strip=True)
                                 replyid = self.get_argument('replyid',default = None,strip=True)
                                 # print 'replyid',replyid
                                 ownerid = self.get_argument('ownerid',default = None,strip=True)
                                 p = yield gen.Task(school_actions.post_wall,ownerid,message,groupid=uniid,commenter = userid,postid=postid,replyid = replyid)
-                                return
+                                self.write(post_resp)
+
                         else:
-                                # print 'huh?'
-                                return
+                            self.write({'error': True})
+                elif isclub:
+                        logger.debug('isclub' )
+                        clubid = self.get_argument('clubid',strip=True)
+                        if posttype is PostType.WALL_POST:
+                                yield gen.Task(club_actions.post_wall,userid,message,groupid=clubid)
+                                self.write(post_resp)
+
+                        elif posttype is PostType.REPLY_POST:
+                                postid = self.get_argument('postid',strip=True)
+                                replyid = self.get_argument('replyid',default = None,strip=True)
+                                # print 'replyid',replyid
+                                ownerid = self.get_argument('ownerid',default = None,strip=True)
+                                p = yield gen.Task(club_actions.post_wall,ownerid,message,groupid=clubid,commenter = userid,postid=postid,replyid = replyid)
+                                self.write(post_resp)
+
+                        else:
+                            self.write({'error': True})
+                    
+                self.finish()
 
 
 class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
@@ -435,14 +511,14 @@ class FriendVoteHandler(BaseHandler):
                 vote = self.get_argument('vote_type',strip=True)
                 uid = self.get_current_user()['_id']['$oid']
                 isreply = self.get_argument('is_reply',strip=True)
-                isuni = str2bool(self.get_argument('is_uni',strip=True,default=False))
+                isuni = str2bool(self.get_argument('is_uni',strip=True,default='f'))
+                isclub = str2bool(self.get_argument('is_club',strip=True,default='f'))
                 #if user_actions.validPost(self.db,powner,postid) is False  or user_actions.is_friends_with_byid(self.db,uid,powner) is False:
                 #       reply = 500;
                 # print isuni
                 uniid = User.objects(id=powner).first().School.University
-
                 # print 'isrepl',isreply
-                if not isuni:
+                if not isuni and not isclub:
                         if isreply == "true":
                                 replyid = self.get_argument('reply_id',strip=True)
                                 if vote == 'up':
@@ -457,8 +533,8 @@ class FriendVoteHandler(BaseHandler):
                                         reply = yield gen.Task(core_actions.downvote_post,powner,uid,postid)
 
                         # print reply
-                        return
-                else:
+                        
+                elif isuni:
                         if isreply == "true":
                                 replyid = self.get_argument('reply_id',strip=True)
                                 if vote == 'up':
@@ -471,9 +547,28 @@ class FriendVoteHandler(BaseHandler):
                                         reply = yield gen.Task(school_actions.upvote_post,uniid,uid,postid)
                                 else:
                                         reply = yield gen.Task(school_actions.downvote_post,uniid,uid,postid)
+                elif isclub:
+                        clubid = self.get_argument('clubid',strip=True)
+                        if isreply == "true":
+                                replyid = self.get_argument('reply_id',strip=True)
+                                if vote == 'up':
+                                        reply = yield gen.Task(club_actions.upvote_comment,clubid,uid,postid,replyid)
+                                else:
+                                        reply = yield gen.Task(club_actions.downvote_comment,clubid,uid,postid,replyid)
+
+                        else:
+                                if vote == 'up':
+                                        reply = yield gen.Task(club_actions.upvote_post,clubid,uid,postid)
+                                else:
+                                        reply = yield gen.Task(club_actions.downvote_post,clubid,uid,postid)
 
                         # print reply
-                        return  
+                logger.debug("Vote Posted Successfully")
+                self.write({
+                'error': False, 
+                'msg': 'Voted'
+                })
+                self.finish()  
 
 class SearchHandler(BaseHandler):
         @tornado.web.asynchronous
@@ -488,7 +583,8 @@ class SearchHandler(BaseHandler):
                 nots= yield gen.Task(core_actions.get_notifications,userid['$oid'])
                 nots.reverse()
                 uniname = University.objects(id=self.get_current_user()['School']['University']['$oid']).first().Name
-                self.render('search.html',userdata= self.get_current_user(),results = results,nots=nots,uniname=uniname)
+                friends = yield gen.Task(user_actions.get_friends,userid['$oid'])
+                self.render('search.html',userdata= self.get_current_user(),results = results,nots=nots,uniname=uniname,friends=friends)
                 
 
 class EditProfileHandler(BaseHandler):
@@ -502,7 +598,7 @@ class EditProfileHandler(BaseHandler):
                 nots.reverse()
                 uniname = University.objects(id=self.get_current_user()['School']['University']['$oid']).first().Name
                 friends = yield gen.Task(user_actions.get_friends,userid)
-                self.render('editprofile.html',user=self.get_current_user(),nots=nots,uniname=uniname,friends=friends)
+                self.render('editprofile.html',user=self.get_current_user(),nots=nots,uniname=uniname,friends=friends,is_club=False)
 
         def post(self):
                 userid = self.get_current_user()['_id']['$oid']
@@ -512,7 +608,7 @@ class EditProfileHandler(BaseHandler):
                 major = self.get_argument('major',default=user.School.Major,strip=True)
                 gradyear = int(self.get_argument('yearpicker',default=user.School.GradYear,strip=True))
                 about = self.get_argument('about',default=user.About,strip=True)
-                print gender
+                #print gender
                 # if password != user.Password:
                 #         m = hashlib.md5()
                 #         m.update(password)
@@ -560,16 +656,21 @@ class ReplyLoader(BaseHandler):
                 postid = self.get_argument('post_id',strip = True)
                 powner = self.get_argument('owner_id',strip = True)
                 is_uni = str2bool(self.get_argument('is_uni',strip=True,default="false"))
+                is_club = str2bool(self.get_argument('is_club',strip=True,default="false"))
 
                 # print 'userid',userid
                 # print 'powner',powner
                 # print 'pid',postid
-                if not is_uni:
+                if not is_uni and not is_club:
                         replies = yield gen.Task(core_actions.get_replies,userid,powner,postid)
-                else:
+                elif is_uni:
                         uniid = self.get_current_user()['School']['University']['$oid']
                         replies = yield gen.Task(school_actions.get_replies,uniid,powner,postid)
+                elif is_club:
+                        clubid = self.get_argument('clubid',strip=True)
+                        replies = yield gen.Task(club_actions.get_replies,clubid,powner,postid)
                 t = core_actions.build_tree(replies)
+                # print t
                 # core_actions.print_graph(t,ObjectId(postid))
                 # print 'out',t.get(postid)
                 self.render('reply.html',replies=t,depth = 0, 
@@ -596,46 +697,178 @@ class NotificationHandler(BaseHandler):
 
 class UniversityFeedHandler(BaseHandler):
         @tornado.web.authenticated
+        @tornado.web.asynchronous
+        @gen.coroutine    
 
         def get(self):
                 user = self.get_current_user()
                 uid = user['_id']['$oid']
                 schoolid = user['School']['University']['$oid']
-                feed = school_actions.get_feed(schoolid)
+                feed = yield gen.Task(school_actions.get_feed,schoolid)
                 # print feed
-                nots=core_actions.get_notifications(uid)
+                nots = yield gen.Task(core_actions.get_notifications,uid)
                 nots.reverse()
                 uniname = University.objects(id=user['School']['University']['$oid']).first().Name
-                self.render("UniFeed.html",userdata=user,feed = feed,nots=nots,uniname=uniname)
+                self.render("UniFeed.html",userdata=user,feed = feed,nots=nots,uniname=uniname,is_club=False)
 
 
 class NewClubHandler(BaseHandler):
     @tornado.web.authenticated
-    
+    @tornado.web.asynchronous
+    @gen.coroutine    
 
     def post(self):
         name = self.get_argument("name",strip=True)
-        about = self.get_argument("about",strip=True)
+        about = self.get_argument("about",strip=True,default="")
+        print about
         members = self.get_argument("members")
         admins = self.get_argument("admins",default=[])
-        print members
-        
+        private = str2bool(self.get_argument("private",strip=True))
+        uid = self.get_current_user()['_id']['$oid']
+        uniid = self.get_current_user()['School']['University']['$oid']
+        members = members.split(",")
+        admins = admins.split(",")
+        del members[-1]
+        del admins[-1]
+        resp = yield gen.Task(club_actions.make_club,ownerid=uid,name=name,university=uniid,about=about,members=members,admins=admins)
+        if resp != 200:
+            self.write({'error' : True,'msg':'Invalid Club'})
+        else:
+            self.write({'error' : False,'msg':'Success'})
+        self.finish()
 
-def ClubHandler(BaseHandler):
+class ClubHandler(BaseHandler):
     @tornado.web.authenticated
+    @tornado.web.asynchronous
+    @gen.coroutine    
 
     def get(self):
-        pass
+        user = self.get_current_user()
+        uid = user['_id']['$oid']
+        nots= yield gen.Task(core_actions.get_notifications,uid)
+        nots.reverse()
+        friends = yield gen.Task(user_actions.get_friends,uid)
+        try:
+            clubid = self.get_argument('clubid',strip=True)
+            club = yield gen.Task(club_actions.get_club,clubid)
+        except:
+            self.redirect("/")
+            return
+        logger.debug(club.Name)
+        is_member = uid in club.Members
+        is_member_reg = uid in club.MemberRequests
+        is_admin = uid in club.Admins
+
+        self.render('club.html',nots=nots,friends=friends,uniname=None,is_member=is_member,is_admin=is_admin,club = club,is_club=True,is_member_reg=is_member_reg)
+    
+
+
+    @tornado.web.asynchronous
+    @gen.coroutine   
+    def post(self):
+        user = self.get_current_user()
+        uid = user['_id']['$oid']
+        clubid = self.get_argument('club_id',strip=True)
+
+class ClubMemberHandler(BaseHandler):
+    @tornado.web.authenticated
+    @tornado.web.asynchronous
+    @gen.coroutine
+
+    def post(self):
+        action = int(self.get_argument('action'))
+        clubid = self.get_argument('clubid',strip=True)
+        userid = self.get_argument('userid',strip=True)
+        uid = self.get_current_user()['_id']['$oid']
+        resp = 500
+        if action == MemberAction.CONFIRM:
+            resp = yield gen.Task(club_actions.confirm_member,uid,clubid,userid)
+        elif action == MemberAction.ADD:
+            resp = yield gen.Task(club_actions.add_member,clubid,userid)
+        if resp != 200:
+            self.write({'error' : True,'msg' : 'Add Member Failure'})
+        else:
+            self.write({'error' : False,'msg' : 'Add Member Success'})
+        self.finish()
+
+    @tornado.web.authenticated
+    @tornado.web.asynchronous
+    @gen.coroutine
+    def get(self):
+        clubid = self.get_argument('clubid',strip=True)
+        club = Club.objects(id=clubid).first()
+        uid = self.get_current_user()['_id']['$oid']
+        is_admin = uid in club.Admins
+        Members = club_actions.get_member_data(clubid)
+        MemberRequests = club_actions.get_member_req_data(clubid)
+        print Members
+        nots= yield gen.Task(core_actions.get_notifications,self.get_current_user()['_id']['$oid'])
+        nots.reverse()
+        friends = yield gen.Task(user_actions.get_friends,self.get_current_user()['_id']['$oid'])
+        self.render('members.html',Members=Members,MemberRequests=MemberRequests,nots=nots,friends=friends,is_club=True,uniname=None,club=club,is_admin=is_admin)
+
+
+class LinkPreviewHandler(BaseHandler):
+    @tornado.web.authenticated
+    @tornado.web.asynchronous
+    @gen.coroutine
+    
+    def get(self):
+        url = self.get_argument("url",strip=True)
+        height = self.get_argument("height",strip=True,default="250")
+        width = self.get_argument("width",strip=True,default="480")
+        if len(url) == 0:
+            self.finish()
+            return
+        embed = self.get_argument("embed",strip=True,default=False)
+        link = yield gen.Task(scraper.get_link,url)
+
+        if embed:
+            if link.embed != None:
+                link.embed = re.sub(r'width="\d+"', 'width='+width, link.embed)
+                link.embed = re.sub(r'height="\d+"', 'height='+height, link.embed)
+                self.write(link.embed)
+        else:
+            if link.image != None:
+                self.write(link.image)
+        self.finish()
+
+class EmailConfirmHandler(BaseHandler):
+    # @tornado.web.asynchronous
+    # @gen.coroutine
+
+    def get(self):
+        try:
+            uniqueid = self.get_argument('regid',strip=True)
+            user = User.objects(RegId=uniqueid).first()
+            if user != None:
+                if user.Active == True:
+                    self.write("Already Confirmed")
+                    self.finish()
+                user.Active = True
+                user.save()
+                self.render('message.html',message="Thanks for registering %s" % user.UserName)
+                return
+            self.write("Thats not right")
+            self.finish()
+            return
+        except:
+            self.render('message.html',message='Thats not right')
+            
+               
 
 def main():
     tornado.options.parse_command_line()
+    if options.debug:
+        logger.info("Running with debug output")
+        logging.getLogger().setLevel(logging.DEBUG)
     #self.db = database.Connection("localhost", "ProjectTakeOver",user="root",password="")
-    print ("Established Database Connection")
-    print ('http://127.0.0.1:'+str(options.port))
+    logger.info ("Established Database Connection")
+    logger.info ('http://127.0.0.1:'+str(options.port))
     app = Application()
     app.listen(options.port)
-    tornado.ioloop.IOLoop.instance().start()
 
+    tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == "__main__":
     main()

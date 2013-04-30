@@ -1,0 +1,26 @@
+#user-data{
+    margin-top: 25px;
+
+    margin-bottom: 25px;
+    padding: 10px 10px 10px 10px;
+    width: auto;
+    height: auto;
+    border-bottom:solid white;
+    border-bottom-width:0px;
+    overflow: auto;
+    background: white;
+    border-radius: 3px;
+    text-align: left;
+
+
+}
+#user-data h2,h3,h4,h5,h6{
+    color: gray;
+}
+
+#Status{
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+

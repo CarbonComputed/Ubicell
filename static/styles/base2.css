@@ -9,7 +9,6 @@
 }
 
 body ,html{
-        min-width: 1100px;
         width: auto;
          overflow-x: hidden;
         background-image:url('../images/hexellence.png');
@@ -53,6 +52,7 @@ background-size:cover;*/
     -webkit-box-shadow: 0px 0px 12px 0px #000000;
     -moz-box-shadow: 0px 0px 12px 0px #000000;
     box-shadow: 0px 0px 12px 0px #000000;
+    /*min-width: 740px;*/
     /* Adds the transparent background */
 /*    background: rgb(68,68,68);
     background-image: linear-gradient(bottom, rgb(54,52,52) 14%, rgb(163,163,163) 90%);
@@ -71,36 +71,47 @@ background-size:cover;*/
 /*    background-image:url('../images/3040.jpg');
 background-repeat:repeat-x;*/
 float: left;
-    min-width: 600px;
+    min-width: 900px;
     white-space: nowrap;
     background: white;
     z-index: 100;
+        /*overflow: hidden;*/
+
 }
 .minwidth { min-width:600px; width: auto !important; width: 600px; }
 #left-top-nav{
-    width: 15%;
+    /*width: 15%;*/
     height: 100%;
  display: inline-block;
-    float: left;
-
+    /*float: left;*/
+    /*min-width: 168px;*/
 }
 #center-top-nav{
-    width: 55%;
-    float: left;
+    /*width: 30%;*/
+    /*float: left;*/
         height: 100%;
          display: inline-block;
+         min-width: 450px;
 
 }
-#right-top-nav{
-    width: 30%;
+#top-nav #right-top-nav{
+    /*width: 55%;*/
+  position: absolute;
  display: inline-block;
-    height: 100%;
-    float: left;
+ right: 5px;
+ margin-right: 20px;
+ /*margin-left: 200px;*/
+ /*float: right;*/
+
+    /*height: 100%;*/
+    /*float: right;*/
+             /*min-width: 338px;*/
+
 }
 .nav-bar{
     display:inline-block;    
     padding-right: 5px;
-    width: 100%;
+    /*width: 100%;*/
     padding-top: 15px;
     padding-left: 55px;
     color: #222;
@@ -192,13 +203,15 @@ a{
 #container{
     margin-top: 100px;
     width: 100%;
+            min-width: 1100px;
+
 }
 
 #left-side-bar{
     float: left;
     width: 15%;
     height: 100%;
-
+    min-width: 168px;
 
 }
 #Main-Content{
@@ -363,7 +376,9 @@ white-space: normal;
     width: 400px;
     /*margin-left: auto;*/
     /*margin-right: auto;*/
+    float: left;
     padding-top: 15px;
+    margin: 0;
 
 }
 
@@ -383,11 +398,18 @@ white-space: normal;
     width: 60%;
 }
 
-.onoffswitch {
+#myonoffswitchpar {
     position: relative; width: 129px;
     -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
     margin: 5px 5px 5px 5px;
     float: right;
+}
+
+#publicswpar {
+    position: relative; width: 129px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+    margin: 5px 5px 5px 5px;
+    /*float: left;*/
 }
 
 #top-nav a:hover{
@@ -529,16 +551,20 @@ border-color: transparent transparent rgba(0,0,0,.85) transparent;
 
 .sidebar {
     text-align: right;
+        opacity: 0; 
+    visibility: none;
+   -webkit-transition:visibility 0s linear 0.5s,opacity 0.5s linear;
+   -moz-transition:visibility 0s linear 0.5s,opacity 0.5s linear;
     
-    margin-top: 100px;
     /*position: fixed;*/
    
 }
-
-.sidebar:hover{
-
+#subsidebar{
+    margin-top: 100px;
 }
-.sidebar li{
+
+#subsidebar h3{
+
     text-decoration: none;
     color: white;
     background: rgb(68,68,68);
@@ -558,18 +584,83 @@ border-color: transparent transparent rgba(0,0,0,.85) transparent;
      -moz-transition: margin .5s;
 }
 
+#subsidebar a{
+    text-decoration: none;
+}
 
 .sidebar a{
     text-decoration: none;
 }
 
+.sidebar li{
+    /*visibility: hidden;*/
+    text-decoration: none;
+    color: white;
+    background: rgb(68,68,68);
+    /*padding-left: 50px;*/
+    margin: 0;
+    margin-bottom: 3px;
+    /*margin-top: 200px;*/
+    /*float: left;*/
+    padding: 5px 5px 5px 5px;
+    text-align: right;
+    border-radius: 3px;
+/*      -webkit-box-shadow: 0px 0px 4px 0px #000000;
+    -moz-box-shadow: 0px 0px 4px 0px #000000;
+    box-shadow: 0px 0px 4px 0px #000000;*/
+    margin-right: 20px;   
+list-style-type: none;
+
+}
+
 .sidebar li:hover{
     color: orange;
+}
+
+#subsidebar:hover li{
+    visibility: visible;
+}
+#subsidebar h3:hover{
+    color: orange;
+
     margin-right: 20px;
     -webkit-transition: margin .5s;
     -moz-transition: margin .5s;
     /*-webkit-transition: padding 2s;*/
     /*padding-left: 50px;*/
+}
+
+
+
+
+#subsidebar:hover{
+/*    color: orange;
+       visibility: visible;
+    
+    opacity: 1;
+    -webkit-transition-delay:0s;
+    -moz-transition-delay:0s;*/
+    /*margin-right: 20px;*/
+
+    /*padding-left: 50px;*/
+}
+
+
+
+
+#subsidebar a:hover + .sidebar{
+   visibility: visible;
+    
+    opacity: 1;
+    -webkit-transition-delay:0s;
+    -moz-transition-delay:0s;
+
+}
+
+.sidebar:hover{
+   visibility: visible;
+    
+    opacity: 1;
 }
 .not-item span{
 position:absolute; 
@@ -602,4 +693,11 @@ position:absolute;
 #newclub{
     display: none;
     position: absolute;
+    top: 50%;
+    left: 50%;
+    margin:-200px 0 0 -250px;
+}
+
+#dd:hover{
+    cursor: pointer;
 }

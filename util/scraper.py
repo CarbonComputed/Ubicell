@@ -29,6 +29,7 @@ from httplib import InvalidURL
 import urlparse, re, urllib, logging, StringIO, logging
 import Image, ImageFile, math
 from BeautifulSoup import BeautifulSoup
+from funcs import *
 
 
 chunk_size = 1024
@@ -1415,6 +1416,8 @@ for scraper in [ EmbedlyOEmbed,
 deepscrapers = [YoutubeEmbedDeepScraper]
 
 def get_media_embed(media_object):
+    if media_object == None:
+        return None
     for scraper in scrapers.get(media_object['type'], []):
         res = scraper.media_embed(**media_object)
         if res:
@@ -1852,6 +1855,35 @@ def test_url(url):
         print "None"
     print "</td>"
     print "</tr>"
+
+class Link(object):
+    link = None
+    image = None
+    embed = None
+    header = None
+
+    def __init__(self,link,image,embed,header):
+        self.link = link
+        self.image = image
+        self.embed = embed
+        self.header = header
+
+@run_async
+def get_link(url,callback = None):
+    h = make_scraper(url)
+    img = h.largest_image_url()
+    mo = h.media_object()
+
+    me = get_media_embed(mo)
+    mec = None
+    if me != None:
+        mec = me.content
+    link = Link(url,img,mec,None)
+    if callback != None:
+        return callback(link)
+    return link
+
+
 
 def test():
     """Take some example URLs and print out a nice pretty HTML table

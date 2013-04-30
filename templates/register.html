@@ -9,6 +9,8 @@
 
 	<link rel="stylesheet" href="../static/styles/autocomplete.css" type="text/css" />
 	<script src="../static/js/schools.js"></script>
+	<script src="/static/js/jquery.form.js"></script> 
+
 
 </head>
 <body>
@@ -34,7 +36,7 @@
 				Password: <input type="password" name="Password" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
 				Confirm Password: <input type="password" name="confPassword" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
 				Email: <input type="email" name="Email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.+-]+\.edu$" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
-
+				{%raw captcha.get_html()%}
 		</div>
 	</div>
 	<div id="Main-Content">
@@ -53,6 +55,7 @@
 			<input type="submit" value="Register" class="status_button" >
 
 		</div>
+
 	</form>
 
 	<div id="autocomplete"></div>
@@ -294,7 +297,6 @@
 			}
 		}
 		
-		alert("Thanks for registering!\nA verification email has been sent.");
 		return true;
 
 
@@ -325,6 +327,18 @@
     		$('#yearpicker').append($('<option />').val(i).html(i));
 		}
 		$('#autocomplete').hide();
+		$('#regForm').ajaxForm({
+			success:function() { 
+             			alert("Thanks for registering!\nA verification email has been sent.");
+  						window.location = "/";
+            },
+            error: function(data){
+            	console.log(data);
+            	var resp = JSON.parse(data.responseText);
+            	alert(resp['msg']);
+            },
+            dataType: 'json'
+            }); 
 		// validateForm($('#regForm'));
 
     });

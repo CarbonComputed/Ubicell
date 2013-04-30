@@ -37,7 +37,7 @@
 				<a href="friends">Friends</a>
 				{%if userdata['UserStatus'] == UserStatus.USER_FRI%}
 			</br>
-				<a href="#"><h6>Unfriend</h6></a>
+				<a href="#" onclick="unfriend();return false;"><h6>Unfriend</h6></a>
 				{%end%}
 			</div>
 
@@ -63,13 +63,13 @@
 						<div id="Status-sec" data-postid={{post['Wall']['id']}} data-ownerid={{post['_id']}}>
 							<div id="Votes">
 								{%set color = 'gray'%}
-								{% if ObjectId(current_user['_id']['$oid']) in post['Wall']['Upvoters'] %}
+								{% if post['Upvoted'] %}
 								{%set color = 'orange'%}
 								{%end%}
 								<a  href="#" onclick="vote(this,'up');return false;" ><i style="color:{{color}};" class="icon-arrow-up"></i></a>
 								<p>{{post['Wall']['Upvotes']-post['Wall']['Downvotes']}}</p>
 								{%set color = 'gray'%}
-								{% if ObjectId(current_user['_id']['$oid']) in post['Wall']['Downvoters'] %}
+								{% if post['Downvoted'] %}
 								{%set color = 'orange'%}
 								{%end%}
 								<a href="#" onclick="vote(this,'down');return false;"><i style="color:{{color}};" class="icon-arrow-down"></i></a>
@@ -126,14 +126,14 @@ function post(){
 			  type: "POST",
 			  url: '/user/{{userdata['UserName']}}',
 			  data: { 'message' : message, 'posttype' : posttype},
-			  success: function(){ alert('success');
-			  },
-			  dataType: 'json'
-			});
-		var currpage = window.location.pathname;
+			  success: function(){ 		var currpage = window.location.pathname;
 		console.log(currpage);
 		$('#status_text').val('');
 		$('#Status-Feed').load('/user/{{userdata['UserName']}} #Status-Feed > *').hide().fadeIn('slow');
+			  },
+			  dataType: 'json'
+			});
+
 
 	
 }
@@ -144,11 +144,11 @@ function sendRequest(element){
 			  type: "POST",
 			  url: '/actions/respond_friend',
 			  data: { 'Action' : 1, 'UserStatus' : userstatus , '_id' : "{{userdata['_id']}}"},
-			  success: function(){ alert('success');
+			  success: function(){ $('#Main-Content').load('/user/{{userdata['UserName']}} #Main-Content > *');
 			  },
 			  dataType: 'json'
 			});
-		$('#Main-Content').load('/user/{{userdata['UserName']}} #Main-Content > *');
+		
 }
 function capitaliseFirstLetter(string)
 {
@@ -176,11 +176,8 @@ function capitaliseFirstLetter(string)
 			  type: "POST",
 			  url: '/actions/friend_vote',
 			  data: { 'vote_type' : vote_type,'post_owner' : ownerid,'post_id' : postid,'is_reply' : "false",'is_uni' : is_uni},
-			  success: function(){ alert('success');
-			  },
-			  dataType: 'json'
-			});
-		   	var checked = $('.onoffswitch-checkbox').is(':checked');
+			  success: function(){ 
+			  			   	var checked = $('.onoffswitch-checkbox').is(':checked');
 		if($('.onoffswitch-checkbox').length <= 0){
 			checked = false;
 		}
@@ -194,10 +191,16 @@ function capitaliseFirstLetter(string)
    		
 
    		}
+			  },
+			  dataType: 'json'
+			});
+
 	}
 
 
-
+function unfriend(){
+	popup("Are you sure you want to unfriend {{escape(userdata['FirstName']).capitalize()}}?")
+}
 
 </script>
 {%end%}

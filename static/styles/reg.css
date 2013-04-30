@@ -15,7 +15,11 @@ body{
 	/*padding-right: 100px;*/
 	
 }
-
+#adcopy-outer{
+	position: absolute;
+	top: 350px;
+	left: 100px;
+}
 #Main-Content{
 	/*background: white;*/
     background: transparent;

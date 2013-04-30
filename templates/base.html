@@ -21,6 +21,8 @@
 	<link rel="stylesheet" href="/static/styles/jquery-ui.css" type="text/css" >
 	<link rel="stylesheet" href="/static/styles/jquery.tagit.css" type="text/css">
 	<link rel="stylesheet" href="/static/styles/custom_pop.css" type="text/css" />
+	<link rel="stylesheet" href="/static/styles/popup.css" type="text/css" />
+
 	{%block scripts%}
 
 	{%end%}
@@ -100,17 +102,22 @@
 	{%block container%}
 	<div id="container">
 		<div id="left-side-bar">
+			<div id="subsidebar">
+			<a href="#" onclick="togglePop();return false;"><h3>Clubs</h3></a>
 			<ul class="sidebar">
-				<a href="#" onclick="togglePop();return false;"><li>Clubs ></li></a>
-				<a href="#"><li>Events ></li></a>
+				{%for club in clubs%}
+				<a href="/club?clubid={{club.Id}}"><li>{{club.Name}}</li></a>
+				<!-- <a href="#"><li>Events ></li></a> -->
+				{%end%}
 			</ul>
+		</div>
 		</div>
 		<div id="Main-Content">
 			<a href="#"><h2 id="hhead" style="float:left;color:gray;margin: 5px 5px 5px 5px;">{{current_user['FirstName'].capitalize()}} {{current_user['LastName'].capitalize()}}</h2></a>
-			<div class="onoffswitch">
+			<div class="onoffswitch" id="myonoffswitchpar">
 				<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
 				<label class="onoffswitch-label" for="myonoffswitch" >
-					<div class="onoffswitch-inner"></div>
+					<div class="onoffswitch-inner" titleb="Friends" titlea="University"></div>
 					<div class="onoffswitch-switch"></div>
 				</label>
 			</div>
@@ -130,14 +137,14 @@
 					<div id="Status-sec" data-postid={{post['Wall']['id']}} data-ownerid={{post['_id']}}>
 											<div id="Votes">
 						{%set color = 'gray'%}
-						{% if ObjectId(current_user['_id']['$oid']) in post['Wall']['Upvoters'] %}
+						{% if post['Upvoted'] %}
 							{%set color = 'orange'%}
 						{%end%}
 						<a style="color:{{color}};" href="#" onclick="vote(this,'up');return false;" ><i style="color:{{color}};" class="icon-arrow-up"></i></a>
 
 						<p>{{post['Wall']['Upvotes']-post['Wall']['Downvotes']}}</p>
 						{%set color = 'gray'%}
-						{% if ObjectId(current_user['_id']['$oid']) in post['Wall']['Downvoters'] %}
+						{% if post['Downvoted'] %}
 							{%set color = 'orange'%}
 						{%end%}
 						<a href="#" onclick="vote(this,'down');return false;"><i style="color:{{color}};" class="icon-arrow-down"></i></a>
@@ -180,13 +187,13 @@
 						<div id="Status-sec" data-postid={{post['Wall']['id']}} data-ownerid={{post['_id']}}>
 							<div id="Votes">
 								{%set color = 'gray'%}
-								{% if ObjectId(current_user['_id']['$oid']) in post['Wall']['Upvoters'] %}
+								{% if post['Upvoted']%}
 								{%set color = 'orange'%}
 								{%end%}
 								<a  href="#" onclick="vote(this,'up');return false;" ><i style="color:{{color}};" class="icon-arrow-up"></i></a>
 								<p>{{post['Wall']['Upvotes']-post['Wall']['Downvotes']}}</p>
 								{%set color = 'gray'%}
-								{% if ObjectId(current_user['_id']['$oid']) in post['Wall']['Downvoters'] %}
+								{% if post['Downvoted'] %}
 								{%set color = 'orange'%}
 								{%end%}
 								<a href="#" onclick="vote(this,'down');return false;"><i style="color:{{color}};" class="icon-arrow-down"></i></a>
@@ -236,14 +243,29 @@
 	<div class="popupform" id="newclub">
 <h3>New Club</h3>
 <form action="#" method="post" onsubmit="submitClub(this);return false;">
-Name: <input type="text" name="name"><br>
-About: <textarea name="about">my club</textarea><br>
+Name: <input type="text" name="name" required><br>
+About: <textarea id="newclubabout"></textarea><br>
 <ul id="memberTags"></ul>
 <!-- All Friends: <input type="checkbox" ><br> -->
 <ul id="adminTags"></ul>
+			<div class="onoffswitch" id="publicswpar">
+				<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="publicsw" checked>
+				<label class="onoffswitch-label" for="publicsw" >
+					<div class="onoffswitch-inner" titleb="Private" titlea="Public"></div>
+					<div class="onoffswitch-switch"></div>
+				</label>
+			</div>
 <a href="#" onclick="$('#newclub').fadeOut()">Cancel</a>
 <input type="submit" value="Create">
+
 </form>
+</div>
+<div id="dialog-overlay"></div>
+<div id="dialog-box">
+    <div class="dialog-content">
+        <div id="dialog-message"></div>
+        <a id="dbutt" href="#" onclick="hidePop();return false;"class="button">Close</a>
+    </div>
 </div>
 </body>
 
@@ -279,6 +301,9 @@ About: <textarea name="about">my club</textarea><br>
         return index >= 0;
     }
 
+    // $('.onoffswitch-inner:before').css('content','Public');
+    // $('.onoffswitch-inner:after').css('content','Private');
+
 });
     $("#adminTags").tagit({
         fieldName: "admins",
@@ -286,8 +311,15 @@ About: <textarea name="about">my club</textarea><br>
     placeholderText: "Admins",
     beforeTagAdded: function(event, ui) {
         // do something special
-        var text = ui.tag.find('span.tagit-label').text().toLowerCase();
-        return $.inArray(text, availableTags) >= 0;
+        var text = ui.tag.find('span.tagit-label').text();
+        var index = $.inArray(text, availableTags);
+        if(index < 0){
+        	return false;
+        }
+        console.log(ui.tag);
+        $(ui.tag.find('span.tagit-label')).data('fid',friendIds[index]);
+
+        return index >= 0;
     }
 
 }); 
@@ -297,17 +329,39 @@ About: <textarea name="about">my club</textarea><br>
 	});
 
 function submitClub(self){
-		var memberform = $(self).find('#memberTags').find('li').children().data('fid');
-		console.log(memberform);
-		console.log($(self).find('#memberTags'));
-			// $.ajax({
-			//   type: "POST",
-			//   url: '/actions/new_club',
-			//   data: { },
-			//   success: function(){ alert('success');
-			//   },
-			//   dataType: 'json'
-			// });
+		var memberform = $(self).find('#memberTags span.tagit-label').eq(1).data('fid');
+		var members_li = $(self).find('#memberTags span.tagit-label');
+		var admins_li = $(self).find('#adminTags span.tagit-label');
+
+		var length = $(self).find('#memberTags span.tagit-label').length;
+		var lengtha = $(self).find('#adminTags span.tagit-label').length;
+		var members = "";
+		var admins = "";
+		for(var i=0;i<length;i++){
+			members += members_li.eq(i).data('fid') + ",";
+		}
+		for(var i=0;i<lengtha;i++){
+			admins += admins_li.eq(i).data('fid') + ",";
+		}
+		var name = $(self).find('input[name="name"]').val();
+		var about = $(self).find('#newclubabout').val();
+		var priv = checked = $('#publicsw').is(':checked');
+		// console.log(about);
+			$.ajax({
+			  type: "POST",
+			  url: '/actions/new_club',
+			  data: {'members':members,'name' : name,'about': about,'private' : priv , 'admins' : admins},
+			  success: function(){ 
+
+			  	popup("Club created successfully!");
+			  	$('#newclub').fadeOut();
+
+			  },
+			  error:function(){
+			  	popup("something went wrong");
+			  },
+			  dataType: 'json'
+			});
 
 }
 	// {%set c = 'black'%}
@@ -329,8 +383,8 @@ function submitClub(self){
 		var nele = ssec.find('.reply-sec');
 		var postid = ssec.data()['postid'];
 		var ownerid = ssec.data()['ownerid'];
-		var checked = !$('.onoffswitch-checkbox').is(':checked');
-		if($('.onoffswitch-checkbox').length <= 0){
+		var checked = !$('#myonoffswitch').is(':checked');
+		if($('#myonoffswitch').length <= 0){
 			checked = false;
 		}
 		//var postid = 
@@ -366,8 +420,8 @@ function submitClub(self){
 		console.log(postid);
 		var element = $(ele).closest('#Status-sec');
 		var vote_type = "";
-		var is_uni = !$('.onoffswitch-checkbox').is(':checked');
-		if($('.onoffswitch-checkbox').length <= 0){
+		var is_uni = !$('#myonoffswitch').is(':checked');
+		if($('#myonoffswitch').length <= 0){
 			is_uni = false;
 		}
 		console.log(is_uni);
@@ -381,24 +435,41 @@ function submitClub(self){
 			  type: "POST",
 			  url: '/actions/friend_vote',
 			  data: { 'vote_type' : vote_type,'post_owner' : ownerid,'post_id' : postid,'is_reply' : "false",'is_uni' : is_uni},
-			  success: function(){ alert('success');
-			  },
-			  dataType: 'json'
-			});
-		   	var checked = $('.onoffswitch-checkbox').is(':checked');
-		if($('.onoffswitch-checkbox').length <= 0){
+			  success: function(){ 
+			  				  			if($('#myonoffswitch').length <= 0){
 			checked = false;
 		}
    		if(checked){
-   			$("#Status-sec[data-postid='" + postid + "']").load("/ #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(700);
+   			$("#Status-sec[data-postid='" + postid + "']").load("/ #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(100);
 
    		}
    		else{
-   			$("#Status-sec[data-postid='" + postid + "']").load("/?University=True #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(700);
+   			$("#Status-sec[data-postid='" + postid + "']").load("/?University=True #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(100);
 
    		
 
    		}
+			  },
+			  error: function(){ 
+
+
+			  },
+			  dataType: 'json'
+			});
+		   	var checked = $('#myonoffswitch').is(':checked');
+		// if($('#myonoffswitch').length <= 0){
+		// 	checked = false;
+		// }
+  //  		if(checked){
+  //  			$("#Status-sec[data-postid='" + postid + "']").load("/ #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(100);
+
+  //  		}
+  //  		else{
+  //  			$("#Status-sec[data-postid='" + postid + "']").load("/?University=True #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(100);
+
+   		
+
+  //  		}
 	}
 
 	function voteReply(post,type){
@@ -408,8 +479,9 @@ function submitClub(self){
 		var replyid = $(post).closest('.reply').data()['postid'];
 		var isReply = "true";
 		var vote_type = "";
-		var is_uni = !$('.onoffswitch-checkbox').is(':checked');
-		if($('.onoffswitch-checkbox').length <= 0){
+		var is_uni = !$('#myonoffswitch').is(':checked');
+		var is_club = "{{is_club}}";
+		if($('#myonoffswitch').length <= 0){
 			is_uni = false;
 		}
 		if(type == 'up'){
@@ -421,29 +493,25 @@ function submitClub(self){
 		$.ajax({
 			  type: "POST",
 			  url: '/actions/friend_vote',
-			  data: { 'vote_type' : vote_type,'post_owner' : ownerid,'post_id' : postid,'reply_id' : replyid,'is_reply' : isReply,'is_uni' : is_uni},
-			  success: function(){ alert('success');
+			  data: { 'vote_type' : vote_type,'post_owner' : ownerid,'post_id' : postid,'reply_id' : replyid,'is_reply' : isReply,'is_uni' : is_uni,'is_club':is_club},
+			  success: function(){ $(".reply[data-postid='" + replyid + "']").load('/actions/get_replies?post_id='+postid+'&owner_id='+ownerid+'&is_uni='+is_uni+" .reply[data-postid='" + replyid + "'] > *").hide().fadeIn(700);
 			  },
 			  dataType: 'json'
 			});
-		$(".reply[data-postid='" + replyid + "']").load('/actions/get_replies?post_id='+postid+'&owner_id='+ownerid+'&is_uni='+is_uni+" .reply[data-postid='" + replyid + "'] > *").hide().fadeIn(700);
+		
 	}
 	function post(){
 		{% from constants import * %}
 		var message = $('#status_text').val();
 		var posttype = parseInt({{PostType.WALL_POST}});
-		var is_uni = !$('.onoffswitch-checkbox').is(':checked');
+		var is_uni = !$('#myonoffswitch').is(':checked');
 		console.log(posttype);
 		$.ajax({
 			  type: "POST",
 			  url: '/actions/post',
 			  data: { 'message' : message, 'posttype' : posttype,'is_uni' : is_uni},
-			  success: function(){ alert('success');
-			  },
-			  dataType: 'json'
-			});
-   		var checked = $('.onoffswitch-checkbox').is(':checked');
-   		if($('.onoffswitch-checkbox').length <= 0){
+			  success: function(){    		var checked = $('#myonoffswitch').is(':checked');
+   		if($('#myonoffswitch').length <= 0){
 			checked = false;
 		}
    		if(checked){
@@ -453,6 +521,10 @@ function submitClub(self){
 			$('#Status-Feed').load('/?University=True #Status-Feed > *').hide().fadeIn('slow');
 		}
 		$('#status_text').val('');
+			  },
+			  dataType: 'json'
+			});
+
 
 	}
 
@@ -461,8 +533,10 @@ function submitClub(self){
 		var postid = ele.data()['postid'];
 		var ownerid = ele.data()['ownerid'];
 		var message = 	$("#reply-box[data-postid='" + postid+ "'] textarea").val();
-		var is_uni = !$('.onoffswitch-checkbox').is(':checked');
-		if($('.onoffswitch-checkbox').length <= 0){
+		var is_uni = !$('#myonoffswitch').is(':checked');
+		var is_club = "{{is_club}}";
+
+		if($('#myonoffswitch').length <= 0){
 			is_uni = false;
 		}
 		console.log(message);
@@ -473,13 +547,14 @@ function submitClub(self){
 		$.ajax({
 			  type: "POST",
 			  url: '/actions/post',
-			  data: { 'message' : message, 'posttype' : posttype, 'postid' : postid,'ownerid' : ownerid,'is_uni' : is_uni},
-			  success: function(){ alert('success');
+			  data: { 'message' : message, 'posttype' : posttype, 'postid' : postid,'ownerid' : ownerid,'is_uni' : is_uni,'is_club' : is_club},
+			  success: function(){ 		
+			  	hideReply(post);
+		loadReplies(post);
 			  },
 			  dataType: 'json'
 			});
-		hideReply(post);
-		loadReplies(post);
+
 
 	}
 
@@ -493,8 +568,10 @@ function submitClub(self){
 		//console.log(replyid);
 		var message = 	$("#reply-box[data-postid='" + replyid+ "'] textarea").val();
 
-		var is_uni = !$('.onoffswitch-checkbox').is(':checked');
-		if($('.onoffswitch-checkbox').length <= 0){
+		var is_uni = !$('#myonoffswitch').is(':checked');
+		var is_club = "{{is_club}}";
+
+		if($('#myonoffswitch').length <= 0){
 			is_uni = false;
 		}
 		//console.log(message);
@@ -505,13 +582,13 @@ function submitClub(self){
 		$.ajax({
 			  type: "POST",
 			  url: '/actions/post',
-			  data: { 'message' : message, 'posttype' : posttype, 'postid' : postid,'ownerid' : ownerid,'replyid' : replyid,'is_uni':is_uni},
-			  success: function(){ alert('success');
+			  data: { 'message' : message, 'posttype' : posttype, 'postid' : postid,'ownerid' : ownerid,'replyid' : replyid,'is_uni':is_uni,'is_club':is_club},
+			  success: function(){ 		hideReply(post);
+		loadReplies(post);
 			  },
 			  dataType: 'json'
 			});
-		hideReply(post);
-		loadReplies(post);
+
 
 
 	}
@@ -548,9 +625,10 @@ $("#logo").click(function(){
 
 
 
-$(".onoffswitch-checkbox").click(function(){
+$("#myonoffswitch").click(function(){
      // window.location=$(this).find("a").attr("href"); 
-   	var checked = $('.onoffswitch-checkbox').is(':checked');
+
+   	var checked = $('#myonoffswitch').is(':checked');
    	if(checked){
    		$('#Status-Feed').load('/ #Status-Feed > *').hide().fadeIn('slow');
    		$('#hhead').html("{{current_user['FirstName'].capitalize()}} {{current_user['LastName'].capitalize()}}");
@@ -558,13 +636,15 @@ $(".onoffswitch-checkbox").click(function(){
    	else{
    		{%import models.University%}
    		$('#Status-Feed').load('/?University=True #Status-Feed > *').hide().fadeIn('slow');
+   		{%if uniname != None%}
 		$('#hhead').html("{{uniname}}");
-
+		{%end%}
    	}
 });
 
-
-
+function hidePop(){
+	$('#dialog-box').fadeOut();
+}
 
 function toggleNotifications(){
 	var isvis = $('#not-menu-cont').is(":visible");
@@ -611,9 +691,10 @@ $(document).ready(function () {
 function togglePop(){
 	var maskHeight = $(window).height();  
 	var maskWidth = $(window).width();
+	console.log(maskHeight);
 	var dialogTop =  (maskHeight/3) - ($('#newclub').height())-300;  
 	var dialogLeft = (maskWidth/2) - ($('#newclub').width()/2);
-	$('#newclub').css({top:dialogTop, left:dialogLeft});
+	// $('#newclub').css({top:50%, left:50%});
 	$("#newclub").fadeToggle();
 
 }
@@ -622,7 +703,7 @@ function togglePop(){
 function popup(message) {
 		
 	// get the screen height and width  
-	var maskHeight = $(document).height();  
+	var maskHeight = $(window).height();  
 	var maskWidth = $(window).width();
 	
 	// calculate the values for center alignment
@@ -630,19 +711,29 @@ function popup(message) {
 	var dialogLeft = (maskWidth/2) - ($('#dialog-box').width()/2); 
 	
 	// assign values to the overlay and dialog box
-	$('#dialog-overlay').css({height:maskHeight, width:maskWidth}).show();
-	$('#dialog-box').css({top:dialogTop, left:dialogLeft}).show();
+	// $('#dialog-overlay').css({height:maskHeight, width:maskWidth}).show();
+	$('#dialog-box').fadeIn();
 	
 	// display the message
 	$('#dialog-message').html(message);
 
+
+	setTimeout(function(){
+	$('#dialog-box').fadeOut();}, 3000);
 }
 
 // $('.notification-count').hide();
+$('#subsidebar h3').hover(function(){
+	$('#subsidebar h3').html('New Club +');
+},
+function(){
+	$('#subsidebar h3').html('Clubs');
+});
 
 $('#logo img').css('cursor', 'pointer');
 
 $('#logo img:hover').css('background', 'gray');
+
 
 </script>
 {%block funcs%}

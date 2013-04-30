@@ -12,6 +12,14 @@
 	display: inline-block;
 	/*vertical-align: middle;*/
 	margin-right: 10px;
+	/*margin-bottom: 10px;*/
+}
+
+.result2 img{
+	display: inline-block;
+	/*vertical-align: middle;*/
+	margin-right: 10px;
+	margin-bottom: 10px;
 }
 
 #sub-res{
@@ -19,12 +27,17 @@
 	/*vertical-align:middle;*/
 }
 
-.result{
+.result,.result2{
 	display: inline-block;
 	padding: 10px 25px 10px 10px;
 }
 
 .result a,a:visited{
+		color: black;
+
+}
+
+.result2 a,a:visited{
 		color: black;
 
 }

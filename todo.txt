@@ -4,7 +4,7 @@ Blocker:
 	Friend Checks
 	-Friend View
 	-Registration checks.
-	Captcha
+	-Captcha
 	Remove Friends
 	-Async code
 	endless scroll

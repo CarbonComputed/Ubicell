@@ -14,7 +14,9 @@ GENDERS = ['Male', 'Female']
 
 
 
-
+class SubClub(EmbeddedDocument):
+	Name = StringField()
+	Id = ObjectIdField()
 
 class User(Document):
 
@@ -33,6 +35,9 @@ class User(Document):
 	FriendsRequested = ListField(ObjectIdField())
 	Wall = ListField(EmbeddedDocumentField('Post'))
 	Nots = ListField(EmbeddedDocumentField('Notification'))
+	Clubs = ListField(EmbeddedDocumentField('SubClub'))
+	Active = BooleanField(default=False)
+	RegId = ObjectIdField()
 
 if __name__ == "__main__":
 	connect('uplace')
