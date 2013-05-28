@@ -1,336 +1,255 @@
-$(document).ready(function() {
-         $('#reply-box').hide();
-         $('.reply-sec').hide();
-         $('#not-menu-cont').hide();
-         var availableTags = [];
-         var friendIds = [];
+PostType = {
+    WALL_POST : 1,
+    REPLY_POST : 2,
+}
 
-        {%for friend in friends%}
+MemberAction = {
+    ADD : 1,
+    DELETE : 2,
+    PROMOTE : 3,
+    CONFIRM : 4
+}
 
-            availableTags.push("{{friend['FirstName'].capitalize()}} {{friend['LastName'].capitalize()}}");
-            friendIds.push("{{friend['_id']}}");
-        {%end%}
-         $("#memberTags").tagit({
-            fieldName: "members",
-    availableTags: availableTags,
-    placeholderText: "Members",
-    singleField: true,
-    beforeTagAdded: function(event, ui) {
-        // do something special
-        var text = ui.tag.find('span.tagit-label').text();
-        var index = $.inArray(text, availableTags);
-        if(index < 0){
-            return false;
-        }
-        console.log(ui.tag);
-        $(ui.tag.find('span.tagit-label')).data('fid',friendIds[index]);
+function loadReplies(ele){
 
-        return index >= 0;
-    }
+    var ssec = $(ele).closest('#status-sec')
+    var nele = ssec.find('.reply-sec');
+    var postid = ssec.data()['postid'];
+    var ownerid = ssec.data()['ownerid'];
 
-});
-    $("#adminTags").tagit({
-        fieldName: "admins",
-    availableTags: availableTags,
-    placeholderText: "Admins",
-    beforeTagAdded: function(event, ui) {
-        // do something special
-        var text = ui.tag.find('span.tagit-label').text().toLowerCase();
-        return $.inArray(text, availableTags) >= 0;
-    }
-
-}); 
-
-
-    console.log(availableTags);
-    });
-
-function submitClub(self){
-        var memberform = $(self).find('#memberTags').find('li').children().data('fid');
-        console.log(memberform);
-        console.log($(self).find('#memberTags'));
-            // $.ajax({
-            //   type: "POST",
-            //   url: '/actions/new_club',
-            //   data: { },
-            //   success: function(){ alert('success');
-            //   },
-            //   dataType: 'json'
-            // });
+    //var postid = 
+    $(nele).load('/actions/get_replies?post_id='+postid).hide().fadeIn(300);
+    $(ssec).find('#show-comment-link').html("Hide Comments");
 
 }
-    // {%set c = 'black'%}
-    // console.log({{len(actions.core_actions.get_unread_notifications(current_user['_id']['$oid']))}});
-    // {%if len(actions.core_actions.get_unread_notifications(current_user['_id']['$oid'])) > 0%}
 
-    //  {%set c = 'orange'%}
-    //  $('.notification-count').show();
-    // {%end%}
-    //  $('.icon-globe').css('color','{{c}}')
-     // $('.icon-globe:hover').css('color','orange')
+function searchFriends(){
+    var query = $('.search_box').val();
+    $('head').append('<link rel="stylesheet" type="text/css" href="/static/styles/search.css">');
+//  $('#Main-Content').load("/search?" + $.param({ query : query}) + " #Main-Content > *").hide().fadeIn(700);
+    window.location = ("/search?" + $.param({ query : query}));
+}
+
+function vote(ele,type){
+    var postid = $(ele).closest('#status-sec').data()['postid'];
+    var vote = $(ele).closest('#status-sec').data('vote');
+    var current_score_ele =  $(ele).closest('#status-sec').find('p').first();
+    var score = parseInt(current_score_ele.text());
+    //var ownerid = $(ele).closest('#status-sec').data()['ownerid'];
+    $.ajax({
+          type: "POST",
+          url: '/actions/friend_vote',
+          data: { 'vote_type' : type,'post_id' : postid,'is_reply' : false},
+          success: function(){ 
+              //console.log(ele);
+              var current_page = document.URL;
+              //console.log(vote);
+              if(vote == -1){
+                if(type == "up"){
+                console.log($(ele).eq(0));
+                 $(ele).closest('#status-sec').data('vote',0);
+                 $(ele).eq(0).siblings('a.downvote').children().eq(0).css('color','gray');
+                 current_score_ele.text(score+1);
+                } 
+              }
+              else if(vote == 0){
+                if(type == "up"){
+                 $(ele).closest('#status-sec').data('vote',1);
+                 $(ele).children().eq(0).css('color','orange');
+                 current_score_ele.text(score+1);
+
+                }
+                if(type == "down"){
+                 $(ele).closest('#status-sec').data('vote',-1);
+                 //console.log($(ele).children().eq(0));
+                 $(ele).children().eq(0).css('color','blue');
+                 current_score_ele.text(score-1);
+                }
+              }
+              else if(vote == 1){
+                if(type == "down"){
+                 $(ele).closest('#status-sec').data('vote',0);
+                   //console.log($(ele).children().eq(0));
+                   //console.log($(ele).eq(0).prevAll('a.upvote').first());
+                   $(ele).eq(0).prevAll('a.upvote').first().children().eq(0).css('color','gray');
+                   current_score_ele.text(score-1);
 
 
-    
+                }
+              }
+              
 
-    function loadReplies(ele){
+              //$("#status-sec[data-postid='" + postid + "']").load(current_page+" #status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(100);
 
-        var ssec = $(ele).closest('#Status-sec')
-        var nele = ssec.find('.reply-sec');
-        var postid = ssec.data()['postid'];
-        var ownerid = ssec.data()['ownerid'];
-        var checked = !$('.onoffswitch-checkbox').is(':checked');
-        if($('.onoffswitch-checkbox').length <= 0){
-            checked = false;
-        }
-        //var postid = 
-        $(nele).load('/actions/get_replies?post_id='+postid+'&owner_id='+ownerid+'&is_uni='+checked).hide().fadeIn(300);
+          },
+          error: function(){ 
+                popup("Something went wrong");
+
+          },
+          dataType: 'json'
+        });
+
+}
+
+
+
+function voteReply(post,type){
+    var ele = $(post).closest('#status-sec');
+    var postid = ele.data()['postid'];
+    //var ownerid = ele.data()['ownerid'];
+    var replyid = $(post).closest('.reply').data()['postid'];
+    var is_club = false;
+    var vote = $(post).closest('.reply').data('vote');
+    var current_score_ele =  $(post).closest('.reply').find('p').first();
+    var score = parseInt(current_score_ele.text());
+    var reply_class = $(post).closest('.reply');
+    console.log(reply_class);
+    console.log(vote);
+    $.ajax({
+          type: "POST",
+          url: '/actions/friend_vote',
+          data: { 'vote_type' : type,'post_id' : postid,'reply_id' : replyid,'is_reply' : true},
+          success: function(){ 
+              if(vote == -1){
+                if(type == "up"){
+                console.log($(ele).eq(0));
+                 $(post).closest('.reply').data('vote',0);
+                 $(reply_class).find('#rep_down').eq(0).css('color','gray');
+                 current_score_ele.text(score+1);
+                } 
+              }
+              else if(vote == 0){
+                if(type == "up"){
+                 $(post).closest('.reply').data('vote',1);
+                 $(post).children().eq(0).css('color','orange');
+                 current_score_ele.text(score+1);
+
+                }
+                if(type == "down"){
+                 $(post).closest('.reply').data('vote',-1);
+                 //console.log($(ele).children().eq(0));
+                 $(post).children().eq(0).css('color','blue');
+                 current_score_ele.text(score-1);
+                }
+              }
+              else if(vote == 1){
+                if(type == "down"){
+                 $(post).closest('.reply').data('vote',0);
+                   //console.log($(ele).children().eq(0));
+                   //console.log($(ele).eq(0).prevAll('a.upvote').first());
+                   $(reply_class).find('#rep_up').eq(0).css('color','gray');
+                   current_score_ele.text(score-1);
+
+
+                }
+              }
+              
+                //$(".reply[data-postid='" + replyid + "']").load('/actions/get_replies?post_id='+postid+" .reply[data-postid='" + replyid + "'] > *").hide().fadeIn(700);
+          },
+          dataType: 'json'
+        });
+}
+
+
+function post(userid,networkid){
+    console.log("i"+networkid);
+    console.log("u" + userid);
+        var message = $('#status-text').val();
+        var posttype = PostType.WALL_POST;
+        console.log(networkid);
+        //var networkid = $('#status_text').data('networkid');
+        $.ajax({
+              type: "POST",
+              url: '/actions/post',
+              data: { 'message' : message, 'posttype' : posttype,'networkid' : networkid,'user_id' : userid},
+              success: function(){
+                    var current_page = document.URL;
+                    console.log(current_page);
+                    $('#status-feed').load(current_page+' #status-feed > *').hide().fadeIn('slow');
+
+                    $('#status-text').val('');
+              },
+              dataType: 'json'
+            });
+}
+
+
+
+
+
+function reply(post){
+    var ele = $(post).closest('#status-sec');
+    var postid = ele.data()['postid'];
+    var message =   $(".reply-box[data-postid='" + postid+ "'] textarea").val();
+
+
+    console.log(message);
+    //var replyid = postid;
+    var posttype = PostType.REPLY_POST;
+
+    $.ajax({
+          type: "POST",
+          url: '/actions/post',
+          data: { 'message' : message, 'posttype' : posttype, 'postid' : postid},
+          success: function(){      
+            hideReply(post);
+            loadReplies(post);
+          },
+          dataType: 'json'
+        });
+
+}
+
+function replyreply(post){
+    var ele = $(post).closest('#status-sec');
+    var postid = ele.data()['postid'];
+    var replyid = $(post).closest('.reply').data()['postid'];
+    var message =   $(".reply-box[data-postid='" + replyid+ "'] textarea").val();
+
+    var posttype = PostType.REPLY_POST;
+
+    $.ajax({
+          type: "POST",
+          url: '/actions/post',
+          data: { 'message' : message, 'posttype' : posttype, 'postid' : postid,'replyid' : replyid},
+          success: function(){      
+            hideReply(post);
+            loadReplies(post);
+          },
+          dataType: 'json'
+        });
+}
+
+function displayReply(post){
+    var ele = $(post).closest('#status-sec').data()['postid'];
+    $(".reply-box[data-postid='" + ele + "']").slideDown(300);
+}
+
+function displayReplyReply(post){
+    var ele = $(post).closest('.reply').find('.reply-box').data()['postid'];
+    console.log(ele);
+    $(".reply-box[data-postid='" + ele + "']").slideDown(300);
+}
+
+function hideReply(post){
+    $(post).closest('.reply-box').slideUp(300);
+}
+
+function hideReplies(ele){
+    var ssec = $(ele).closest('#status-sec')
+    var nele = ssec.find('.reply-sec');
+    $(nele).fadeOut(300);
+}
+function toggleReplies(ele){
+    if(ele.innerHTML == "Show Comments"){
+        ele.innerHTML = "Hide Comments";
+        loadReplies(ele);
     }
-
-    function hideReplies(ele){
-        var ssec = $(ele).closest('#Status-sec')
-        var nele = ssec.find('.reply-sec');
-        $(nele).fadeOut(300);
-    }
-    function toggleReplies(ele){
-        if(ele.innerHTML == "Show Comments"){
-            ele.innerHTML = "Hide Comments";
-            loadReplies(ele);
-        }
         else{
             ele.innerHTML = "Show Comments";
             hideReplies(ele);
         }
-    }
-
-    function searchFriends(){
-        var query = $('.search_box').val();
-        $('head').append('<link rel="stylesheet" type="text/css" href="/static/styles/search.css">');
-    //  $('#Main-Content').load("/search?" + $.param({ query : query}) + " #Main-Content > *").hide().fadeIn(700);
-        window.location = ("/search?" + $.param({ query : query}));
-    }
-
-    function vote(ele,type){
-        var postid = $(ele).closest('#Status-sec').data()['postid'];
-        var ownerid = $(ele).closest('#Status-sec').data()['ownerid'];
-        console.log(postid);
-        var element = $(ele).closest('#Status-sec');
-        var vote_type = "";
-        var is_uni = !$('.onoffswitch-checkbox').is(':checked');
-        if($('.onoffswitch-checkbox').length <= 0){
-            is_uni = false;
-        }
-        console.log(is_uni);
-        if(type == 'up'){
-            vote_type = "up";
-        }
-        else{
-            vote_type = "down";
-        }
-        $.ajax({
-              type: "POST",
-              url: '/actions/friend_vote',
-              data: { 'vote_type' : vote_type,'post_owner' : ownerid,'post_id' : postid,'is_reply' : "false",'is_uni' : is_uni},
-              success: function(){ 
-                                        if($('.onoffswitch-checkbox').length <= 0){
-            checked = false;
-        }
-        if(checked){
-            $("#Status-sec[data-postid='" + postid + "']").load("/ #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(100);
-
-        }
-        else{
-            $("#Status-sec[data-postid='" + postid + "']").load("/?University=True #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(100);
-
-        
-
-        }
-              },
-              error: function(){ 
-
-
-              },
-              dataType: 'json'
-            });
-            var checked = $('.onoffswitch-checkbox').is(':checked');
-        // if($('.onoffswitch-checkbox').length <= 0){
-        //  checked = false;
-        // }
-  //        if(checked){
-  //            $("#Status-sec[data-postid='" + postid + "']").load("/ #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(100);
-
-  //        }
-  //        else{
-  //            $("#Status-sec[data-postid='" + postid + "']").load("/?University=True #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(100);
-
-        
-
-  //        }
-    }
-
-    function voteReply(post,type){
-        var ele = $(post).closest('#Status-sec');
-        var postid = ele.data()['postid'];
-        var ownerid = ele.data()['ownerid'];
-        var replyid = $(post).closest('.reply').data()['postid'];
-        var isReply = "true";
-        var vote_type = "";
-        var is_uni = !$('.onoffswitch-checkbox').is(':checked');
-        if($('.onoffswitch-checkbox').length <= 0){
-            is_uni = false;
-        }
-        if(type == 'up'){
-            vote_type = "up";
-        }
-        else{
-            vote_type = "down";
-        }
-        $.ajax({
-              type: "POST",
-              url: '/actions/friend_vote',
-              data: { 'vote_type' : vote_type,'post_owner' : ownerid,'post_id' : postid,'reply_id' : replyid,'is_reply' : isReply,'is_uni' : is_uni},
-              success: function(){ alert('success');
-              },
-              dataType: 'json'
-            });
-        $(".reply[data-postid='" + replyid + "']").load('/actions/get_replies?post_id='+postid+'&owner_id='+ownerid+'&is_uni='+is_uni+" .reply[data-postid='" + replyid + "'] > *").hide().fadeIn(700);
-    }
-    function post(){
-        {% from constants import * %}
-        var message = $('#status_text').val();
-        var posttype = parseInt({{PostType.WALL_POST}});
-        var is_uni = !$('.onoffswitch-checkbox').is(':checked');
-        console.log(posttype);
-        $.ajax({
-              type: "POST",
-              url: '/actions/post',
-              data: { 'message' : message, 'posttype' : posttype,'is_uni' : is_uni},
-              success: function(){ alert('success');
-              },
-              dataType: 'json'
-            });
-        var checked = $('.onoffswitch-checkbox').is(':checked');
-        if($('.onoffswitch-checkbox').length <= 0){
-            checked = false;
-        }
-        if(checked){
-            $('#Status-Feed').load('/ #Status-Feed > *').hide().fadeIn('slow');
-        }
-        else{
-            $('#Status-Feed').load('/?University=True #Status-Feed > *').hide().fadeIn('slow');
-        }
-        $('#status_text').val('');
-
-    }
-
-    function reply(post){
-        var ele = $(post).closest('#Status-sec');
-        var postid = ele.data()['postid'];
-        var ownerid = ele.data()['ownerid'];
-        var message =   $("#reply-box[data-postid='" + postid+ "'] textarea").val();
-        var is_uni = !$('.onoffswitch-checkbox').is(':checked');
-        if($('.onoffswitch-checkbox').length <= 0){
-            is_uni = false;
-        }
-        console.log(message);
-        //var replyid = postid;
-        {% from constants import * %}
-        var posttype = parseInt({{PostType.REPLY_POST}});
-
-        $.ajax({
-              type: "POST",
-              url: '/actions/post',
-              data: { 'message' : message, 'posttype' : posttype, 'postid' : postid,'ownerid' : ownerid,'is_uni' : is_uni},
-              success: function(){ alert('success');
-              },
-              dataType: 'json'
-            });
-        hideReply(post);
-        loadReplies(post);
-
-    }
-
-    function replyreply(post){
-        var ele = $(post).closest('#Status-sec');
-        var postid = ele.data()['postid'];
-        var ownerid = ele.data()['ownerid'];
-        //console.log(post);
-        //console.log(ownerid);
-        var replyid = $(post).closest('.reply').data()['postid'];
-        //console.log(replyid);
-        var message =   $("#reply-box[data-postid='" + replyid+ "'] textarea").val();
-
-        var is_uni = !$('.onoffswitch-checkbox').is(':checked');
-        if($('.onoffswitch-checkbox').length <= 0){
-            is_uni = false;
-        }
-        //console.log(message);
-        
-        {% from constants import * %}
-        var posttype = parseInt({{PostType.REPLY_POST}});
-
-        $.ajax({
-              type: "POST",
-              url: '/actions/post',
-              data: { 'message' : message, 'posttype' : posttype, 'postid' : postid,'ownerid' : ownerid,'replyid' : replyid,'is_uni':is_uni},
-              success: function(){ alert('success');
-              },
-              dataType: 'json'
-            });
-        hideReply(post);
-        loadReplies(post);
-
-
-    }
-    function displayReply(post){
-        var ele = $(post).closest('#Status-sec').data()['postid'];
-        $("#reply-box[data-postid='" + ele + "']").slideDown(300);
-    }
-
-    function displayReplyReply(post){
-        var ele = $(post).closest('.reply').find('#reply-box').data()['postid'];
-        console.log(ele);
-        $("#reply-box[data-postid='" + ele + "']").slideDown(300);
-    }
-
-    function hideReply(post){
-        $(post).closest('#reply-box').slideUp(300);
-    }
-    function getPosts(){
-        var feed=       $.ajax({
-              type: "GET",
-              url: '/actions/post',
-              data: { },
-              success: function(){ alert('success');
-              },
-              dataType: 'json'
-            });
-        console.log(feed);
-    }
-$("#logo").click(function(){
-     // window.location=$(this).find("a").attr("href"); 
-     window.location = ("/");
-     return false;
-});
-
-
-
-$(".onoffswitch-checkbox").click(function(){
-     // window.location=$(this).find("a").attr("href"); 
-    var checked = $('.onoffswitch-checkbox').is(':checked');
-    if(checked){
-        $('#Status-Feed').load('/ #Status-Feed > *').hide().fadeIn('slow');
-        $('#hhead').html("{{current_user['FirstName'].capitalize()}} {{current_user['LastName'].capitalize()}}");
-    }
-    else{
-        {%import models.University%}
-        $('#Status-Feed').load('/?University=True #Status-Feed > *').hide().fadeIn('slow');
-        $('#hhead').html("{{uniname}}");
-
-    }
-});
-
-
-
+}
 
 function toggleNotifications(){
     var isvis = $('#not-menu-cont').is(":visible");
@@ -350,29 +269,66 @@ function toggleNotifications(){
     }
     
      $('#not-menu-cont').fadeToggle();
-
-
-
 }
 
-$(document).ready(function () {
-
-    // if user clicked on button, the overlay layer or the dialogbox, close the dialog  
-    $('a.btn-ok, #dialog-overlay, #dialog-box').click(function () {     
-        $('#dialog-overlay, #dialog-box').hide();       
-        return false;
-    });
-    
-    // if user resize the window, call the same function again
-    // to make sure the overlay fills the screen and dialogbox aligned to center    
-    $(window).resize(function () {
+function popup(message) {
         
-        //only do it if the dialog box is not hidden
-        if (!$('#dialog-box').is(':hidden')) popup();       
-    }); 
+    // get the screen height and width  
+    var maskHeight = $(window).height();  
+    var maskWidth = $(window).width();
     
+    // calculate the values for center alignment
+    var dialogTop =  (maskHeight/3) - ($('#dialog-box').height());  
+    var dialogLeft = (maskWidth/2) - ($('#dialog-box').width()/2); 
     
-});
+    // assign values to the overlay and dialog box
+    // $('#dialog-overlay').css({height:maskHeight, width:maskWidth}).show();
+    $('#dialog-box').fadeIn();
+    
+    // display the message
+    $('#dialog-message').html(message);
+
+
+    setTimeout(function(){
+    $('#dialog-box').fadeOut();}, 3000);
+}
+
+function submitClub(self){
+    var memberform = $(self).find('#memberTags span.tagit-label').eq(1).data('fid');
+    var members_li = $(self).find('#memberTags span.tagit-label');
+    var admins_li = $(self).find('#adminTags span.tagit-label');
+
+    var length = $(self).find('#memberTags span.tagit-label').length;
+    var lengtha = $(self).find('#adminTags span.tagit-label').length;
+    var members = "";
+    var admins = "";
+    for(var i=0;i<length;i++){
+        members += members_li.eq(i).data('fid') + ",";
+    }
+    for(var i=0;i<lengtha;i++){
+        admins += admins_li.eq(i).data('fid') + ",";
+    }
+    var name = $(self).find('input[name="name"]').val();
+    var about = $(self).find('#newclubabout').val();
+    var priv = checked = $('#publicsw').is(':checked');
+    // console.log(about);
+        $.ajax({
+          type: "POST",
+          url: '/actions/new_club',
+          data: {'members':members,'name' : name,'about': about,'private' : priv , 'admins' : admins},
+          success: function(){ 
+
+            popup("Club created successfully!");
+            $('#newclub').fadeOut();
+
+          },
+          error:function(){
+            popup("something went wrong");
+          },
+          dataType: 'json'
+        });
+
+}
 
 function togglePop(){
     var maskHeight = $(window).height();  
@@ -385,28 +341,62 @@ function togglePop(){
 
 }
 
-//Popup dialog
-function popup(message) {
-        
-    // get the screen height and width  
-    var maskHeight = $(window).height();  
-    var maskWidth = $(window).width();
+function requestMember(clubid){
     
-    // calculate the values for center alignment
-    var dialogTop =  (maskHeight/3) - ($('#dialog-box').height());  
-    var dialogLeft = (maskWidth/2) - ($('#dialog-box').width()/2); 
+    var action = MemberAction.ADD;
+
+    $.ajax({
+        type: "POST",
+        url: '/club/members',
+        data: {'clubid': clubid,'action' : action},
+        success: function(){ 
+
+         // popup("M");
+          $("#user-data").load(document.URL+" #user-data > *").hide().fadeIn(100);
+
+        },
+        error:function(){
+          popup("something went wrong");
+        },
+        dataType: 'json'
+    });
+}
+function addMember(userid,clubid) {
     
-    // assign values to the overlay and dialog box
-    $('#dialog-overlay').css({height:maskHeight, width:maskWidth}).show();
-    $('#dialog-box').css({top:dialogTop, left:dialogLeft}).show();
-    
-    // display the message
-    $('#dialog-message').html(message);
+    var action = MemberAction.CONFIRM;
+
+                $.ajax({
+              type: "POST",
+              url: '/club/members',
+              data: {'clubid': clubid,'userid' : userid,'action' : action},
+              success: function(){ 
+
+                popup("Member added successfully!");
+                $("#Main-Content").load(document.URL+" #Main-Content > *").hide().fadeIn(100);
+
+              },
+              error:function(){
+                popup("something went wrong");
+              },
+              dataType: 'json'
+            });
+}
+
+function sendRequest(element,userid){
+      var userstatus = $(element).data()['userstatus'];
+      $.ajax({
+        type: "POST",
+        url: '/actions/respond_friend',
+        data: { 'Action' : 1, 'UserStatus' : userstatus , '_id' : userid},
+        success: function(){ $('#Main-Content').load(document.URL+' #Main-Content > *');
+        },
+        dataType: 'json'
+      });
 
 }
 
-// $('.notification-count').hide();
-
-$('#logo img').css('cursor', 'pointer');
-
-$('#logo img:hover').css('background', 'gray');
+$("#logo").click(function(){
+     // window.location=$(this).find("a").attr("href"); 
+     window.location = ("/");
+     return false;
+});

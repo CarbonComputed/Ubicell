@@ -25,7 +25,7 @@ from email.mime.text import MIMEText
 
 logger = logging.getLogger(__name__)
 
-smtp = smtplib.SMTP('localhost')
+# smtp = smtplib.SMTP('localhost')
 
 EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
@@ -40,9 +40,9 @@ def login(username,password,callback=None):
 	# password = password.encode('utf-8')
 	m.update(password)
 	hashed = m.hexdigest()
-	login = User.objects(UserName=username.lower(),Password=hashed).exclude("Password","Wall","FriendsRequested","Friends","FriendsRequesting")
+	login = User.objects(UserName=username.lower(),Password=hashed).exclude("Password","FriendsRequested","Friends","FriendsRequesting","Clubs","Nots","Votes")
 	if login.first() is None:
-		login = User.objects(Email=username.lower(),Password=hashed).exclude("Password","Wall","FriendsRequested","Friends","FriendsRequesting")
+		login = User.objects(Email=username.lower(),Password=hashed).exclude("Password","FriendsRequested","Friends","FriendsRequesting","Clubs","Nots","Votes")
 		if login.first() is None:
 			if callback != None:
 				return callback(None)
@@ -93,7 +93,17 @@ def register(user,request,callback=None):
 	#Check length
 
 	usermodel = User(UserName=username,FirstName=firstname,LastName=lastname,Password=password,Email=email,Gender=gender,School=school,About=aboutme,RegId=regid) 
-	usermodel.save()
+	try:
+		usermodel.save()
+	except NotUniqueError as e:
+		if "UserName" in str(e):
+			if callback != None:
+				return callback(RegError.USERNAME_INUSE)
+			return RegError.USERNAME_INUSE
+		if "Email" in str(e):
+			if callback != None:
+				return callback(RegError.EMAIL_INUSE)
+			return RegError.EMAIL_INUSE
 
 	profimg = ProfileImage(Owner=usermodel.id)
 	profimg.Image.put(fileinfo['body'],content_type = 'image/jpeg',Owner=usermodel.id)
@@ -107,7 +117,7 @@ def register(user,request,callback=None):
 	uni.Students.append(usermodel.id)
 	uni.save()
 	logger.info(username + " has registered")
-	send_confirmation(email,regid)
+	#send_confirmation(email,regid)
 	if callback != None:
 		return callback(200)
 	return 200

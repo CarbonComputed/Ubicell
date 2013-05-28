@@ -9,6 +9,7 @@ import tornado.web
 import os.path
 import uuid
 
+from uimodules import *
 from tornado.options import define, options
 from tornado.httpclient import HTTPError
 from tornado import gen
@@ -64,13 +65,22 @@ class Application(tornado.web.Application):
                 (r'/actions/get_replies',ReplyLoader),
                 (r'/actions/edit_profile',EditProfileHandler),
                 (r'/actions/get_nots',NotificationHandler),
-                (r'/actions/get_uni_feed',UniversityFeedHandler),
+                (r'/actions/feed',FeedHandler),
+                (r'/university',UniversityFeedHandler),
                 (r'/actions/new_club',NewClubHandler),
                 (r'/actions/thumbnail',LinkPreviewHandler),
                 (r'/club',ClubHandler),
                 (r'/club/members',ClubMemberHandler),
-                (r'/verify',EmailConfirmHandler)                
+                (r'/verify',EmailConfirmHandler),
+                     
                 ]
+                uimodules = {
+                    "LeftSideModule": LeftSideModule, 
+                    "NewClubModule": NewClubModule,
+                    "PostModule": PostModule,
+                    "NavModule" : NavModule,
+                    "NotModule" : NotModule,
+                }
                 settings = dict(
                         cookie_secret="p5q5askPJeOhs5mXb3QZ9CrNZUlxRWha6CPXif8G",
                         login_url="/auth/login",
@@ -80,6 +90,7 @@ class Application(tornado.web.Application):
                         autoescape="xhtml_escape",
                         facebook_api_key='124864341026931',
                         facebook_secret='29c22c3ca0963581b47f1604adbe48ce',
+                        ui_modules = uimodules,
                         )
                 tornado.web.Application.__init__(self, handlers, **settings)
                 connect(config.DB_NAME)
@@ -102,30 +113,40 @@ class MainHandler(BaseHandler):
         def get(self):
                 user = self.get_current_user()
                 is_uni = str2bool(self.get_argument('University',strip=True,default="f"))
-                # print user['_id']['$oid']
-                
+                try:
+                    numresults = int(self.get_argument('nresults',strip=True,default=NUM_RESULTS))
+                except:
+                    numresults = NUM_RESULTS
+                try:
+                    page = int(self.get_argument('page',strip=True,default=0))
+                except:
+                    page = 0
+                startNum = page * NUM_RESULTS
+                sort = self.get_argument('sort',strip=True,default="Hotness")
 
                 uid = user['_id']['$oid']
-                feed = yield gen.Task(core_actions.get_feed,uid)
-                feed = feed['result']
-                # print feed
-                nots= yield gen.Task(core_actions.get_notifications,uid)
-                nots.reverse()
+                me = yield gen.Task(user_actions.get_simple_data,uid)
 
+                feed = yield gen.Task(core_actions.get_feed,uid,startNum=startNum,numResults=NUM_RESULTS)
+                if len(feed) == 0 and page > 0:
+                    self.finish()
+                    return
+
+                nots= yield gen.Task(core_actions.get_notifications,uid)
                 uniname = University.objects(id=user['School']['University']['$oid']).first().Name
-                # print 'is_uni',is_uni
-                # print uid
                 friends = yield gen.Task(user_actions.get_friends,uid)
-                # print friends[0]
-                #print self.request
+
                 clubs = User.objects(id=uid).first().Clubs
                 if not is_uni:
-                        self.render("base.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends,clubs=clubs,is_club=False)
+                        self.render("index.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends,clubs=clubs,me=me)
                 else:
                         uniid = user['School']['University']['$oid']
 
-                        feed = yield gen.Task(school_actions.get_feed,uniid)
-                        self.render("UniFeed.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends,code=200,clubs=clubs,is_club=False)
+                        feed = yield gen.Task(core_actions.get_feed,uid,uniid,startNum=startNum,numResults=NUM_RESULTS)
+                        if len(feed) == 0 and page > 0:
+                            self.finish()
+                            return
+                        self.render("index.html",userdata=user,feed = feed,uniname=uniname,friends=friends,clubs=clubs,me=me)
 
 
 
@@ -203,7 +224,11 @@ class RegisterHandler(BaseHandler):
                     # self.redirect("/")
                     return
                 else:
-                    self.write({'error' : True,'msg' : str(resp)})
+                    self.set_status(501)
+                    if resp == RegError.EMAIL_INUSE:
+                        self.write({'error' : True,'msg':"Email already in use"})
+                    if resp == RegError.USERNAME_INUSE:
+                        self.write({'error' : True,'msg':"Username already in use"})
                     self.finish()
                     return
                 # except BaseException as e:
@@ -220,6 +245,11 @@ class UserHandler(BaseHandler):
 
         def get(self,UserName):
                 #check if user can view profile
+                try:
+                    page = int(self.get_argument('page',strip=True,default=0))
+                except:
+                    page = 0
+                startNum = page * NUM_RESULTS
 
                 user = self.get_current_user()
                 uid = user['_id']['$oid']
@@ -228,11 +258,13 @@ class UserHandler(BaseHandler):
                 friend = yield gen.Task(user_actions.is_friends_with,uid,UserName)
                 friend_requested = yield gen.Task(user_actions.is_friend_requested,uid,UserName)
                 friend_requesting = yield gen.Task(user_actions.is_friend_requesting,uid,UserName)
-                feed = yield gen.Task(core_actions.get_user_feed,user2['_id'])
-                feed = feed['result']
+                feed = yield gen.Task(core_actions.get_user_feed,user2['_id'],startNum=startNum)
                 # print 'friend',friend
                 # print 'friend_requesting',friend_requesting
                 # print 'friend_requested',friend_requested
+                if len(feed) == 0 and page > 0:
+                    self.finish()
+                    return
                 if user2 is None:
                         raise tornado.web.HTTPError(404)
                 user2['UserStatus'] = UserStatus.USER_FRI
@@ -240,6 +272,7 @@ class UserHandler(BaseHandler):
                 nots.reverse()
                 uniname = University.objects(id=user['School']['University']['$oid']).first().Name
                 # print user2['UserStatus']
+                me = yield gen.Task(user_actions.get_simple_data,uid)
 
                 friends = yield gen.Task(user_actions.get_friends,uid)
                 if UserName == user['UserName']:
@@ -247,10 +280,11 @@ class UserHandler(BaseHandler):
                         user2['UserStatus'] = UserStatus.USER_ME
                         # print user2
                         # print user2['ProfileImg']['$oid']
-                        feed = yield gen.Task(core_actions.get_user_feed,uid)
-                        feed = feed['result']
-
-                        self.render("me.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends,is_club=False)
+                        feed = yield gen.Task(core_actions.get_user_feed,uid,startNum=startNum)
+                        if len(feed) == 0 and page > 0:
+                            self.finish()
+                            return
+                        self.render("me.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends,me=me)
                         return
                 elif friend is False and friend_requested is False and friend_requesting is False:
                         user2['UserStatus'] = UserStatus.USER_NEI
@@ -264,11 +298,12 @@ class UserHandler(BaseHandler):
                 #get user data
                 #render page
                 # print user2['ProfileImg']
-                feed = yield gen.Task(core_actions.get_user_feed,user2['_id'])
-                feed = feed['result']
+                #feed = yield gen.Task(core_actions.get_user_feed,user2['_id'])
+                logger.debug(user2['_id'])
+                # logger.debug(feed[0].Message)
                 # print user2['UserStatus']
 
-                self.render("user.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends,is_club=False)
+                self.render("user.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends,me=me)
 
         @tornado.web.asynchronous
         @gen.coroutine
@@ -281,12 +316,12 @@ class UserHandler(BaseHandler):
                 friendid = User.objects(UserName=UserName).first().id
                 resp = {'error' : False}
                 if posttype is PostType.WALL_POST:
-                        p = yield gen.Task(core_actions.post_wall,friendid,message,userid)
+                        p = yield gen.Task(core_actions.post_wall,friendid,message,userid,networkid=userid)
                         self.write(resp)
                 elif posttype is PostType.REPLY_POST:
                         postid = self.get_argument('postid',strip=True)
                         replyid = self.get_argument('replyid',default = None,strip=True)
-                        p = yield gen.Task(core_actions.post_wall,userid,message)
+                        p = yield gen.Task(core_actions.post_reply,userid,message,postid,replyid)
                         self.write(resp)
                 else:
                         # print 'huh?'
@@ -387,67 +422,40 @@ class PostHandler(BaseHandler):
 
         @tornado.web.asynchronous
         @gen.coroutine
+        @tornado.web.authenticated
         def post(self):
-                userid = self.get_current_user()['_id']['$oid']
-                message = self.get_argument('message',strip=True)
-                posttype = int(self.get_argument('posttype',strip=True))
-                isuni = str2bool(self.get_argument('is_uni',strip=True,default='f'))
-                isclub = str2bool(self.get_argument('is_club',strip=True,default='f'))
+            userid = self.get_current_user()['_id']['$oid']
+            message = self.get_argument('message',strip=True)
+            posttype = int(self.get_argument('posttype',strip=True))
+            networkid = self.get_argument('networkid',default=userid,strip=True)
+            friendid = self.get_argument('user_id',default=userid,strip=True)
+            if networkid != None and len(networkid) == 0:
+                networkid = userid
+            if friendid != None and len(friendid) == 0:
+                friendid = userid
+            print friendid
 
-                post_resp = {'error' : False}
-                if not isuni and not isclub:
-                        logger.debug('not isuni')
-                        if posttype is PostType.WALL_POST:
-                                yield gen.Task(core_actions.post_wall,userid,message)
-                                self.write(post_resp)
+            # isuni = str2bool(self.get_argument('is_uni',strip=True,default='f'))
+            # isclub = str2bool(self.get_argument('is_club',strip=True,default='f'))
+            print friendid
+            print userid
+            logger.debug("Post userid=%s message=%s posttype=%s networkid=%s friendid=%s",userid,message,posttype,networkid,friendid)
+            post_resp = {'error' : False}
+            if posttype is PostType.WALL_POST:
+                    yield gen.Task(core_actions.post_wall,friendid,message,userid,networkid=networkid)
+                    self.write(post_resp)
 
-                        elif posttype is PostType.REPLY_POST:
-                                postid = self.get_argument('postid',strip=True)
-                                replyid = self.get_argument('replyid',default = None,strip=True)
-                                # print 'replyid',replyid
-                                ownerid = self.get_argument('ownerid',default = None,strip=True)
-                                p = yield gen.Task(core_actions.post_wall,ownerid,message,commenter = userid,postid=postid,replyid = replyid)
-                                self.write(post_resp)
+            elif posttype is PostType.REPLY_POST:
+                    postid = self.get_argument('postid',strip=True)
+                    replyid = self.get_argument('replyid',default = None,strip=True)
+                    p = yield gen.Task(core_actions.post_reply,userid,message=message,postid=postid,replyid = replyid)
+                    self.write(post_resp)
 
-                        else:
-                                self.write({'error': True})
-                                
-                elif isuni:
-                        logger.debug('isuni')
-                        uniid = User.objects(id=userid).first().School.University
-                        if posttype is PostType.WALL_POST:
-                                yield gen.Task(school_actions.post_wall,userid,message,groupid=uniid)
-                                self.write(post_resp)
+            else:
+                    self.write({'error': True})
 
-                        elif posttype is PostType.REPLY_POST:
-                                postid = self.get_argument('postid',strip=True)
-                                replyid = self.get_argument('replyid',default = None,strip=True)
-                                # print 'replyid',replyid
-                                ownerid = self.get_argument('ownerid',default = None,strip=True)
-                                p = yield gen.Task(school_actions.post_wall,ownerid,message,groupid=uniid,commenter = userid,postid=postid,replyid = replyid)
-                                self.write(post_resp)
-
-                        else:
-                            self.write({'error': True})
-                elif isclub:
-                        logger.debug('isclub' )
-                        clubid = self.get_argument('clubid',strip=True)
-                        if posttype is PostType.WALL_POST:
-                                yield gen.Task(club_actions.post_wall,userid,message,groupid=clubid)
-                                self.write(post_resp)
-
-                        elif posttype is PostType.REPLY_POST:
-                                postid = self.get_argument('postid',strip=True)
-                                replyid = self.get_argument('replyid',default = None,strip=True)
-                                # print 'replyid',replyid
-                                ownerid = self.get_argument('ownerid',default = None,strip=True)
-                                p = yield gen.Task(club_actions.post_wall,ownerid,message,groupid=clubid,commenter = userid,postid=postid,replyid = replyid)
-                                self.write(post_resp)
-
-                        else:
-                            self.write({'error': True})
                     
-                self.finish()
+            self.finish()
 
 
 class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
@@ -506,63 +514,29 @@ class FriendVoteHandler(BaseHandler):
         #Check if post is owned by friend
 
         def post(self):
-                powner = self.get_argument('post_owner',strip=True)
+                # powner = self.get_argument('post_owner',strip=True)
                 postid = self.get_argument('post_id',strip=True)
                 vote = self.get_argument('vote_type',strip=True)
                 uid = self.get_current_user()['_id']['$oid']
-                isreply = self.get_argument('is_reply',strip=True)
-                isuni = str2bool(self.get_argument('is_uni',strip=True,default='f'))
-                isclub = str2bool(self.get_argument('is_club',strip=True,default='f'))
-                #if user_actions.validPost(self.db,powner,postid) is False  or user_actions.is_friends_with_byid(self.db,uid,powner) is False:
-                #       reply = 500;
-                # print isuni
-                uniid = User.objects(id=powner).first().School.University
-                # print 'isrepl',isreply
-                if not isuni and not isclub:
-                        if isreply == "true":
-                                replyid = self.get_argument('reply_id',strip=True)
-                                if vote == 'up':
-                                        reply = yield gen.Task(core_actions.upvote_comment,powner,uid,postid,replyid)
-                                else:
-                                        reply = yield gen.Task(core_actions.downvote_comment,powner,uid,postid,replyid)
+                isreply = str2bool(self.get_argument('is_reply',strip=True,default='f'))
+                # networkid = self.get_argument('networkid',default=None,strip=True)
 
+
+                if isreply:
+                        replyid = self.get_argument('reply_id',strip=True)
+                        if vote == 'up':
+                                reply = yield gen.Task(core_actions.upvote_comment,uid,postid,replyid)
                         else:
-                                if vote == 'up':
-                                        reply = yield gen.Task(core_actions.upvote_post,powner,uid,postid)
-                                else:
-                                        reply = yield gen.Task(core_actions.downvote_post,powner,uid,postid)
+                                reply = yield gen.Task(core_actions.downvote_comment,uid,postid,replyid)
+
+                else:
+                        if vote == 'up':
+                                reply = yield gen.Task(core_actions.upvote_post,uid,postid)
+                        else:
+                                reply = yield gen.Task(core_actions.downvote_post,uid,postid)
 
                         # print reply
-                        
-                elif isuni:
-                        if isreply == "true":
-                                replyid = self.get_argument('reply_id',strip=True)
-                                if vote == 'up':
-                                        reply = yield gen.Task(school_actions.upvote_comment,uniid,uid,postid,replyid)
-                                else:
-                                        reply = yield gen.Task(school_actions.downvote_comment,uniid,uid,postid,replyid)
-
-                        else:
-                                if vote == 'up':
-                                        reply = yield gen.Task(school_actions.upvote_post,uniid,uid,postid)
-                                else:
-                                        reply = yield gen.Task(school_actions.downvote_post,uniid,uid,postid)
-                elif isclub:
-                        clubid = self.get_argument('clubid',strip=True)
-                        if isreply == "true":
-                                replyid = self.get_argument('reply_id',strip=True)
-                                if vote == 'up':
-                                        reply = yield gen.Task(club_actions.upvote_comment,clubid,uid,postid,replyid)
-                                else:
-                                        reply = yield gen.Task(club_actions.downvote_comment,clubid,uid,postid,replyid)
-
-                        else:
-                                if vote == 'up':
-                                        reply = yield gen.Task(club_actions.upvote_post,clubid,uid,postid)
-                                else:
-                                        reply = yield gen.Task(club_actions.downvote_post,clubid,uid,postid)
-
-                        # print reply
+     
                 logger.debug("Vote Posted Successfully")
                 self.write({
                 'error': False, 
@@ -584,7 +558,7 @@ class SearchHandler(BaseHandler):
                 nots.reverse()
                 uniname = University.objects(id=self.get_current_user()['School']['University']['$oid']).first().Name
                 friends = yield gen.Task(user_actions.get_friends,userid['$oid'])
-                self.render('search.html',userdata= self.get_current_user(),results = results,nots=nots,uniname=uniname,friends=friends)
+                self.render('search.html',userdata= self.get_current_user(),results = results,nots=nots,uniname=uniname,friends=friends,is_club=False)
                 
 
 class EditProfileHandler(BaseHandler):
@@ -635,7 +609,7 @@ class EditProfileHandler(BaseHandler):
                     user.ProfileImg = profimg.id
 
                 user.save()
-                user =  User.objects(id=user.id).exclude("Password","Wall","FriendsRequested","Friends","FriendsRequesting").first()
+                user =  User.objects(id=user.id).exclude("Password","Wall","FriendsRequested","Friends","FriendsRequesting","Clubs","Nots").first()
                 self.set_secure_cookie("userdata", tornado.escape.json_encode(dumps(user.to_mongo())))
                 # self.write("<script>alert(\"success!\") </script>");
                 # self.redirect("/")
@@ -654,21 +628,23 @@ class ReplyLoader(BaseHandler):
                 #Check if friends
                 userid = self.get_current_user()['_id']
                 postid = self.get_argument('post_id',strip = True)
-                powner = self.get_argument('owner_id',strip = True)
-                is_uni = str2bool(self.get_argument('is_uni',strip=True,default="false"))
-                is_club = str2bool(self.get_argument('is_club',strip=True,default="false"))
+                # powner = self.get_argument('owner_id',strip = True)
+                # is_uni = str2bool(self.get_argument('is_uni',strip=True,default="false"))
+                # is_club = str2bool(self.get_argument('is_club',strip=True,default="false"))
 
                 # print 'userid',userid
                 # print 'powner',powner
                 # print 'pid',postid
-                if not is_uni and not is_club:
-                        replies = yield gen.Task(core_actions.get_replies,userid,powner,postid)
-                elif is_uni:
-                        uniid = self.get_current_user()['School']['University']['$oid']
-                        replies = yield gen.Task(school_actions.get_replies,uniid,powner,postid)
-                elif is_club:
-                        clubid = self.get_argument('clubid',strip=True)
-                        replies = yield gen.Task(club_actions.get_replies,clubid,powner,postid)
+                replies = yield gen.Task(core_actions.get_replies,userid,postid)
+
+                # if not is_uni and not is_club:
+                #         replies = yield gen.Task(core_actions.get_replies,userid,powner,postid)
+                # elif is_uni:
+                #         uniid = self.get_current_user()['School']['University']['$oid']
+                #         replies = yield gen.Task(core_actions.get_replies,uniid,powner,postid)
+                # elif is_club:
+                #         clubid = self.get_argument('clubid',strip=True)
+                #         replies = yield gen.Task(core_actions.get_replies,clubid,powner,postid)
                 t = core_actions.build_tree(replies)
                 # print t
                 # core_actions.print_graph(t,ObjectId(postid))
@@ -701,15 +677,34 @@ class UniversityFeedHandler(BaseHandler):
         @gen.coroutine    
 
         def get(self):
-                user = self.get_current_user()
-                uid = user['_id']['$oid']
-                schoolid = user['School']['University']['$oid']
-                feed = yield gen.Task(school_actions.get_feed,schoolid)
-                # print feed
-                nots = yield gen.Task(core_actions.get_notifications,uid)
-                nots.reverse()
-                uniname = University.objects(id=user['School']['University']['$oid']).first().Name
-                self.render("UniFeed.html",userdata=user,feed = feed,nots=nots,uniname=uniname,is_club=False)
+            user = self.get_current_user()
+            try:
+                numresults = int(self.get_argument('nresults',strip=True,default=NUM_RESULTS))
+            except:
+                numresults = NUM_RESULTS
+            try:
+                page = int(self.get_argument('page',strip=True,default=0))
+            except:
+                page = 0
+            startNum = page * NUM_RESULTS
+            sort = self.get_argument('sort',strip=True,default="Hotness")
+
+            uid = user['_id']['$oid']
+            feed = yield gen.Task(core_actions.get_feed,uid,startNum=startNum,numResults=NUM_RESULTS)
+            nots= yield gen.Task(core_actions.get_notifications,uid)
+            uniname = University.objects(id=user['School']['University']['$oid']).first().Name
+            friends = yield gen.Task(user_actions.get_friends,uid)
+            me = yield gen.Task(user_actions.get_simple_data,uid)
+
+            clubs = User.objects(id=uid).first().Clubs
+
+            uniid = user['School']['University']['$oid']
+            feed = yield gen.Task(core_actions.get_feed,uid,uniid,startNum=startNum,numResults=NUM_RESULTS)
+            if len(feed) == 0 and page > 0:
+                self.finish()
+                return
+            self.render("university.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends,clubs=clubs,me=me)
+
 
 
 class NewClubHandler(BaseHandler):
@@ -754,12 +749,18 @@ class ClubHandler(BaseHandler):
         except:
             self.redirect("/")
             return
-        logger.debug(club.Name)
-        is_member = uid in club.Members
-        is_member_reg = uid in club.MemberRequests
-        is_admin = uid in club.Admins
 
-        self.render('club.html',nots=nots,friends=friends,uniname=None,is_member=is_member,is_admin=is_admin,club = club,is_club=True,is_member_reg=is_member_reg)
+        logger.debug(club.Name)
+
+        is_member = ObjectId(uid) in club.Members
+        is_member_reg = ObjectId(uid) in club.MemberRequests
+        is_admin = ObjectId(uid) in club.Admins
+        feed = yield gen.Task(core_actions.get_feed,uid,clubid)
+        me = yield gen.Task(user_actions.get_simple_data,uid)
+        if len(feed) == 0 and page > 0:
+            self.finish()
+            return
+        self.render('club.html',nots=nots,feed=feed,friends=friends,uniname=None,is_member=is_member,is_admin=is_admin,club = club,is_club=True,is_member_reg=is_member_reg,me=me)
     
 
 
@@ -778,13 +779,15 @@ class ClubMemberHandler(BaseHandler):
     def post(self):
         action = int(self.get_argument('action'))
         clubid = self.get_argument('clubid',strip=True)
-        userid = self.get_argument('userid',strip=True)
+
         uid = self.get_current_user()['_id']['$oid']
+
         resp = 500
         if action == MemberAction.CONFIRM:
+            userid = self.get_argument('userid',strip=True)
             resp = yield gen.Task(club_actions.confirm_member,uid,clubid,userid)
         elif action == MemberAction.ADD:
-            resp = yield gen.Task(club_actions.add_member,clubid,userid)
+            resp = yield gen.Task(club_actions.add_member,clubid,uid)
         if resp != 200:
             self.write({'error' : True,'msg' : 'Add Member Failure'})
         else:
@@ -801,11 +804,13 @@ class ClubMemberHandler(BaseHandler):
         is_admin = uid in club.Admins
         Members = club_actions.get_member_data(clubid)
         MemberRequests = club_actions.get_member_req_data(clubid)
+        clubs = User.objects(id=uid).first().Clubs
+
         print Members
         nots= yield gen.Task(core_actions.get_notifications,self.get_current_user()['_id']['$oid'])
         nots.reverse()
         friends = yield gen.Task(user_actions.get_friends,self.get_current_user()['_id']['$oid'])
-        self.render('members.html',Members=Members,MemberRequests=MemberRequests,nots=nots,friends=friends,is_club=True,uniname=None,club=club,is_admin=is_admin)
+        self.render('members.html',Members=Members,MemberRequests=MemberRequests,nots=nots,friends=friends,is_club=True,uniname=None,club=club,is_admin=is_admin,clubs=clubs)
 
 
 class LinkPreviewHandler(BaseHandler):
@@ -854,8 +859,45 @@ class EmailConfirmHandler(BaseHandler):
             return
         except:
             self.render('message.html',message='Thats not right')
-            
-               
+
+class FeedHandler(BaseHandler):
+    @tornado.web.authenticated
+    @tornado.web.asynchronous
+    @gen.coroutine
+
+    def get(self):
+        user = self.get_current_user()
+        uid = user['_id']['$oid']
+        try:
+            numresults = int(self.get_argument('nresults',strip=True,default=NUM_RESULTS))
+        except:
+            numresults = NUM_RESULTS
+        try:
+            page = int(self.get_argument('page',strip=True,default=0))
+        except:
+            page = 0
+
+        startNum = page * NUM_RESULTS
+        sort = self.get_argument('sort',strip=True,default="-Hotness")
+        netid = self.get_argument('network_id',strip=True,default=None)
+        userid = self.get_argument('user_id',strip=True,default=None)
+        me = yield gen.Task(user_actions.get_simple_data,uid)
+
+        #logger.debug('Netid= '+netid)
+        uniname = University.objects(id=user['School']['University']['$oid']).first().Name
+        logger.debug("Sort= %s",sort)
+        if userid != None:
+            feed = yield gen.Task(core_actions.get_user_feed,userid,netid,startNum=startNum,numResults=NUM_RESULTS)
+            self.render('feed.html',feed=feed)
+        else:
+            feed = yield gen.Task(core_actions.get_feed,uid,netid,startNum=startNum,numResults=NUM_RESULTS,orderBy=sort)
+            if netid == None:
+                self.render('feed.html',feed=feed,uniname=uniname,me=me)
+            elif netid == user['School']['University']['$oid']:
+                self.render('feed.html',feed=feed,me=me)
+            else:
+                self.render('feed.html',feed=feed,me=me)        
+        
 
 def main():
     tornado.options.parse_command_line()
@@ -872,5 +914,11 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # connect("uplace")
+    # core_actions.post_wall("51800A8A407450B2A4409A73" ,"testpost")
+
+    #core_actions.downvote_comment("51800A8A407450B2A4409A73","51852A59407450C74987D99F","51852ED5407450C774AFA513")
+    # core_actions.get_user_feed("51800A8A407450B2A4409A73")
+    # core_actions.downvote_comment("51800A8A407450B2A4409A73","mothafucka","51800A8A407450B2A4409A73","51852A59407450C74987D99F")
 
 

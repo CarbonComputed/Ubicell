@@ -2,8 +2,7 @@
 <title>Ubicell</title>
 <head>
 	<script src="../static/jquery-1.9.1.min.js"></script>
-	<link rel="stylesheet" href="../static/styles/base2.css" type="text/css" />
-	<link rel="stylesheet" href="../static/styles/reg.css" type="text/css" />
+	<link rel="stylesheet" href="../static/styles/ubicell.css" type="text/css" />
 	<link rel="stylesheet" href="../static/styles/font-awesome.css" type="text/css" />
 	<script src="/static/jquery-1.9.1.min.js"></script>
 
@@ -15,7 +14,7 @@
 </head>
 <body>
 
-	<div id="top-nav">
+	<div id="nav">
 		<div id="logo">
 			
 				<a href="/"><img src="/static/images/logo_word6.svg" height="55px" width="175px"></a>
@@ -25,21 +24,21 @@
 
 	</div>
 	<div class="clear"></div>
-	<div id="container">
+	<div id="container" class="register">
 
 	<div id="left-side-bar">
 		<form id="regForm" action="register" onSubmit="return validateForm(this)" method="post" enctype="multipart/form-data">
 
 		<div id="reg-block">
 				Name: <input type="text" name="FullName" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"> </span><br>
-				Username: <input type="text" name="UserName" pattern="[A-Za-z\d.]{5,}" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
-				Password: <input type="password" name="Password" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
+				Username: <input id="un" type="text" name="UserName" pattern="[A-Za-z\d.]{5,}" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
+				Password: <input id="pw" type="password" name="Password" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
 				Confirm Password: <input type="password" name="confPassword" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
 				Email: <input type="email" name="Email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.+-]+\.edu$" required="true"><i class="icon-remove" style="color:red;"></i><span class="error-box"></span><br>
-				{%raw captcha.get_html()%}
+				<div id="cap">{%raw captcha.get_html()%}</div>
 		</div>
 	</div>
-	<div id="Main-Content">
+	<div id="content">
 		<div id="extra-info">
 			<div id="profile-pic">
 			  <label for="pic">Profile Picture</label>
@@ -87,7 +86,7 @@
 		var name = $(input).attr("name");
 		var value = input.value;
 		if(name=="UserName"){
-			console.log("here");
+			//console.log("here");
 			displayMessage(input,"Username must contain at least 5 characters");
 		}
 		if(name == "Email"){
@@ -129,11 +128,14 @@
 
 		var value = input.value;
 		var name = $(input).attr("name");
+		//console.log(value);
 		if(value.length <= 0){
 			hideMessage(input);
 			return false;
 		}
 		if(name == "UserName"){
+
+
 			if(value.match(/[a-z\d.]{5,}/)){
 				makeCheck(input);
 				hideMessage(input);
@@ -322,6 +324,7 @@
         }
 	$(function() {
      // Handler for .ready() called.
+
      		for (i = new Date().getFullYear()+10; i > 2000; i--)
 		{
     		$('#yearpicker').append($('<option />').val(i).html(i));
@@ -336,14 +339,22 @@
             	console.log(data);
             	var resp = JSON.parse(data.responseText);
             	alert(resp['msg']);
+            	ACPuzzle.reload();
+
             },
             dataType: 'json'
             }); 
-		// validateForm($('#regForm'));
 
     });
 
+$(document).ready(function() {
+		setTimeout(function(){
+	 validate( document.getElementById( "un" ))
+validate( document.getElementById( "pw" ))
+	}, 1500);
+		;
 
+});
 	
 	</script>
 </div>

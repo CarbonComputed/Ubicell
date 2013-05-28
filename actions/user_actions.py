@@ -40,7 +40,7 @@ def get_friend_data(username,callback=None):
 
 
 def get_simple_data(userid,callback=None):
-	user = User.objects(id=userid).exclude("Wall","Friends","FriendsRequested","FriendsRequesting","Password").first()
+	user = User.objects(id=userid).exclude("Friends","FriendsRequested","FriendsRequesting","Password").first()
 	if callback != None:
 		return callback(user)
 	return user

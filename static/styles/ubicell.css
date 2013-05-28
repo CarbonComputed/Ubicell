@@ -1,0 +1,750 @@
+/*Globals*/
+
+* {
+font-family:Calibri;
+margin:0;
+padding:0;
+}
+
+.clear {
+clear:both;
+}
+
+body,html {
+width:auto;
+height:100%;
+overflow-x:hidden;
+background-image:url(../images/hexellence.png);
+}
+
+#container {
+height:auto;
+margin-top:100px;
+min-width:1100px;
+width:100%;
+}
+
+.name {
+color:#000;
+padding-top:3px;
+text-decoration:none;
+vertical-align:top;
+}
+
+.name:hover {
+text-decoration:underline;
+}
+
+/*Top Navigation Bar*/
+#nav {
+width:100%;
+height:55px;
+position:fixed;
+float:left;
+min-width:900px;
+white-space:nowrap;
+background:#FFF;
+z-index:100;
+margin:0;
+-webkit-box-shadow:0 0 12px 0 #000;
+-moz-box-shadow:0 0 12px 0 #000;
+box-shadow:0 0 12px 0 #000;
+}
+#nav a:hover {
+background:orange;
+}
+
+#nav span a,#nav span a:visited {
+color:#FFF;
+text-decoration:none;
+}
+
+#nav span a:hover {
+background:orange;
+color:#FFF;
+text-decoration:none;
+}
+
+#nav #left-nav {
+height:100%;
+display:inline-block;
+}
+
+#nav #center-nav {
+height:100%;
+display:inline-block;
+min-width:450px;
+}
+
+#nav #right-nav {
+position:absolute;
+display:inline-block;
+right:5px;
+margin-right:20px;
+}
+
+#nav #logo {
+height:inherit;
+}
+
+#nav #logo img,object {
+float:left;
+padding-left:10px;
+padding-top:5px;
+}
+
+#nav #dd:hover {
+cursor:pointer;
+}
+
+#nav #dd i{
+padding: 2px 2px 2px 2px;
+}
+#nav #dd a:hover {
+text-decoration: underline;
+background: orange;
+}
+
+#nav #right-nav .icon-globe {
+background:#FFF;
+color:#000;
+position:relative;
+}
+
+#nav #right-nav .icon-globe:hover {
+color:orange!important;
+}
+
+#nav a,#nav i,#nav ul a:hover {
+background:#444;
+}
+
+#nav .nav-bar {
+color:#222;
+display:inline-block;
+padding-left:55px;
+padding-right:5px;
+padding-top:15px;
+}
+
+#nav .nav-bar a,i {
+border-radius:3px;
+color:#FFF;
+padding:5px;
+text-decoration:none;
+}
+
+#nav .search_box {
+font-size:18px;
+width:60%;
+}
+
+#nav #search-area {
+float:left;
+margin:0;
+padding-top:15px;
+width:400px;
+}
+
+#nav #search-area a,i,#subsidebar a,.sidebar a {
+text-decoration:none;
+}
+
+#nav #search-area input {
+margin-right:0;
+padding-right:0;
+}
+
+#nav #logo {
+height:inherit;
+}
+
+#nav #logo img,object {
+float:left;
+padding-left:10px;
+padding-top:5px;
+}
+
+/*The notification menu*/
+
+#nav #not {
+display:inline-block;
+position:relative;
+}
+
+#nav #not #not-menu {
+background-color:rgba(0,0,0,0.85);
+border-radius:3px;
+color:#fff;
+font-family:tahoma, arial, sans-serif;
+font-size:13px;
+font-weight:700;
+height:500px;
+overflow-y:auto;
+position:absolute;
+white-space:normal;
+width:250px;
+z-index:99;
+}
+
+#nav #not #not-menu-cont {
+background-color:transparent;
+border-color:blue;
+border-radius:3px;
+border-width:10px;
+color:#fff;
+display:none;
+font-size:13px;
+font-weight:700;
+height:500px;
+margin-top:13px;
+padding:2px;
+position:absolute;
+white-space:normal;
+width:250px;
+z-index:99;
+}
+
+#nav #not #not-menu-cont:after {
+border-color:transparent transparent rgba(0,0,0,.85);
+border-style:solid;
+border-width:0 10px 16px;
+content:"";
+height:0;
+left:4px;
+position:absolute;
+top:-14px;
+visibility:visible;
+width:0;
+z-index:1000;
+}
+
+#nav #not .not-item {
+border-bottom:solid gray;
+border-bottom-width:1px;
+height:60px;
+padding:5px;
+position:relative;
+}
+
+#nav #not .not-item img {
+float:left;
+margin-right:5px;
+padding:5px;
+}
+
+#nav #not .not-item span {
+background-image:url(empty.gif);
+height:100%;
+left:0;
+position:absolute;
+top:0;
+width:100%;
+z-index:1;
+}
+
+#nav #not .not-item:hover {
+background:#444;
+cursor:pointer;
+}
+
+#nav #not .notification-count {
+background-color:red;
+color:#fff;
+font-family:tahoma, arial, sans-serif;
+font-size:9px;
+font-weight:700;
+padding:2px;
+position:absolute;
+right:-4px;
+top:-4px;
+}
+
+/*The Left Sidebar*/
+
+#left-side-bar {
+float:left;
+height:100%;
+min-width:168px;
+width:15%;
+}
+
+#left-side-bar:hover  .sidebar{
+  transition: opacity .35s ease-in-out;
+-moz-transition: opacity .35s ease-in-out;
+-webkit-transition: opacity .35s ease-in-out;
+opacity:1;
+visibility:visible;
+
+
+}
+
+#left-side-bar  #subsidebar {
+padding-top:100px;
+
+}
+
+#left-side-bar #subsidebar a:hover + .sidebar {
+-moz-transition-delay:0;
+-webkit-transition-delay:0;
+opacity:1;
+visibility:visible;
+}
+
+#left-side-bar #subsidebar h3 {
+-moz-box-shadow:0 0 4px 0 #000;
+-moz-transition:margin .5s;
+-webkit-box-shadow:0 0 4px 0 #000;
+-webkit-transition:margin .5s;
+background:#444;
+border-radius:3px;
+box-shadow:0 0 4px 0 #000;
+color:#FFF;
+margin:0 75px 10px 0;
+padding:5px;
+text-align:right;
+text-decoration:none;
+}
+
+#left-side-bar  #subsidebar h3:hover {
+-moz-transition:margin .5s;
+-webkit-transition:margin .5s;
+color:orange;
+margin-right:20px;
+}
+
+#left-side-bar #subsidebar:hover li {
+visibility:visible;
+}
+
+#left-side-bar .sidebar {
+-moz-transition:visibility 0 linear .5s .5s linear;
+-webkit-transition:visibility 0 linear .5s .5s linear;
+  transition: opacity 1s ease-in-out;
+  -moz-transition: opacity 1s ease-in-out;
+  -webkit-transition: opacity 1s ease-in-out;
+opacity:0;
+text-align:right;
+visibility:none;
+}
+
+#left-side-bar .sidebar li {
+background:#444;
+border-radius:3px;
+color:#FFF;
+list-style-type:none;
+margin:0 20px 3px 0;
+padding:5px;
+text-align:right;
+text-decoration:none;
+}
+
+#left-side-bar .sidebar li:hover {
+  color: orange;
+}
+
+#left-side-bar .sidebar:hover {
+opacity:1;
+visibility:visible;
+}
+
+/*The Main Content of the page*/
+
+#content {
+-moz-box-shadow:0 0 8px 0 #000;
+-webkit-box-shadow:0 0 8px 0 #000;
+background:#FFF;
+border-radius:10px;
+box-shadow:0 0 8px 0 #000;
+float:left;
+height:auto;
+text-align:center;
+width:70%;
+}
+
+
+
+/*The status posting section.*/
+#content #status {
+border-bottom:solid gray;
+border-bottom-width:1px;
+height:100px;
+margin-left:auto;
+margin-right:auto;
+padding-bottom:-5px;
+padding-top:15px;
+}
+
+#content #status .status-box {
+-moz-box-shadow:inset 2px 2px 2px 0 #ddd;
+-webkit-box-shadow:inset 2px 2px 2px 0 #ddd;
+box-shadow:inset 2px 2px 2px 0 #ddd;
+font-size:18px;
+height:inherit;
+padding:7px 10px;
+resize:none;
+vertical-align:middle;
+width:70%;
+}
+
+#content #status .status-button {
+background:#444;
+border-radius:5px;
+border-style:solid;
+border-width:small;
+color:#FFF;
+cursor:pointer;
+font-size:18px;
+margin-left:10px;
+padding:5px;
+vertical-align:middle;
+}
+
+#content #status .status-button:hover {
+background:orange;
+color:#FFF;
+text-decoration:none;
+}
+
+/*The status feed.*/
+#status-feed #status-sec {
+background:#FFF;
+border-bottom:solid orange;
+border-bottom-width:0;
+border-radius:0;
+margin:0;
+padding-bottom:10px;
+padding-left:10px;
+padding-top:10px;
+text-align:left;
+white-space:normal;
+width:100%;
+}
+
+#status-feed #votes {
+background:#FFF;
+border-radius:5px;
+float:left;
+height:inherit;
+margin-right:15px;
+text-align:center;
+text-decoration:none;
+}
+
+#status-feed #votes i {
+color:gray;
+padding:5px;
+text-decoration:none;
+}
+
+#status-feed #votes i:hover,.sidebar li:hover {
+color:orange;
+}
+
+#status-feed #votes p {
+color:gray;
+padding-left:5px;
+padding-right:5px;
+text-decoration:none;
+}
+
+#status-sec {
+padding:10px;
+}
+
+#status-sec img {
+display:inline-block;
+float:left;
+margin-right:10px;
+margin-top:5px;
+}
+
+#status-sec p {
+color:#000;
+height:auto;
+white-space:normal;
+width:100%;
+word-wrap:break-word;
+}
+
+#status-sec .reply-box {
+display:none;
+font-size:10px;
+margin-left:115px;
+padding-top:10px;
+}
+
+#status-sec .reply-box textarea {
+height:50px;
+width:100%;
+}
+
+#status-sec .post {
+padding-top: 5px;
+}
+
+#status-sec .reply-sec {
+text-align:left;
+padding-top:15px;
+font-size:75%;
+background:white;
+display: none;
+}
+
+/*The new club dialog box*/
+
+#newclub {
+display:none;
+left:50%;
+margin:-200px 0 0 -250px;
+position:absolute;
+top:50%;
+}
+
+/*A club pages css*/
+.club #user-data{
+    margin-top: 25px;
+
+    margin-bottom: 25px;
+    padding: 10px 10px 10px 10px;
+    width: auto;
+    height: auto;
+    border-bottom:solid white;
+    border-bottom-width:0px;
+    overflow: auto;
+    background: white;
+    border-radius: 3px;
+    text-align: left;
+
+
+}
+.club #user-data h2,h3,h4,h5,h6{
+    color: gray;
+}
+
+.club #Status{
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+/*The user page css*/
+
+.user #user-data{
+  margin-top: 25px;
+
+    margin-bottom: 25px;
+    padding: 10px 10px 10px 10px;
+    width: auto;
+    height: auto;
+    border-bottom:solid white;
+    border-bottom-width:0px;
+    overflow: auto;
+    background: white;
+    border-radius: 3px;
+    text-align: right;
+
+
+}
+
+
+
+.user #user-data img{
+  -webkit-box-shadow: 0px 0px 8px 0px #000000;
+    -moz-box-shadow: 0px 0px 8px 0px #000000;
+    box-shadow: 0px 0px 8px 0px #000000;
+    float: left;
+    margin-right: 30px;
+    
+    /*display: block;*/
+}
+
+.user #user-data a{
+    color: black;
+    /*display: block;*/
+}
+
+.user #user-data h6{
+    padding-top: 5px;
+    padding-right: 5px;
+}
+.user .proimg{
+    float: left;
+    margin: 0;
+    width: 150px;
+    height: 150px;
+    position: relative;
+}
+.user .proimg .changepro{
+    position: absolute;
+    float: right;
+    top: 0px;
+    right: 0px;
+    z-index: 1;
+    margin: 4px 4px 4px 4px;
+    padding: 2px 2px 2px 2px;
+    background: white;
+    color: black;
+    -webkit-box-shadow: 0px 0px 8px 0px #000000;
+    -moz-box-shadow: 0px 0px 8px 0px #000000;
+    box-shadow: 0px 0px 8px 0px #000000;
+    border-radius: 1px;
+    text-decoration: none;
+    border-style:outset;
+    border-width:2px;
+}
+
+.user .changepro a{
+    color: black;
+    text-decoration: none;
+
+}
+
+.user .user-description {
+  color: gray;
+}
+
+.user .user-description a{
+    color: black;
+}
+
+/*Search Page/Member Page css*/
+.search #content{
+  color: gray;
+  text-align: left;
+  padding: 10px 10px 10px 10px;
+}
+
+.search #content h1{
+  font-size: 18px;
+}
+
+.search .result img{
+  display: inline-block;
+  /*vertical-align: middle;*/
+  margin-right: 10px;
+  /*margin-bottom: 10px;*/
+}
+
+.search .result2 img{
+  display: inline-block;
+  /*vertical-align: middle;*/
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+.search .sub-res{
+  display: inline-block;
+  /*vertical-align:middle;*/
+}
+
+.search .result,.result2{
+  display: inline-block;
+  padding: 10px 25px 10px 10px;
+  width: 280px;
+}
+
+.search .result a,a:visited{
+    color: black;
+
+}
+
+.search .result2 a,a:visited{
+    color: black;
+
+}
+
+/*Register/EditProfile css*/
+
+
+.register #container{
+  height: 75%;
+  font-size: 16px;
+}
+
+.register #left-side-bar{
+  /*background: white;*/
+
+  min-width: 320px;
+  /*padding-right: 100px;*/
+  
+}
+.register #adcopy-outer{
+  position: absolute;
+  top: 350px;
+  left: 100px;
+}
+.register #content: {
+  /*background: white;*/
+    background: transparent;
+  text-align: right;
+  -webkit-box-shadow: 0px 0px 0px 0px #000000;
+    -moz-box-shadow: 0px 0px 0px 0px #000000;
+    box-shadow: 0px 0px 0px 0px #000000;
+
+}
+
+
+.register #reg-block{
+  font-size: 16px;
+  text-align: right;
+
+}
+
+.register #reg-block input{
+  margin: 5px 5px 5px 5px;
+  padding: 8px 8px 8px 8px;
+  border-radius: 5px;
+
+  /*margin-right: 15px;*/
+}
+.register #profile-pic{
+  text-align: right;
+  padding-bottom: 10px;
+}
+.register #extra-info{
+  position: relative;
+  text-align: right;
+  padding: 10px 10px 10px 10px;
+  padding-right: 30%;
+  padding-top: 50px;
+}
+.register #extra-info input,select{
+  margin: 5px 5px 5px 5px;
+  padding: 8px 8px 8px 8px;
+    border-radius: 5px;
+
+}
+
+.register .error-box{
+  text-align: left;
+  display: none;
+  z-index: 1;
+  padding-bottom: 10px;
+  border-radius: 3px;
+  width: auto;
+  height: auto;
+  background: rgba(0,0,0,.75);
+  color: white;
+  position: absolute;
+  padding: 10px 10px 10px 10px;
+  margin-left: 10px;
+/*  top:0;
+  left: 100px;*/
+}
+
+.register .error-box:after{
+      content: "";
+    width: 0;
+    height: 0;
+    position: absolute;
+    top: 10%;
+    left: -8px;
+    margin-top: 2px;
+width: 0px;
+height: 0px;
+border-style: solid;
+border-width: 4px 8px 4px 0;
+border-color: transparent rgba(0,0,0,.75) transparent transparent;
+    /*border-color: #4cbeff transparent;*/
+}

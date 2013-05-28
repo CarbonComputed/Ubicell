@@ -1,10 +1,295 @@
 
-<html>
-{%from constants import *%}
+{%from bson.objectid import ObjectId%}
+{%from actions import *%}
+{%from tornado.escape import linkify%}
 
-<title>uPlace</title>
-<h1>uPlace:{{escape(userdata['UserName'])}} </h1>
-<a href="/auth/logout">Logout</a>
+<html>
+<title>Ubicell</title>
+<head>
+
+    <link rel="stylesheet" href="/static/styles/ubicell.css" type="text/css" />
+
+    <link rel="stylesheet" href="/static/styles/font-awesome.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="/static/styles/dropdown.css?1.3" />
+
+    <link rel="stylesheet" href="/static/styles/switch.css" type="text/css" />
+    <script src="/static/jquery-1.9.1.min.js"></script>
+    <script src="/static/js/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/static/js/dropdown.js"></script>
+    <script type="text/javascript" src="/static/js/modernizr.custom.79639.js"></script> 
+
+    <script src="/static/js/tag-it.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/static/js/jquery.endless-scroll.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/static/js/ubicell.js" type="text/javascript" charset="utf-8"></script>
+
+    <link rel="stylesheet" href="/static/styles/jquery-ui.css" type="text/css" >
+    <link rel="stylesheet" href="/static/styles/jquery.tagit.css" type="text/css">
+    <link rel="stylesheet" href="/static/styles/custom_pop.css" type="text/css" />
+    <link rel="stylesheet" href="/static/styles/popup.css" type="text/css" />
+
+    {%block scripts%}
+
+    {%end%}
+
+</head>
 <body>
+    <div id="background-grad"></div>
+
+    <div class="clear"></div>
+    {%block nav%}
+
+    {%module NavModule(current_user['_id']['$oid'],nots)%}
+    {% end %}
+    <div class="clear"></div>
+    {%block container%}
+    <div id="container" class="index">
+        {%module LeftSideModule(current_user['_id']['$oid'],clubs)%}
+        <div id="content">
+            <a href="/user/{{current_user['UserName']}}"><img src="/images?picid={{str(current_user['ProfileImg']['$oid'])}}" style="float:left;margin:5px 5px 5px 5px;width:35px; height:35px;"></a>
+            <a href="#"><h2 id="hhead" style="float:left;color:gray;margin: 5px 5px 5px 5px;">{{current_user['FirstName'].capitalize()}} {{current_user['LastName'].capitalize()}}</h2></a>
+<!--             <div class="onoffswitch" id="myonoffswitchpar">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+                <label class="onoffswitch-label" for="myonoffswitch" >
+                    <div class="onoffswitch-inner" titleb="Popular" titlea="New"></div>
+                    <div class="onoffswitch-switch"></div>
+                </label>
+            </div> -->
+            <div class="clear"></div>
+
+            <div id="status">
+                <form action="#" onsubmit="post($('#status_text').data('userid'),$('body').data('networkid'));return false;">
+                    <textarea id="status-text" class="status-box" type="text" name="status" placeholder="Whatsup {{current_user['FirstName'].capitalize()}}?"></textarea>
+                    <input class="status-button" type="submit" value="Post!" >
+                </form>
+            </div>
+            <div id="status-feed">
+                {%for post in feed%}
+                    {%module PostModule(me,post,uniname,detailed=True)%}
+                {%end%}
+
+            </div>
+            
+        </div>
+    {%end%}
+
+    </div>
+{%module NewClubModule()%}
+<div id="dialog-overlay"></div>
+<div id="dialog-box">
+    <div class="dialog-content">
+        <div id="dialog-message"></div>
+        <a id="dbutt" href="#" onclick="hidePop();return false;"class="button">Close</a>
+    </div>
+</div>
 </body>
+
+
+<script type="text/javascript">
+    $(document).ready(function() {
+         $('#reply-box').hide();
+         $('.reply-sec').hide();
+         $('#not-menu-cont').hide();
+         var availableTags = [];
+         var friendIds = [];
+
+        {%for friend in friends%}
+
+            availableTags.push("{{friend['FirstName'].capitalize()}} {{friend['LastName'].capitalize()}}");
+            friendIds.push("{{friend['_id']}}");
+        {%end%}
+         $("#memberTags").tagit({
+            fieldName: "members",
+    availableTags: availableTags,
+    placeholderText: "Members",
+    singleField: true,
+    beforeTagAdded: function(event, ui) {
+        // do something special
+        var text = ui.tag.find('span.tagit-label').text();
+        var index = $.inArray(text, availableTags);
+        if(index < 0){
+            return false;
+        }
+        console.log(ui.tag);
+        $(ui.tag.find('span.tagit-label')).data('fid',friendIds[index]);
+
+        return index >= 0;
+    }
+
+    // $('.onoffswitch-inner:before').css('content','Public');
+    // $('.onoffswitch-inner:after').css('content','Private');
+
+});
+    $("#adminTags").tagit({
+        fieldName: "admins",
+    availableTags: availableTags,
+    placeholderText: "Admins",
+    beforeTagAdded: function(event, ui) {
+        // do something special
+        var text = ui.tag.find('span.tagit-label').text();
+        var index = $.inArray(text, availableTags);
+        if(index < 0){
+            return false;
+        }
+        console.log(ui.tag);
+        $(ui.tag.find('span.tagit-label')).data('fid',friendIds[index]);
+
+        return index >= 0;
+    }
+
+}); 
+
+
+    console.log(availableTags);
+    });
+
+$("#logo").click(function(){
+     // window.location=$(this).find("a").attr("href"); 
+     window.location = ("/");
+     return false;
+});
+
+
+var clicked;
+
+
+
+function hidePop(){
+    $('#dialog-box').fadeOut();
+}
+
+
+
+$(document).ready(function () {
+
+    // if user clicked on button, the overlay layer or the dialogbox, close the dialog  
+    $('a.btn-ok, #dialog-overlay, #dialog-box').click(function () {     
+        $('#dialog-overlay, #dialog-box').hide();       
+        return false;
+    });
+    
+    // if user resize the window, call the same function again
+    // to make sure the overlay fills the screen and dialogbox aligned to center    
+    $(window).resize(function () {
+        
+        //only do it if the dialog box is not hidden
+        if (!$('#dialog-box').is(':hidden')) popup();       
+    }); 
+    
+    var page = 0;
+
+    $(window).scroll(function() {
+        if ($('body').height() <= ($(window).height() + $(window).scrollTop())) {
+            if($(window).scrollTop() != 0){
+                    page++;
+                    // $('#loading').show(); 
+                 //   $("#Status-Feed").append($("<div>").load("/?page="+page+" #Status-Feed",function(){
+                 //     $('#loading').hide(); 
+                 //   }));
+                
+            }
+
+        }
+    });
+
+});
+
+// using some custom options
+
+// $('.notification-count').hide();
+$('#tpop').hover(function(){
+    $('#tpop').html('New Club +');
+},
+function(){
+    $('#tpop').html('Clubs');
+});
+
+$('#logo img').css('cursor', 'pointer');
+
+$('#logo img:hover').css('background', 'gray');
+
+
+$(document).endlessScroll({
+  fireOnce: false,
+  fireDelay: 500,
+  inflowPixels: 20,
+  ceaseFireOnEmpty: true,
+  loader:'<div id="loading"><img src="/static/images/ajax-loader.gif"></div>',
+  insertBefore: '#status-feed',
+  resetCounter: function(){
+    if(clicked == true){
+        clicked = false;
+        return true;
+    }
+    return false;
+  },
+  content: function(fireSeq,pageSeq,scrollDir){
+    if(pageSeq < 0){
+                var u = document.URL;
+                
+                u = u+"?page="+fireSeq
+                
+                console.log(u);
+                var content ="";
+                $.ajax({
+                type : "GET",
+                url: u,
+                success: function(data) {
+                    console.log(data.length);
+                    content = $('<div/>').html(data).find('#status-feed').html();
+                    //console.log(data.html());
+                    if(content==null){
+                        content='';
+                    }
+                    //console.log($(data).find('#Status-Feed').html());
+                    //content = $(data).html();
+                    //console.log(content);
+                },
+
+                async:false
+                });
+                //console.log(content);
+                return content;
+                 //console.log(data);
+                 
+        //console.log($.get("/?page="+fireSeq+" #Status-Feed"));
+        //return $.get("/?page="+fireSeq+" #Status-Feed").responseText;
+    }
+    
+  },
+
+  callback: function(p){
+    //alert("test");
+  }
+});
+</script>
+{%block funcs%}
+
+<script type="text/javascript">
+
+$("#myonoffswitch").click(function(){
+     // window.location=$(this).find("a").attr("href"); 
+
+    var checked = $('#myonoffswitch').is(':checked');
+    console.log("TEST" + checked);
+        if(checked){
+        $('#Status-Feed').load("/actions/feed"+' #Status-Feed > *').hide().fadeIn('slow');
+  //        $('#hhead').html("{{current_user['FirstName'].capitalize()}} {{current_user['LastName'].capitalize()}}");
+  //        $('body').data('networkid',null);
+            //window.history.pushState("newstate", "Friend Feed", "/actions/feed");
+
+        }
+        else{
+  //        {%import models.University%}
+            $('#Status-Feed').load('/actions/feed?sort=-Time #Status-Feed > *').hide().fadeIn('slow');
+  //        {%if uniname != None%}
+        // $('#hhead').html("{{uniname}}");
+        // {%end%}
+        // $('body').data('networkid',"{{current_user['School']['University']['$oid']}}");
+         //window.history.pushState("newstate", "University Feed", "/actions/feed?sort=-Time ");
+        }
+    clicked = true;
+});
+
+</script>
+{%end%}
 </html>

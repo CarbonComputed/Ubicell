@@ -60,7 +60,7 @@ class SolveMedia:
   </script>
 
   <noscript>
-     <iframe src="%(baseurl)s/papi/challenge.noscript?k=%(ckey)s%(param)s"
+     <iframe id="capif" src="%(baseurl)s/papi/challenge.noscript?k=%(ckey)s%(param)s"
          height="150" width="350" frameborder="0"></iframe><br>
      <textarea name="adcopy_challenge" rows="3" cols="40">
      </textarea>

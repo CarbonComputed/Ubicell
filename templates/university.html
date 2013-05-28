@@ -1,0 +1,133 @@
+{% extends "index.html" %}
+
+
+{%from bson.objectid import ObjectId%}
+{%block container%}
+<div id="container" class="index">
+        {%module LeftSideModule(current_user['_id']['$oid'],clubs)%}
+        <div id="content">
+            
+            <a href="#"><h2 id="hhead" style="float:left;color:gray;margin: 5px 5px 5px 5px;">{{uniname}}</h2></a>
+<!--             <div class="onoffswitch" id="myonoffswitchpar">
+                <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+                <label class="onoffswitch-label" for="myonoffswitch" >
+                    <div class="onoffswitch-inner" titleb="Popular" titlea="New"></div>
+                    <div class="onoffswitch-switch"></div>
+                </label>
+            </div> -->
+            <div class="clear"></div>
+            
+            <div id="status">
+                <form action="#" onsubmit="post($('#status_text').data('userid'),$('body').data('networkid'));return false;">
+                    <textarea id="status-text" class="status-box" type="text" name="status" placeholder="Whatsup {{current_user['FirstName'].capitalize()}}?"></textarea>
+                    <input class="status-button" type="submit" value="Post!" >
+                </form>
+            </div>
+            <div id="status-feed">
+                {%for post in feed%}
+                    {%module PostModule(me,post,uniname,detailed=False)%}
+                {%end%}
+
+            </div>
+            
+        </div>
+{%end%}
+{%block funcs%}
+
+<script type="text/javascript">
+
+$("#myonoffswitch").click(function(){
+     // window.location=$(this).find("a").attr("href"); 
+
+    var checked = $('#myonoffswitch').is(':checked');
+    console.log("TEST" + checked);
+      if(checked){
+                    var u = "/actions/feed";
+            
+            u = u+"?page="+0;
+            
+
+            
+            u = u + "&network_id={{current_user['School']['University']['$oid']}}";
+      $('#Status-Feed').load(u+" #Status-Feed > *").hide().fadeIn('slow');
+  //      $('#hhead').html("{{current_user['FirstName'].capitalize()}} {{current_user['LastName'].capitalize()}}");
+  //      $('body').data('networkid',null);
+      //window.history.pushState("newstate", "Friend Feed", "/actions/feed");
+
+      }
+      else{
+            var u = "/actions/feed";
+            
+            u = u+"?page="+0;
+            
+
+            
+            u = u + "&network_id={{current_user['School']['University']['$oid']}}";
+            u = u + "&sort=-Time";
+  //      {%import models.University%}
+        $('#Status-Feed').load(u+' #Status-Feed > *').hide().fadeIn('slow');
+  //      {%if uniname != None%}
+    // $('#hhead').html("{{uniname}}");
+    // {%end%}
+    // $('body').data('networkid',"{{current_user['School']['University']['$oid']}}");
+     //window.history.pushState("newstate", "University Feed", "/actions/feed?sort=-Time ");
+      }
+    clicked = true;
+});
+
+$(document).endlessScroll({
+  fireOnce: false,
+  fireDelay: 500,
+  loader:'<div id="loading"><img src="/static/images/ajax-loader.gif"></div>',
+  insertBefore: '#Status-Feed',
+  resetCounter: function(){
+   if(clicked == true){
+      clicked = false;
+      return true;
+   }
+   return false;
+  },
+  content: function(fireSeq,pageSeq,scrollDir){
+   console.log("test");
+   if(pageSeq < 0){
+            var u = "/actions/feed";
+            
+            u = u+"?page="+fireSeq
+            
+
+            
+            u = u + "&network_id={{current_user['School']['University']['$oid']}}";
+            
+            console.log(u);
+            var content ="";
+            $.ajax({
+            type : "GET",
+             url: u,
+             success: function(data) {
+               console.log(data);
+                  data = $('<div/>').html(data).contents().eq(1);
+                  
+               //console.log($(data).find('#Status-Feed').html());
+                  content = $(data).html();
+                  console.log(content);
+             },
+
+             async:false
+            });
+            //console.log(content);
+            return content;
+             //console.log(data);
+             
+      //console.log($.get("/?page="+fireSeq+" #Status-Feed"));
+      //return $.get("/?page="+fireSeq+" #Status-Feed").responseText;
+   }
+   
+  },
+  callback: function(p){
+    //alert("test");
+  }
+});
+// $("#myonoffswitch").trigger('click');
+$('body').data('networkid',"{{current_user['School']['University']['$oid']}}");
+</script>
+{%end%}

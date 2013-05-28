@@ -9,10 +9,8 @@ from mongoengine import *
 import datetime
 
 
-class Post(EmbeddedDocument):
-    id = ObjectIdField()
-    Downvoters = ListField(ObjectIdField())
-    Upvoters = ListField(ObjectIdField())
+class Post(Document):
+    NetworkId = ObjectIdField()
     FriendId = ObjectIdField()
     UserId = ObjectIdField()
     ParentId = ObjectIdField()

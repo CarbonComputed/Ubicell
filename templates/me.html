@@ -1,19 +1,18 @@
-{% extends "base.html" %}
+{% extends "index.html" %}
 
 <html>
 <head>
 	{%block scripts%}
-		<link rel="stylesheet" href="/static/styles/me.css" type="text/css" />
+		<!-- <link rel="stylesheet" href="/static/styles/me.css" type="text/css" /> -->
 
 	{%end%}
 </head>
 <body>
 	{%block container%}
-	<div id="container">
-		<div id="left-side-bar">
+	<div id="container" class="user">
+        {%module LeftSideModule(current_user['_id']['$oid'])%}
 
-		</div>
-		<div id="Main-Content">
+		<div id="content">
 			<div id="user-data">
 				<div class="proimg">
 					<img  src="/images?picid={{escape(userdata['ProfileImg']['$oid'])}}" height="150" width="150">
@@ -24,141 +23,84 @@
 					<h3>{{escape(userdata['School']['Major'])}}, {{userdata['School']['GradYear']}}</h3>
 					<p>About Me: {{escape(userdata['About'])}}</p>
 				</br>
-				<a href="Photos">Photos</a>
+				<a href="photos">Photos</a>
 				<a href="friends">Friends</a>
 			</div>
 
 		</div>
 		<div class="clear"></div>
 		<div id="Status">
-			<form action="#" onsubmit="post();return false;">
-				<textarea id="status_text" class="status_box" type="text" name="status" ></textarea>
-				<input class="status_button" type="submit" value="Post!">
-			</form>
+			<form action="#" onsubmit="post($('#status-text').data('networkid'),null,null);return false;">
+                    <textarea id="status-text" class="status-box" type="text" name="status" placeholder="Whatsup {{current_user['FirstName'].capitalize()}}?"></textarea>
+                    <input class="status-button" type="submit" value="Post!" >
+                </form>
 		</div>
-		<div class ="clear"></div>
-		<div id="Status-Feed">
-				{%for post in feed%}
+            <div id="status-feed">
+                {%for post in feed%}
+                    {%module PostModule(me,post,uniname,detailed=False)%}
+                {%end%}
 
-						<div id="Status-sec" data-postid={{post['Wall']['id']}} data-ownerid={{post['_id']}}>
-							<div id="Votes">
-								{%set color = 'gray'%}
-								{% if post['Upvoted'] %}
-								{%set color = 'orange'%}
-								{%end%}
-								<a  href="#" onclick="vote(this,'up');return false;" ><i style="color:{{color}};" class="icon-arrow-up"></i></a>
-								<p>{{post['Wall']['Upvotes']-post['Wall']['Downvotes']}}</p>
-								{%set color = 'gray'%}
-								{% if post['Downvoted'] %}
-								{%set color = 'orange'%}
-								{%end%}
-								<a href="#" onclick="vote(this,'down');return false;"><i style="color:{{color}};" class="icon-arrow-down"></i></a>
-								<div class="clear"></div>
-
-							</div>
-
-							<div id="status-post">
-															<a href="/user/{{post['UserName']}}"><img src="/images?picid={{str(post['ProfileImg'])}}" href="/user/{{post['UserName']}}" height="52" width="52"></a>
-								<div class="status-info">
-								<a class="Name" href="/user/{{post['UserName']}}">{{post['FirstName'].capitalize()}} {{post['LastName'].capitalize()}}</a></br>
-								<p class="post">{% raw linkify(post['Wall']['Message'])%}</p>
-								<a href="#" onclick="toggleReplies(this);return false;" style="float:left;background:white;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
-								<a href="#" onclick="displayReply(this);return false;"style="float:left;background:white;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>
-								<p></p>
-								</div>
-							</div>
-
-							<div class="clear"></div>
-							<div id="reply-box" data-postid={{post['Wall']['id']}}  style="text-align:left;"> 
-								<form>
-									<textarea id="reply_text_id" class="reply_text"></textarea>
-									<div >
-										<a id="rep_link" onclick="reply(this);return false;" href="#">Reply</a>
-										<a onclick="hideReply(this);return false;" href="#">Cancel</a>
-									</div>
-								</form>
-							</div>
-							{%block reply_sec%}
-
-							{%end%}
-							<div class="reply-sec" style= "display:none;padding-top:15px;font-size:75%;background:white;">
-
-							</div>
-						</div>
-				{%end%}
-
-		</div>
+            </div>
 
 	</div>
 </div>
 {%end%}
-</div>
+
 {%block funcs%}
 
 <script type="text/javascript">
+$(document).endlessScroll({
+  fireOnce: false,
+  fireDelay: 500,
+  loader:'<div id="loading"><img src="/static/images/ajax-loader.gif"></div>',
+  insertBefore: '#Status-Feed',
+  resetCounter: function(){
+  	if(clicked == true){
+  		clicked = false;
+  		return true;
+  	}
+  	return false;
+  },
+  content: function(fireSeq,pageSeq,scrollDir){
+  	if(pageSeq < 0){
+  				var u = "/actions/feed";
+  				if(document.URL.indexOf("?") < 0){
+  					u = u+"?page="+fireSeq
+  				}
+  				else{
+  					u = u+"&page="+fireSeq
+  				}
+  				u = u + "&user_id={{userdata['_id']['$oid']}}"
 
-function post(){
-		
-		{% from constants import * %}
-		var message = $('#status_text').val();
-		var posttype = parseInt({{PostType.WALL_POST}});
-		console.log(posttype);
-		$.ajax({
-			  type: "POST",
-			  url: '/actions/post',
-			  data: { 'message' : message, 'posttype' : posttype},
-			  success: function(){ 		var currpage = window.location.pathname;
-		console.log(currpage);
-		$('#status_text').val('');
+  				var content ="";
+			  	$.ajax({
+			  	type : "GET",
+			    url: u,
+			    success: function(data) {
+			    	console.log(data);
+			      	data = $('<div/>').html(data).contents().eq(1);
+			      	
+		  		 	//console.log($(data).find('#Status-Feed').html());
+		   			content = $(data).html();
+		   			console.log(content);
+			    },
 
-		$('#Status-Feed').load('/user/{{userdata['UserName']}} #Status-Feed > *').hide().fadeIn('slow');
-			  },
-			  dataType: 'json'
-			});
+			    async:false
+			  	});
+			  	//console.log(content);
+		  		return content;
+		  		 //console.log(data);
+		  		 
+  		//console.log($.get("/?page="+fireSeq+" #Status-Feed"));
+  		//return $.get("/?page="+fireSeq+" #Status-Feed").responseText;
+  	}
+  	
+  },
+  callback: function(p){
+    //alert("test");
+  }
+});
 
-
-	
-}
-	function vote(ele,type){
-		var postid = $(ele).closest('#Status-sec').data()['postid'];
-		var ownerid = $(ele).closest('#Status-sec').data()['ownerid'];
-		console.log(postid);
-		var element = $(ele).closest('#Status-sec');
-		var vote_type = "";
-		var is_uni = !$('.onoffswitch-checkbox').is(':checked');
-		if($('.onoffswitch-checkbox').length <= 0){
-			is_uni = false;
-		}
-		console.log(is_uni);
-		if(type == 'up'){
-			vote_type = "up";
-		}
-		else{
-			vote_type = "down";
-		}
-		$.ajax({
-			  type: "POST",
-			  url: '/actions/friend_vote',
-			  data: { 'vote_type' : vote_type,'post_owner' : ownerid,'post_id' : postid,'is_reply' : "false",'is_uni' : is_uni},
-			  success: function(){ 		   	var checked = $('.onoffswitch-checkbox').is(':checked');
-		if($('.onoffswitch-checkbox').length <= 0){
-			checked = false;
-		}
-   		if(checked){
-   			$("#Status-sec[data-postid='" + postid + "']").load("/user/{{userdata['UserName']}} #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(700);
-
-   		}
-   		else{
-   			$("#Status-sec[data-postid='" + postid + "']").load("/user/{{userdata['UserName']}} #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(700);
-
-   		
-
-   		}
-			  },
-			  dataType: 'json'
-			});
-
-	}
 $('.changepro').hide();
 $('.proimg').hover(function(){
     $('.changepro').show();

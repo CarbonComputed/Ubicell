@@ -1,8 +1,9 @@
 from mongoengine import *
 
 class Notification(EmbeddedDocument):
-	Message = StringField(required=True)
-	Read = BooleanField(default=False)
+    meta = {'allow_inheritance': True}
+    Message = StringField(required=True)
+    Read = BooleanField(default=False)
 
 class FriendRequestNot(Notification):
 	Friend = ObjectIdField()

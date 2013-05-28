@@ -1,13 +1,11 @@
-{% extends "base.html" %}
+{% extends "index.html" %}
 
 
 <html>
 <title>uPlace</title>
 <head>
 {%block scripts%}
-        <link rel="stylesheet" href="/static/styles/reg.css" type="text/css" />
 
-    <link rel="stylesheet" href="/static/styles/editp.css" type="text/css" />
     <link rel="stylesheet" href="/static/styles/popup.css" type="text/css" />
     <script src="/static/js/jquery.form.js"></script> 
 {%end%}
@@ -16,40 +14,40 @@
 
 	<div class="clear"></div>
     {%block container%}
-	<div id="container">
+	<div id="container" class="register">
 
 	<div id="left-side-bar">
 		<form id="regForm" action="/actions/edit_profile" method="post" enctype="multipart/form-data">
 
-		<div id="reg-block">
-                            Name: <input type="text" name="FullName" value="{{user['FirstName'].capitalize()}} {{user['LastName'].capitalize()}}"><br>
-            <div id="profile-pic">
-              <label for="pic">Profile Picture</label>
-              <input type="file" name="pic" accept="image/*" onchange="readURL(this);" style="vertical-align:middle;width: 90px;">
-              <img id="pro-pic" src="#" alt="your image" height = "65px" width="65px" style="margin: 0;padding: 0;vertical-align: middle;" />
-            </div>
+    		<div id="reg-block">
+                                Name: <input type="text" name="FullName" value="{{user['FirstName'].capitalize()}} {{user['LastName'].capitalize()}}"><br>
+                <div id="profile-pic">
+                  <label for="pic">Profile Picture</label>
+                  <input type="file" name="pic" accept="image/*" onchange="readURL(this);" style="vertical-align:middle;width: 90px;">
+                  <img id="pro-pic" src="#" alt="your image" height = "65px" width="65px" style="margin: 0;padding: 0;vertical-align: middle;" />
+                </div>
 
 
-<!-- 				Password: <input type="password" name="Password"><br>
-				Confirm Password: <input type="password" name="confPassword"><br>
- -->
-		</div>
-	</div>
-	<div id="Main-Content">
-		<div id="extra-info">
-            {%if user['Gender'] == "Male"%}
-            Male <input type="radio" name="gender" value="Male" checked> 
-            Female <input type="radio" name="gender" value="Female" ><br>
+    <!-- 				Password: <input type="password" name="Password"><br>
+    				Confirm Password: <input type="password" name="confPassword"><br>
+     -->
+    		</div>
+    	</div>
+    	<div id="content">
+    		<div id="extra-info">
+                {%if user['Gender'] == "Male"%}
+                Male <input type="radio" name="gender" value="Male" checked> 
+                Female <input type="radio" name="gender" value="Female" ><br>
 
-            {%else%}
-            Male <input type="radio" name="gender" value="Male" > 
-            Female <input type="radio" name="gender" value="Female" checked><br>
-            {%end%}
-            Major: <input type="text" name="major" value="{{user['School']['Major']}}">
-            Grad Year: <select name="yearpicker" id="yearpicker" value="{{user['School']['GradYear']}}" >{{user['School']['GradYear']}} </select><br><br>
-            About Me: <textarea style="vertical-align: middle;" name="about" value="{{user['About']}}">{{user['About']}}</textarea><br><br><br>
-            <input type="submit" value="Save" class="status_button" >
-		</div>
+                {%else%}
+                Male <input type="radio" name="gender" value="Male" > 
+                Female <input type="radio" name="gender" value="Female" checked><br>
+                {%end%}
+                Major: <input type="text" name="major" value="{{user['School']['Major']}}">
+                Grad Year: <select name="yearpicker" id="yearpicker" value="{{user['School']['GradYear']}}" >{{user['School']['GradYear']}} </select><br><br>
+                About Me: <textarea style="vertical-align: middle;" name="about" value="{{user['About']}}">{{user['About']}}</textarea><br><br><br>
+                <input type="submit" value="Save" class="status_button" >
+    		</div>
 	</form>
 
 	<div id="autocomplete"></div>
@@ -62,6 +60,7 @@
         <div id="dialog-message"></div>
         <a id="dbutt" href="#" class="button">Close</a>
     </div>
+</div>
 </div>
 {%end%}
 

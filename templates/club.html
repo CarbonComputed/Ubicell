@@ -1,27 +1,26 @@
-{% extends "base.html" %}
+{% extends "index.html" %}
 
 <html>
 <head>
     {%block scripts%}
-    <link rel="stylesheet" href="/static/styles/club.css" type="text/css" />
-
+<!--     <link rel="stylesheet" href="/static/styles/club.css" type="text/css" />
+ -->
     {%end%}
 
 </head>
 <body>
     {%block container%}
 
-    <div id="container">
-        <div id="left-side-bar">
+    <div id="container" class="club">
+        {%module LeftSideModule(current_user['_id']['$oid'])%}
 
-        </div>
-        <div id="Main-Content">
+        <div id="content">
             <div id="user-data">
                 <h1>{{club.Name}}</h1>
                 <h4>{{club.About}}</h2>
                 <a href="/club/members?clubid={{club.id}}"><h5>{{len(club.Members)}} Members</h5></a></br>
-                <a href="#" >
-                {%if not is_member and club.Private%}
+                <a href="#" onclick="requestMember('{{club.id}}');return false;" >
+                {%if not is_member and club.Private and not is_member_reg%}
                     <h5>Request to Join</h5>
                 {%elif not club.Private and not is_member%}
                     <h5>Join</h5>
@@ -34,63 +33,18 @@
                 {%end%}
             </div>
             <div class="clear"></div>
-            <div id="Status">
-                <form onsubmit="postClub();return false;">
-                    <textarea id="status_text" class="status_box" type="text" name="status" ></textarea>
-                    <input class="status_button" type="submit" value="Post!">
+            <div id="status">
+                <form action="#" onsubmit="post($('#status_text').data('userid'),$('body').data('networkid'));return false;">
+                    <textarea id="status-text" class="status-box" type="text" name="status" placeholder="Whatsup {{current_user['FirstName'].capitalize()}}?"></textarea>
+                    <input class="status-button" type="submit" value="Post!" >
                 </form>
             </div>
-            <div class ="clear"></div>
-            <div id="Status-Feed">
-                {%for post in club.Wall%}
 
-                        <div id="Status-sec" data-postid={{post.id}} data-ownerid={{post.UserId}}>
-                            <div id="Votes">
-                                {%set color = 'gray'%}
-                                
-                                {% if ObjectId(post.UserId) in post.Upvoters %}
-                                {%set color = 'orange'%}
-                                {%end%}
-                                <a  href="#" onclick="vote(this,'up');return false;" ><i style="color:{{color}};" class="icon-arrow-up"></i></a>
-                                <p>{{post.Upvotes-post.Downvotes}}</p>
-                                {%set color = 'gray'%}
-                                {% if ObjectId(post.UserId) in post.Downvoters %}
-                                {%set color = 'orange'%}
-                                {%end%}
-                                <a href="#" onclick="vote(this,'down');return false;"><i style="color:{{color}};" class="icon-arrow-down"></i></a>
-                                <div class="clear"></div>
-
-                            </div>
-                            {%set user=user_actions.get_simple_data(post.UserId)%}
-                            <div id="status-post">
-                                                            <a href="/user/{{user.UserName}}"><img src="/images?picid={{str(user.ProfileImg)}}" href="/user/{{user.UserName}}" height="52" width="52"></a>
-                                <div class="status-info">
-                                <a class="Name" href="/user/{{user.UserName}}">{{user.FirstName.capitalize()}} {{user.LastName.capitalize()}}</a></br>
-                                <p class="post">{% raw linkify(post.Message)%}</p>
-                                <a href="#" onclick="toggleReplies(this);return false;" style="float:left;background:white;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
-                                <a href="#" onclick="displayReply(this);return false;"style="float:left;background:white;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>
-                                <p></p>
-                                </div>
-                            </div>
-
-                            <div class="clear"></div>
-                            <div id="reply-box" data-postid={{post.id}}  style="text-align:left;"> 
-                                <form>
-                                    <textarea id="reply_text_id" class="reply_text"></textarea>
-                                    <div >
-                                        <a id="rep_link" onclick="reply(this);return false;" href="#">Reply</a>
-                                        <a onclick="hideReply(this);return false;" href="#">Cancel</a>
-                                    </div>
-                                </form>
-                            </div>
-                            {%block reply_sec%}
-
-                            {%end%}
-                            <div class="reply-sec" style= "padding-top:15px;font-size:75%;background:white;">
-
-                            </div>
-                        </div>
+            <div id="status-feed">
+                {%for post in feed%}
+                    {%module PostModule(me,post,uniname,detailed=False)%}
                 {%end%}
+
             </div>
         </div>
 
@@ -99,180 +53,62 @@
     {%end%}
 {%block funcs%}
 <script type="text/javascript">
+$('body').data('networkid',"{{club.id}}");
 
-function postClub(){
-        console.log("test!!");
-        {% from constants import * %}
-        var message = $('#status_text').val();
-        var posttype = parseInt({{PostType.WALL_POST}});
-        console.log(posttype);
-        $.ajax({
-              type: "POST",
-              url: '/actions/post',
-              data: { 'message' : message, 'posttype' : posttype,'is_club' : true,'clubid': "{{club.id}}"},
-              success: function(){      var currpage = window.location.pathname;
-        console.log(currpage);
-        $('#status_text').val('');
-        $('#Status-Feed').load('/club?clubid={{club.id}} #Status-Feed > *').hide().fadeIn('slow');
-              },
-              dataType: 'json'
+$(document).endlessScroll({
+  fireOnce: false,
+  fireDelay: 500,
+  loader:'<div id="loading"><img src="/static/images/ajax-loader.gif"></div>',
+  insertBefore: '#Status-Feed',
+  resetCounter: function(){
+   if(clicked == true){
+      clicked = false;
+      return true;
+   }
+   return false;
+  },
+  content: function(fireSeq,pageSeq,scrollDir){
+   console.log("test");
+   if(pageSeq < 0){
+            var u = "/actions/feed";
+            
+            u = u+"?page="+fireSeq
+            
+
+            
+            u = u + "&network_id={{club.id}}";
+            
+            console.log(u);
+            var content ="";
+            $.ajax({
+            type : "GET",
+             url: u,
+             success: function(data) {
+               console.log(data);
+                  data = $('<div/>').html(data).contents().eq(1);
+                  
+               //console.log($(data).find('#Status-Feed').html());
+                  content = $(data).html();
+                  console.log(content);
+             },
+
+             async:false
             });
+            //console.log(content);
+            return content;
+             //console.log(data);
+             
+      //console.log($.get("/?page="+fireSeq+" #Status-Feed"));
+      //return $.get("/?page="+fireSeq+" #Status-Feed").responseText;
+   }
+   
+  },
+  callback: function(p){
+    //alert("test");
+  }
+});
 
 
-    
-}
-
-
-function capitaliseFirstLetter(string)
-{
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-    function vote(ele,type){
-        console.log("test");
-        var postid = $(ele).closest('#Status-sec').data()['postid'];
-        var ownerid = $(ele).closest('#Status-sec').data()['ownerid'];
-        console.log(postid);
-        var element = $(ele).closest('#Status-sec');
-        var vote_type = "";
-        var is_uni = false
-        console.log(is_uni);
-        if(type == 'up'){
-            vote_type = "up";
-        }
-        else{
-            vote_type = "down";
-        }
-        $.ajax({
-              type: "POST",
-              url: '/actions/friend_vote',
-              data: { 'vote_type' : vote_type,'post_owner' : ownerid,'post_id' : postid,'is_reply' : "false",'is_uni' : false,'is_club':true,'clubid' : "{{club.id}}"},
-              success: function(){ 
-                            var checked = $('.onoffswitch-checkbox').is(':checked');
-        if($('.onoffswitch-checkbox').length <= 0){
-            checked = false;
-        }
-        if(checked){
-            $("#Status-sec[data-postid='" + postid + "']").load("/club?clubid={{club.id}} #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(700);
-
-        }
-        else{
-            $("#Status-sec[data-postid='" + postid + "']").load("/club?clubid={{club.id}} #Status-sec[data-postid='" + postid + "'] > *").hide().fadeIn(700);
-
-        
-
-        }
-              },
-              dataType: 'json'
-            });
-
-    }
-    function voteReply(post,type){
-        var ele = $(post).closest('#Status-sec');
-        var postid = ele.data()['postid'];
-        var ownerid = ele.data()['ownerid'];
-        var replyid = $(post).closest('.reply').data()['postid'];
-        var isReply = "true";
-        var vote_type = "";
-        var is_uni = !$('#myonoffswitch').is(':checked');
-        var is_club = "{{is_club}}";
-        if($('#myonoffswitch').length <= 0){
-            is_uni = false;
-        }
-        if(type == 'up'){
-            vote_type = "up";
-        }
-        else{
-            vote_type = "down";
-        }
-        $.ajax({
-              type: "POST",
-              url: '/actions/friend_vote',
-              data: { 'vote_type' : vote_type,'post_owner' : ownerid,'post_id' : postid,'reply_id' : replyid,'is_reply' : isReply,'is_uni' : is_uni,'is_club':is_club,'clubid' : "{{club.id}}"},
-              success: function(){ $(".reply[data-postid='" + replyid + "']").load('/actions/get_replies?post_id='+postid+'&owner_id='+ownerid+'&is_uni='+is_uni+'&is_club='+true+'&clubid='+"{{club.id}}"+" .reply[data-postid='" + replyid + "'] > *").hide().fadeIn(700);
-              },
-              dataType: 'json'
-            });
-        
-    }
-    function reply(post){
-        var ele = $(post).closest('#Status-sec');
-        var postid = ele.data()['postid'];
-        var ownerid = ele.data()['ownerid'];
-        var message =   $("#reply-box[data-postid='" + postid+ "'] textarea").val();
-        var is_uni = !$('#myonoffswitch').is(':checked');
-        var is_club = "{{is_club}}";
-
-        if($('#myonoffswitch').length <= 0){
-            is_uni = false;
-        }
-        console.log(message);
-        //var replyid = postid;
-        {% from constants import * %}
-        var posttype = parseInt({{PostType.REPLY_POST}});
-
-        $.ajax({
-              type: "POST",
-              url: '/actions/post',
-              data: { 'message' : message, 'posttype' : posttype, 'postid' : postid,'ownerid' : ownerid,'is_uni' : is_uni,'is_club' : is_club,'clubid' : "{{club.id}}"},
-              success: function(){      
-                hideReply(post);
-        loadReplies(post);
-              },
-              dataType: 'json'
-            });
-
-
-    }
-    function replyreply(post){
-        var ele = $(post).closest('#Status-sec');
-        var postid = ele.data()['postid'];
-        var ownerid = ele.data()['ownerid'];
-        //console.log(post);
-        //console.log(ownerid);
-        var replyid = $(post).closest('.reply').data()['postid'];
-        //console.log(replyid);
-        var message =   $("#reply-box[data-postid='" + replyid+ "'] textarea").val();
-
-        var is_uni = !$('#myonoffswitch').is(':checked');
-        var is_club = "{{is_club}}";
-
-        if($('#myonoffswitch').length <= 0){
-            is_uni = false;
-        }
-        //console.log(message);
-        
-        {% from constants import * %}
-        var posttype = parseInt({{PostType.REPLY_POST}});
-
-        $.ajax({
-              type: "POST",
-              url: '/actions/post',
-              data: { 'message' : message, 'posttype' : posttype, 'postid' : postid,'ownerid' : ownerid,'replyid' : replyid,'is_uni':is_uni,'is_club':is_club,'clubid' : "{{club.id}}"},
-              success: function(){      hideReply(post);
-        loadReplies(post);
-              },
-              dataType: 'json'
-            });
-
-
-
-    }
-
-    function loadReplies(ele){
-
-        var ssec = $(ele).closest('#Status-sec')
-        var nele = ssec.find('.reply-sec');
-        var postid = ssec.data()['postid'];
-        var ownerid = ssec.data()['ownerid'];
-        var checked = !$('#myonoffswitch').is(':checked');
-        var is_club = true;
-        if($('#myonoffswitch').length <= 0){
-            checked = false;
-        }
-        //var postid = 
-        $(nele).load('/actions/get_replies?post_id='+postid+'&owner_id='+ownerid+'&is_uni='+checked+'&is_club='+is_club+'&clubid={{club.id}}').hide().fadeIn(300);
-    }
 
 
 </script>

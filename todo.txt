@@ -7,7 +7,7 @@ Blocker:
 	-Captcha
 	Remove Friends
 	-Async code
-	endless scroll
+	-endless scroll
 	Add Friend link next to people.
 
 Features:
@@ -21,7 +21,7 @@ Features:
 		Remove photos
 
 Extra:
-	Clean up javascript/html code.
+	-Clean up javascript/html code.
 
 
 ---new event page

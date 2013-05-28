@@ -10,8 +10,6 @@ import datetime
 
 class Reply(EmbeddedDocument):
     id = ObjectIdField()
-    Downvoters = ListField(ObjectIdField())
-    Upvoters = ListField(ObjectIdField())
     FriendId = ObjectIdField()
     UserId = ObjectIdField()
     ParentId = ObjectIdField()

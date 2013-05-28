@@ -4,7 +4,6 @@ UNIVERSITY_LIST = ["A.T. Still University - Online", "Alaska Bible College", "Al
 
 class University(Document):
 	Name = StringField(choices=UNIVERSITY_LIST,unique=True)
-	Wall = ListField(EmbeddedDocumentField('Post'))
 	Students = ListField(ObjectIdField())
 	Admins = ListField(ObjectIdField())
 	BanList = ListField(ObjectIdField())
