@@ -14,14 +14,19 @@ body,html {
 width:auto;
 height:100%;
 overflow-x:hidden;
-background-image:url(../images/hexellence.png);
+/*background-image:url(../images/hexellence.png);*/
+background: rgba(100,100,100,0);
 }
 
 #container {
-height:auto;
-margin-top:100px;
+padding-top:100px;
 min-width:1100px;
 width:100%;
+
+}
+
+i{
+  padding: 4px 4px 4px 4px;
 }
 
 .name {
@@ -43,7 +48,7 @@ position:fixed;
 float:left;
 min-width:900px;
 white-space:nowrap;
-background:#FFF;
+background: white;
 z-index:100;
 margin:0;
 -webkit-box-shadow:0 0 12px 0 #000;
@@ -51,16 +56,16 @@ margin:0;
 box-shadow:0 0 12px 0 #000;
 }
 #nav a:hover {
-background:orange;
+color:rgb(132,188,241);;
 }
 
 #nav span a,#nav span a:visited {
-color:#FFF;
+color: rgb(133,133,133);
 text-decoration:none;
 }
 
 #nav span a:hover {
-background:orange;
+background:rgb(132,188,241);;
 color:#FFF;
 text-decoration:none;
 }
@@ -84,13 +89,13 @@ margin-right:20px;
 }
 
 #nav #logo {
-height:inherit;
+/*height:inherit;*/
 }
 
 #nav #logo img,object {
 float:left;
-padding-left:10px;
-padding-top:5px;
+/*padding-left:10px;
+padding-top:5px;*/
 }
 
 #nav #dd:hover {
@@ -102,22 +107,22 @@ padding: 2px 2px 2px 2px;
 }
 #nav #dd a:hover {
 text-decoration: underline;
-background: orange;
+background: rgb(132,188,241);;
 }
 
-#nav #right-nav .icon-globe {
-background:#FFF;
-color:#000;
+#nav .icon-globe {
+background:transparent;
+/*color:#000;*/
 position:relative;
 }
 
 #nav #right-nav .icon-globe:hover {
-color:orange!important;
+color:rgb(132,188,241) !important;
 }
 
-#nav a,#nav i,#nav ul a:hover {
+/*#nav span a,#nav i,#nav ul a:hover {
 background:#444;
-}
+}*/
 
 #nav .nav-bar {
 color:#222;
@@ -125,13 +130,20 @@ display:inline-block;
 padding-left:55px;
 padding-right:5px;
 padding-top:15px;
+
+
 }
 
-#nav .nav-bar a,i {
+#nav .nav-bar a {
 border-radius:3px;
 color:#FFF;
 padding:5px;
 text-decoration:none;
+background: rgb(238,238,238);;
+}
+
+#nav .nav-bar *{
+  color: rgb(133,133,133);
 }
 
 #nav .search_box {
@@ -153,10 +165,18 @@ text-decoration:none;
 #nav #search-area input {
 margin-right:0;
 padding-right:0;
+border-radius: 5px;
+border-width: 1px;
+border-style: solid;
+border-color: gray;
+padding: 1px 1px 1px 1px;
+/*-webkit-box-shadow:0 0 7px 0 #000;
+-moz-box-shadow:0 0 7px 0 #000;
+box-shadow:0 0 7px 0 #000;*/
 }
 
 #nav #logo {
-height:inherit;
+/*height:inherit;*/
 }
 
 #nav #logo img,object {
@@ -170,6 +190,7 @@ padding-top:5px;
 #nav #not {
 display:inline-block;
 position:relative;
+background: transparent;
 }
 
 #nav #not #not-menu {
@@ -296,10 +317,10 @@ visibility:visible;
 -moz-transition:margin .5s;
 -webkit-box-shadow:0 0 4px 0 #000;
 -webkit-transition:margin .5s;
-background:#444;
+background: rgb(238,238,238);;
+color: rgb(133,133,133);
 border-radius:3px;
 box-shadow:0 0 4px 0 #000;
-color:#FFF;
 margin:0 75px 10px 0;
 padding:5px;
 text-align:right;
@@ -309,7 +330,7 @@ text-decoration:none;
 #left-side-bar  #subsidebar h3:hover {
 -moz-transition:margin .5s;
 -webkit-transition:margin .5s;
-color:orange;
+color:rgb(132,188,241);
 margin-right:20px;
 }
 
@@ -340,7 +361,7 @@ text-decoration:none;
 }
 
 #left-side-bar .sidebar li:hover {
-  color: orange;
+  color: rgb(132,188,241);;
 }
 
 #left-side-bar .sidebar:hover {
@@ -352,27 +373,42 @@ visibility:visible;
 
 #content {
 -moz-box-shadow:0 0 8px 0 #000;
--webkit-box-shadow:0 0 8px 0 #000;
-background:#FFF;
-border-radius:10px;
-box-shadow:0 0 8px 0 #000;
+/*-webkit-box-shadow:0 0 8px 0 #000;*/
+background:transparent;
+/*border-radius:10px;*/
+/*box-shadow:0 0 8px 0 #000;*/
 float:left;
 height:auto;
 text-align:center;
 width:70%;
+border-width: 0px;
+border-left-width: 1px;
+border-color: rgb(238,238,238);
+border-style: solid; 
 }
 
 
 
 /*The status posting section.*/
 #content #status {
-border-bottom:solid gray;
+border-bottom:solid rgb(238,238,238);
 border-bottom-width:1px;
 height:100px;
 margin-left:auto;
 margin-right:auto;
 padding-bottom:-5px;
 padding-top:15px;
+}
+
+#content #status a{
+  text-decoration: none;
+}
+
+#content #hhead{
+  float: left;
+  color: rgb(132,188,241);
+  margin: 5px 5px 5px 5px;
+
 }
 
 #content #status .status-box {
@@ -388,11 +424,11 @@ width:70%;
 }
 
 #content #status .status-button {
-background:#444;
+background:rgb(238,238,238);
 border-radius:5px;
 border-style:solid;
 border-width:small;
-color:#FFF;
+color: rgb(133,133,133);
 cursor:pointer;
 font-size:18px;
 margin-left:10px;
@@ -401,16 +437,15 @@ vertical-align:middle;
 }
 
 #content #status .status-button:hover {
-background:orange;
-color:#FFF;
+background:rgb(132,188,241);;
+color: white;
 text-decoration:none;
 }
 
 /*The status feed.*/
 #status-feed #status-sec {
-background:#FFF;
-border-bottom:solid orange;
-border-bottom-width:0;
+background:transparent;
+
 border-radius:0;
 margin:0;
 padding-bottom:10px;
@@ -419,10 +454,24 @@ padding-top:10px;
 text-align:left;
 white-space:normal;
 width:100%;
+border-width: 0px;
+border-bottom-width: 0px;
+border-bottom-style: solid;
+border-bottom-color: gray;
+border-bottom-right-radius:0px;
+}
+
+#status-feed #status-sec a{
+  text-decoration: none;
+}
+
+#status-feed #status-sec a:hover{
+  /*color: rgb(241,241,241);*/
+  text-decoration: underline;
 }
 
 #status-feed #votes {
-background:#FFF;
+background:transparent;
 border-radius:5px;
 float:left;
 height:inherit;
@@ -433,12 +482,18 @@ text-decoration:none;
 
 #status-feed #votes i {
 color:gray;
+background: rgb(238,238,238);
 padding:5px;
 text-decoration:none;
+border-radius: 3px;
+}
+
+#status-feed #votes i:hover {
+  background: rgb(218,218,218);
 }
 
 #status-feed #votes i:hover,.sidebar li:hover {
-color:orange;
+color:rgb(132,188,241);;
 }
 
 #status-feed #votes p {
@@ -448,10 +503,12 @@ padding-right:5px;
 text-decoration:none;
 }
 
-#status-sec {
+/*#status-sec {
 padding:10px;
-}
 
+
+}
+*/
 #status-sec img {
 display:inline-block;
 float:left;
@@ -487,7 +544,7 @@ padding-top: 5px;
 text-align:left;
 padding-top:15px;
 font-size:75%;
-background:white;
+background:transparent;
 display: none;
 }
 
@@ -512,14 +569,14 @@ top:50%;
     border-bottom:solid white;
     border-bottom-width:0px;
     overflow: auto;
-    background: white;
+    background: transparent;
     border-radius: 3px;
     text-align: left;
 
 
 }
 .club #user-data h2,h3,h4,h5,h6{
-    color: gray;
+    color: rgb(132,188,241);;
 }
 
 .club #Status{
@@ -540,7 +597,7 @@ top:50%;
     border-bottom:solid white;
     border-bottom-width:0px;
     overflow: auto;
-    background: white;
+    background: transparent;
     border-radius: 3px;
     text-align: right;
 
@@ -747,4 +804,92 @@ border-style: solid;
 border-width: 4px 8px 4px 0;
 border-color: transparent rgba(0,0,0,.75) transparent transparent;
     /*border-color: #4cbeff transparent;*/
+}
+
+/*The login page css*/
+/*.login #container{
+  height: 75%;
+  font-size: 18px;
+}*/
+
+.login #left-side-bar{
+  background: transparent;
+  height: inherit;
+  min-width: 320px;
+  
+}
+
+.login #content{
+  background: transparent;
+  width: 65%;
+  height: 60%;
+  text-align: left;
+  padding-left: 50px;
+  margin-left: 10px;
+  border-left-width: 1px;
+  border-left-style: solid;
+}
+
+.login #login{
+  font-size: 16px;
+  text-align: right;
+
+}
+
+.login #login input{
+  margin: 5px 5px 5px 5px;
+  padding: 8px 8px 8px 8px;
+
+}
+
+.login img,object {
+float:left;
+padding-left:0px;
+padding-top:0px;
+}
+
+
+/*Pagination*/
+
+ul{border:0; margin:0; padding:0;}
+
+#pagination li{
+border:0; margin:0; padding:0;
+font-size:11px;
+list-style:none;
+}
+#pagination a{
+border:solid 1px #DDDDDD;
+margin-right:2px;
+}
+#pagination .previous-off,
+#pagination .next-off {
+color:#666666;
+display:block;
+float:left;
+font-weight:bold;
+padding:3px 4px;
+}
+#pagination .next a,
+#pagination .previous a {
+font-weight:bold;
+border:solid 1px #FFFFFF;
+} 
+#pagination .active{
+color:#ff0084;
+font-weight:bold;
+display:block;
+float:left;
+padding:4px 6px;
+}
+#pagination a:link,
+#pagination a:visited {
+color:#0063e3;
+display:block;
+float:left;
+padding:3px 6px;
+text-decoration:none;
+}
+#pagination a:hover{
+border:solid 1px #666666;
 }

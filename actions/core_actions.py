@@ -288,6 +288,23 @@ def get_feed(userid,networkid=None,includeMe=True,orderBy='-Hotness',numResults=
 		return callback(feed)
 	return feed
 
+def count_posts(userid,networkid=None,includeMe=True,orderBy='-Hotness',callback=None):
+		if networkid == None:
+			if includeMe:
+				logger.info("Retrieving main feed count")
+				friends = User.objects(id=userid).first().Friends
+				count = Post.objects(Q(UserId__in=friends) | Q(UserId = userid)).order_by(orderBy).count()
+			else:
+				logger.info("Retrieving user feed")
+				count = Post.objects(UserId = userid).order_by(orderBy).count()
+		else:
+			count = Post.objects(NetworkId=networkid).order_by(orderBy).count()
+
+
+		if callback != None:
+			return callback(count)
+		return count
+
 @funcs.run_async
 def get_user_feed(userid,orderBy="-Hotness",numResults=5,startNum =0,callback=None):
 	logger.info("Retrieving user feed here")

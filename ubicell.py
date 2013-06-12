@@ -29,10 +29,13 @@ from models.ProfileImage import *
 from models.User import *
 from models.University import *
 from models.Club import *
+from models.Pagination import *
 from util.funcs import *
 from util import scraper
 from util.libsolvemedia import *
 import config
+
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -99,6 +102,11 @@ class Application(tornado.web.Application):
 
 class BaseHandler(tornado.web.RequestHandler):
 
+        # def url_for_other_page(page):
+        #     args = request.view_args.copy()
+        #     args['page'] = page
+        #     return url_for(request.endpoint, **args)
+        #         app.jinja_env.globals['url_for_other_page'] = url_for_other_page
 
         def get_current_user(self):
                 user_json = self.get_secure_cookie("userdata")
@@ -118,35 +126,40 @@ class MainHandler(BaseHandler):
                 except:
                     numresults = NUM_RESULTS
                 try:
-                    page = int(self.get_argument('page',strip=True,default=0))
+                    page = int(self.get_argument('page',strip=True,default=1))
                 except:
-                    page = 0
-                startNum = page * NUM_RESULTS
+                    page = 1
+                startNum = (page-1) * NUM_RESULTS
                 sort = self.get_argument('sort',strip=True,default="Hotness")
 
                 uid = user['_id']['$oid']
                 me = yield gen.Task(user_actions.get_simple_data,uid)
 
                 feed = yield gen.Task(core_actions.get_feed,uid,startNum=startNum,numResults=NUM_RESULTS)
-                if len(feed) == 0 and page > 0:
+                if len(feed) == 0 and page > 1:
                     self.finish()
                     return
-
+                
                 nots= yield gen.Task(core_actions.get_notifications,uid)
                 uniname = University.objects(id=user['School']['University']['$oid']).first().Name
                 friends = yield gen.Task(user_actions.get_friends,uid)
+                total_posts = yield gen.Task(core_actions.count_posts,uid)
 
+                pagination = Pagination(page, NUM_RESULTS, total_posts)
                 clubs = User.objects(id=uid).first().Clubs
                 if not is_uni:
-                        self.render("index.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends,clubs=clubs,me=me)
+                        self.render("index.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends,clubs=clubs,me=me,pagination=pagination)
                 else:
                         uniid = user['School']['University']['$oid']
 
                         feed = yield gen.Task(core_actions.get_feed,uid,uniid,startNum=startNum,numResults=NUM_RESULTS)
+                        total_posts = yield gen.Task(core_actions.count_posts,uid,uniid)
+
+                        pagination = Pagination(page, NUM_RESULTS, total_posts)
                         if len(feed) == 0 and page > 0:
                             self.finish()
                             return
-                        self.render("index.html",userdata=user,feed = feed,uniname=uniname,friends=friends,clubs=clubs,me=me)
+                        self.render("index.html",userdata=user,feed = feed,uniname=uniname,friends=friends,clubs=clubs,me=me,pagination=pagination)
 
 
 
@@ -281,10 +294,13 @@ class UserHandler(BaseHandler):
                         # print user2
                         # print user2['ProfileImg']['$oid']
                         feed = yield gen.Task(core_actions.get_user_feed,uid,startNum=startNum)
+                        total_posts = yield gen.Task(core_actions.count_posts,uid)
+
+                        pagination = Pagination(page, NUM_RESULTS, total_posts)
                         if len(feed) == 0 and page > 0:
                             self.finish()
                             return
-                        self.render("me.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends,me=me)
+                        self.render("me.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends,me=me,pagination=pagination)
                         return
                 elif friend is False and friend_requested is False and friend_requesting is False:
                         user2['UserStatus'] = UserStatus.USER_NEI
@@ -302,8 +318,10 @@ class UserHandler(BaseHandler):
                 logger.debug(user2['_id'])
                 # logger.debug(feed[0].Message)
                 # print user2['UserStatus']
+                total_posts = yield gen.Task(core_actions.count_posts,user2['_id'])
 
-                self.render("user.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends,me=me)
+                pagination = Pagination(page, NUM_RESULTS, total_posts)
+                self.render("user.html",userdata=user2,feed=feed,nots=nots,uniname=uniname,friends=friends,me=me,pagination=pagination)
 
         @tornado.web.asynchronous
         @gen.coroutine
@@ -683,10 +701,10 @@ class UniversityFeedHandler(BaseHandler):
             except:
                 numresults = NUM_RESULTS
             try:
-                page = int(self.get_argument('page',strip=True,default=0))
+                page = int(self.get_argument('page',strip=True,default=1))
             except:
-                page = 0
-            startNum = page * NUM_RESULTS
+                page = 1
+            startNum = (page - 1)  * NUM_RESULTS
             sort = self.get_argument('sort',strip=True,default="Hotness")
 
             uid = user['_id']['$oid']
@@ -700,10 +718,13 @@ class UniversityFeedHandler(BaseHandler):
 
             uniid = user['School']['University']['$oid']
             feed = yield gen.Task(core_actions.get_feed,uid,uniid,startNum=startNum,numResults=NUM_RESULTS)
+            total_posts = yield gen.Task(core_actions.count_posts,uid,uniid)
+
+            pagination = Pagination(page, NUM_RESULTS, total_posts)
             if len(feed) == 0 and page > 0:
                 self.finish()
                 return
-            self.render("university.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends,clubs=clubs,me=me)
+            self.render("university.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends,clubs=clubs,me=me,pagination=pagination)
 
 
 
@@ -749,18 +770,26 @@ class ClubHandler(BaseHandler):
         except:
             self.redirect("/")
             return
+        try:
+            page = int(self.get_argument('page',strip=True,default=0))
+        except:
+            page = 0
+        startNum = page * NUM_RESULTS
 
         logger.debug(club.Name)
 
         is_member = ObjectId(uid) in club.Members
         is_member_reg = ObjectId(uid) in club.MemberRequests
         is_admin = ObjectId(uid) in club.Admins
-        feed = yield gen.Task(core_actions.get_feed,uid,clubid)
+        feed = yield gen.Task(core_actions.get_feed,uid,clubid,startNum=startNum)
         me = yield gen.Task(user_actions.get_simple_data,uid)
         if len(feed) == 0 and page > 0:
             self.finish()
             return
-        self.render('club.html',nots=nots,feed=feed,friends=friends,uniname=None,is_member=is_member,is_admin=is_admin,club = club,is_club=True,is_member_reg=is_member_reg,me=me)
+        total_posts = yield gen.Task(core_actions.count_posts,uid,clubid)
+
+        pagination = Pagination(page, NUM_RESULTS, total_posts)
+        self.render('club.html',nots=nots,feed=feed,friends=friends,uniname=None,is_member=is_member,is_admin=is_admin,club = club,is_club=True,is_member_reg=is_member_reg,me=me,pagination=pagination)
     
 
 

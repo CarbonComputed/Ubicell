@@ -49,57 +49,7 @@
 {%block funcs%}
 
 <script type="text/javascript">
-$(document).endlessScroll({
-  fireOnce: false,
-  fireDelay: 500,
-  loader:'<div id="loading"><img src="/static/images/ajax-loader.gif"></div>',
-  insertBefore: '#Status-Feed',
-  resetCounter: function(){
-  	if(clicked == true){
-  		clicked = false;
-  		return true;
-  	}
-  	return false;
-  },
-  content: function(fireSeq,pageSeq,scrollDir){
-  	if(pageSeq < 0){
-  				var u = "/actions/feed";
-  				if(document.URL.indexOf("?") < 0){
-  					u = u+"?page="+fireSeq
-  				}
-  				else{
-  					u = u+"&page="+fireSeq
-  				}
-  				u = u + "&user_id={{userdata['_id']['$oid']}}"
 
-  				var content ="";
-			  	$.ajax({
-			  	type : "GET",
-			    url: u,
-			    success: function(data) {
-			    	console.log(data);
-			      	data = $('<div/>').html(data).contents().eq(1);
-			      	
-		  		 	//console.log($(data).find('#Status-Feed').html());
-		   			content = $(data).html();
-		   			console.log(content);
-			    },
-
-			    async:false
-			  	});
-			  	//console.log(content);
-		  		return content;
-		  		 //console.log(data);
-		  		 
-  		//console.log($.get("/?page="+fireSeq+" #Status-Feed"));
-  		//return $.get("/?page="+fireSeq+" #Status-Feed").responseText;
-  	}
-  	
-  },
-  callback: function(p){
-    //alert("test");
-  }
-});
 
 $('.changepro').hide();
 $('.proimg').hover(function(){

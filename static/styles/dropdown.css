@@ -150,7 +150,7 @@
     padding-left: 10px;
     padding-right: 0px;
     /* Styles */
-    background: rgb(68,68,68);
+    background: rgb(238,238,238);;;
     border-left: 0px solid gray;
     border-radius: 5px;
     /*cursor: pointer;*/
@@ -160,13 +160,13 @@ display:inline-block;
     outline: none;
 }
 .wrapper-dropdown-2:hover {
-    background: orange;
+    background: rgb(132,188,241);;;
 }
 .wrapper-dropdown-2:hover #tab{
-    background: orange;
+    background: rgb(132,188,241);
 }
 .wrapper-dropdown-2:hover a{
-    background: orange;
+    background: rgb(132,188,241);
 }
 
 .wrapper-dropdown-2:after {
@@ -180,7 +180,7 @@ display:inline-block;
     border-width: 0; 
     /*border-width: 6px 6px 0 6px;*/
     border-style: solid;
-    border-color: rgb(68,68,68) transparent;
+    border-color: rgb(238,238,238) transparent;
 }
 
 .wrapper-dropdown-2:hover:after {

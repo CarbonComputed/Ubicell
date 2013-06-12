@@ -37,8 +37,8 @@
                                             <div class="status-info">
                         <p><a class="name" href="/user/{{friend.UserName}}">{{friend.FirstName.capitalize()}} {{friend.LastName.capitalize()}}</a><i class="icon-caret-right" style="color:black;margin-top:5px;"></i><a class="name" href="{{url}}">{{netname}}</a></p>
                         <p class="post">{% raw linkify(post.Message)%}</p>
-                        <a id="show-comment-link" href="#" onclick="toggleReplies(this);return false;"style="float:left;background:white;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
-                        <a href="#" onclick="displayReply(this);return false;" style="float:left;background:white;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>                     
+                        <a id="show-comment-link" href="#" onclick="toggleReplies(this);return false;"style="float:left;background:transparent;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
+                        <a href="#" onclick="displayReply(this);return false;" style="float:left;background:transparent;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>                     
 
                     </div>
                 </div>
@@ -49,8 +49,8 @@
                                             <div class="status-info">
                         <p><a class="name" href="/user/{{friend.UserName}}">{{friend.FirstName.capitalize()}} {{friend.LastName.capitalize()}}</a><i class="icon-caret-right" style="color:black;margin-top:5px;"></i><a class="name" href="/user/{{user.UserName}}">{{user.FirstName.capitalize()}} {{user.LastName.capitalize()}}</a></p>
                         <p class="post">{% raw linkify(post.Message)%}</p>
-                        <a id="show-comment-link" href="#" onclick="toggleReplies(this);return false;"style="float:left;background:white;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
-                        <a href="#" onclick="displayReply(this);return false;" style="float:left;background:white;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>                     
+                        <a id="show-comment-link" href="#" onclick="toggleReplies(this);return false;"style="float:left;background:transparent;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
+                        <a href="#" onclick="displayReply(this);return false;" style="float:left;background:transparent;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>                     
 
                     </div>
                 </div>
@@ -60,8 +60,8 @@
                                 <div class="status-info">
                                 <a class="name" href="/user/{{user.UserName}}">{{user['FirstName'].capitalize()}} {{user['LastName'].capitalize()}}</a></br>
                                 <p class="post">{% raw linkify(post['Message'])%}</p>
-                                <a id="show-comment-link" href="#" onclick="toggleReplies(this);return false;" style="float:left;background:white;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
-                                <a href="#" onclick="displayReply(this);return false;"style="float:left;background:white;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>
+                                <a id="show-comment-link" href="#" onclick="toggleReplies(this);return false;" style="float:left;background:transparent;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
+                                <a href="#" onclick="displayReply(this);return false;"style="float:left;background:transparent;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>
                                 <p></p>
                                 </div>
                             </div>
@@ -71,8 +71,8 @@
                                 <div class="status-info">
                                 <a class="name" href="/user/{{user.UserName}}">{{user['FirstName'].capitalize()}} {{user['LastName'].capitalize()}}</a></br>
                                 <p class="post">{% raw linkify(post['Message'])%}</p>
-                                <a id="show-comment-link" href="#" onclick="toggleReplies(this);return false;" style="float:left;background:white;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
-                                <a href="#" onclick="displayReply(this);return false;"style="float:left;background:white;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>
+                                <a id="show-comment-link" href="#" onclick="toggleReplies(this);return false;" style="float:left;background:transparent;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
+                                <a href="#" onclick="displayReply(this);return false;"style="float:left;background:transparent;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>
                                 <p></p>
                                 </div>
                             </div>
@@ -82,8 +82,8 @@
                                 <div class="status-info">
                                 <a class="name" href="/user/{{friend.UserName}}">{{friend['FirstName'].capitalize()}} {{friend['LastName'].capitalize()}}</a></br>
                                 <p class="post">{% raw linkify(post['Message'])%}</p>
-                                <a id="show-comment-link" href="#" onclick="toggleReplies(this);return false;" style="float:left;background:white;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
-                                <a href="#" onclick="displayReply(this);return false;"style="float:left;background:white;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>
+                                <a id="show-comment-link"  href="#" onclick="toggleReplies(this);return false;" style="float:left;background:transparent;font-size:11px;padding-top:10px;color:black;">Show Comments</a>
+                                <a href="#" onclick="displayReply(this);return false;"style="float:left;background:transparent;font-size:11px;padding-top:10px;color:black;padding-left:10px;">Reply</a>
                                 <p></p>
                                 </div>
                             </div>
@@ -105,7 +105,7 @@
     {%block reply_sec%}
 
     {%end%}
-    <div class="reply-sec" style= "padding-top:15px;font-size:75%;background:white;">
+    <div class="reply-sec" style= "padding-top:15px;font-size:75%;background:transparent;">
 
     </div>
 </div>
