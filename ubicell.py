@@ -119,47 +119,47 @@ class MainHandler(BaseHandler):
         @gen.coroutine
         @tornado.web.authenticated
         def get(self):
-                user = self.get_current_user()
-                is_uni = str2bool(self.get_argument('University',strip=True,default="f"))
-                try:
-                    numresults = int(self.get_argument('nresults',strip=True,default=NUM_RESULTS))
-                except:
-                    numresults = NUM_RESULTS
-                try:
-                    page = int(self.get_argument('page',strip=True,default=1))
-                except:
-                    page = 1
-                startNum = (page-1) * NUM_RESULTS
-                sort = self.get_argument('sort',strip=True,default="Hotness")
+                # user = self.get_current_user()
+                # is_uni = str2bool(self.get_argument('University',strip=True,default="f"))
+                # try:
+                #     numresults = int(self.get_argument('nresults',strip=True,default=NUM_RESULTS))
+                # except:
+                #     numresults = NUM_RESULTS
+                # try:
+                #     page = int(self.get_argument('page',strip=True,default=1))
+                # except:
+                #     page = 1
+                # startNum = (page-1) * NUM_RESULTS
+                # sort = self.get_argument('sort',strip=True,default="Hotness")
 
-                uid = user['_id']['$oid']
-                me = yield gen.Task(user_actions.get_simple_data,uid)
+                # uid = user['_id']['$oid']
+                # me = yield gen.Task(user_actions.get_simple_data,uid)
 
-                feed = yield gen.Task(core_actions.get_feed,uid,startNum=startNum,numResults=NUM_RESULTS)
-                if len(feed) == 0 and page > 1:
-                    self.finish()
-                    return
+                # feed = yield gen.Task(core_actions.get_feed,uid,startNum=startNum,numResults=NUM_RESULTS)
+                # if len(feed) == 0 and page > 1:
+                #     self.finish()
+                #     return
                 
-                nots= yield gen.Task(core_actions.get_notifications,uid)
-                uniname = University.objects(id=user['School']['University']['$oid']).first().Name
-                friends = yield gen.Task(user_actions.get_friends,uid)
-                total_posts = yield gen.Task(core_actions.count_posts,uid)
+                # nots= yield gen.Task(core_actions.get_notifications,uid)
+                # uniname = University.objects(id=user['School']['University']['$oid']).first().Name
+                # friends = yield gen.Task(user_actions.get_friends,uid)
+                # total_posts = yield gen.Task(core_actions.count_posts,uid)
 
-                pagination = Pagination(page, NUM_RESULTS, total_posts)
-                clubs = User.objects(id=uid).first().Clubs
-                if not is_uni:
-                        self.render("index.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends,clubs=clubs,me=me,pagination=pagination)
-                else:
-                        uniid = user['School']['University']['$oid']
+                # pagination = Pagination(page, NUM_RESULTS, total_posts)
+                # clubs = User.objects(id=uid).first().Clubs
+                # if not is_uni:
+                #         self.render("index.html",userdata=user,feed = feed,nots=nots,uniname=uniname,friends=friends,clubs=clubs,me=me,pagination=pagination)
+                # else:
+                #         uniid = user['School']['University']['$oid']
 
-                        feed = yield gen.Task(core_actions.get_feed,uid,uniid,startNum=startNum,numResults=NUM_RESULTS)
-                        total_posts = yield gen.Task(core_actions.count_posts,uid,uniid)
+                #         feed = yield gen.Task(core_actions.get_feed,uid,uniid,startNum=startNum,numResults=NUM_RESULTS)
+                #         total_posts = yield gen.Task(core_actions.count_posts,uid,uniid)
 
-                        pagination = Pagination(page, NUM_RESULTS, total_posts)
-                        if len(feed) == 0 and page > 0:
-                            self.finish()
-                            return
-                        self.render("index.html",userdata=user,feed = feed,uniname=uniname,friends=friends,clubs=clubs,me=me,pagination=pagination)
+                #         pagination = Pagination(page, NUM_RESULTS, total_posts)
+                #         if len(feed) == 0 and page > 0:
+                #             self.finish()
+                #             return
+                #         self.render("index.html",userdata=user,feed = feed,uniname=uniname,friends=friends,clubs=clubs,me=me,pagination=pagination)
 
 
 

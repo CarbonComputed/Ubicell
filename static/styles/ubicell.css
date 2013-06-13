@@ -482,14 +482,18 @@ text-decoration:none;
 
 #status-feed #votes i {
 color:gray;
-background: rgb(238,238,238);
+
 padding:5px;
 text-decoration:none;
 border-radius: 3px;
 }
 
 #status-feed #votes i:hover {
-  background: rgb(218,218,218);
+  background: rgb(238,238,238);
+}
+
+#status-feed #votes i:active{
+]  background: rgb(218,218,218);
 }
 
 #status-feed #votes i:hover,.sidebar li:hover {
